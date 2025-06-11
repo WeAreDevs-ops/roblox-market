@@ -15,6 +15,7 @@ export default function Admin() {
     robuxBalance: '',
     limitedItems: '',
     inventory: 'Public',
+    accountType: 'Global Account',  // <-- added
     games: ['', '', '']
   });
 
@@ -69,13 +70,8 @@ export default function Admin() {
       return;
     }
 
-    // Fetch Roblox profile automatically
     const profileURL = await fetchRobloxProfile(form.username);
-
-    const newAccount = {
-      ...form,
-      profile: profileURL
-    };
+    const newAccount = { ...form, profile: profileURL };
 
     const res = await fetch('/api/accounts', {
       method: 'POST',
@@ -96,6 +92,7 @@ export default function Admin() {
         robuxBalance: '',
         limitedItems: '',
         inventory: 'Public',
+        accountType: 'Global Account',
         games: ['', '', '']
       });
     } else {
@@ -140,35 +137,30 @@ export default function Admin() {
         <>
           <h2>Add Account</h2>
 
-          {/* Username only now */}
           <input 
             type="text" placeholder="Roblox Username" value={form.username}
             onChange={e => setForm({...form, username: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
 
-          {/* Price */}
           <input 
             type="text" placeholder="Price (PHP)" value={form.price}
             onChange={e => setForm({...form, price: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
 
-          {/* Robux Balance */}
           <input 
             type="text" placeholder="Robux Balance" value={form.robuxBalance}
             onChange={e => setForm({...form, robuxBalance: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
 
-          {/* Limited Items */}
           <input 
             type="text" placeholder="Limited Items" value={form.limitedItems}
             onChange={e => setForm({...form, limitedItems: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
 
-          {/* Games */}
           {[0,1,2].map(i => (
             <input 
               key={i}
@@ -182,14 +174,12 @@ export default function Admin() {
             />
           ))}
 
-          {/* Age */}
           <select value={form.age} onChange={e => setForm({...form, age: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}>
             <option>13+</option>
             <option>{'<13'}</option>
           </select>
 
-          {/* Email */}
           <select value={form.email} onChange={e => setForm({...form, email: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}>
             <option>Verified</option>
@@ -197,25 +187,29 @@ export default function Admin() {
             <option>Add Email</option>
           </select>
 
-          {/* MOP */}
           <select value={form.mop} onChange={e => setForm({...form, mop: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}>
             <option>Gcash</option>
             <option>Paypal</option>
           </select>
 
-          {/* Negotiable */}
           <select value={form.negotiable} onChange={e => setForm({...form, negotiable: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}>
             <option>Yes</option>
             <option>No</option>
           </select>
 
-          {/* Inventory */}
           <select value={form.inventory} onChange={e => setForm({...form, inventory: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}>
             <option>Public</option>
             <option>Private</option>
+          </select>
+
+          {/* Account Type field */}
+          <select value={form.accountType} onChange={e => setForm({...form, accountType: e.target.value})}
+            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}>
+            <option>Global Account</option>
+            <option>PH Account</option>
           </select>
 
           <button 
@@ -238,6 +232,7 @@ export default function Admin() {
               <p><strong>Robux Balance:</strong> {acc.robuxBalance}</p>
               <p><strong>Limited Items:</strong> {acc.limitedItems}</p>
               <p><strong>Inventory:</strong> {acc.inventory}</p>
+              <p><strong>Account Type:</strong> {acc.accountType || 'Global Account'}</p>
               <p><strong>Games:</strong> {acc.games?.filter(g => g).join(", ")}</p>
 
               <button onClick={() => deleteAccount(acc.id)} 
@@ -250,4 +245,4 @@ export default function Admin() {
       )}
     </div>
   );
-    }
+        }
