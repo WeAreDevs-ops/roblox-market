@@ -42,7 +42,13 @@ export default function Admin() {
 
     if (res.ok) {
       fetchAccounts();
-      setForm({ username: '', age: '13+', email: 'Verified', profileLink: '', imageUrl: '' });
+      setForm({
+        username: '',
+        age: '13+',
+        email: 'Verified',
+        profileLink: '',
+        imageUrl: ''
+      });
     } else {
       alert('Error adding account');
     }
@@ -79,25 +85,20 @@ export default function Admin() {
             <option>Not Verified</option>
             <option>Add Email</option>
           </select>
-          <input type="text" placeholder="Profile Link" value={form.profileLink} onChange={e => setForm({...form, profileLink: e.target.value})} />
+          <input type="text" placeholder="Roblox Profile Link" value={form.profileLink} onChange={e => setForm({...form, profileLink: e.target.value})} />
           <input type="text" placeholder="Image URL" value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} />
           <button onClick={addAccount}>Add Account</button>
 
           <h2>All Listings</h2>
-          {accounts.map(acc => (
-            <div key={acc.id} className="account-card">
-              <img src={acc.imageUrl} alt="Avatar" />
-              <div className="account-info">
-                <h3>{acc.username}</h3>
-                <p>Age: {acc.age}</p>
-                <p>Email: {acc.email}</p>
-                <a href={acc.profileLink} target="_blank" rel="noreferrer">
-                  View Profile
-                </a>
+          <ul>
+            {accounts.map(acc => (
+              <li key={acc.id}>
+                {acc.username} ({acc.age}) — {acc.email} —
+                <a href={acc.profileLink} target="_blank">Profile</a>
                 <button onClick={() => deleteAccount(acc.id)}>Delete</button>
-              </div>
-            </div>
-          ))}
+              </li>
+            ))}
+          </ul>
         </>
       )}
     </div>
