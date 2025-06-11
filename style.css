@@ -1,0 +1,68 @@
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.main-title {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.account-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.account-card:hover {
+  transform: translateY(-5px);
+}
+
+.account-card h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+p {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 12px;
+  color: white;
+}
+
+.green { background-color: #28a745; }
+.red { background-color: #dc3545; }
+.blue { background-color: #007bff; }
+.yellow { background-color: #ffc107; }
+
+.buy-button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  background: #007bff;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.buy-button:hover {
+  background: #0056b3;
+}
