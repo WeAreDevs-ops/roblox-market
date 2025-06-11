@@ -1,6 +1,6 @@
 import { db } from '../firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
-import axios from 'axios';
+import axios from 'axios';  // ✅ corrected import path here
 
 export default async function handler(req, res) {
   const accountsRef = collection(db, "accounts");
@@ -48,4 +48,4 @@ export default async function handler(req, res) {
   else {
     res.status(405).end();
   }
-      }
+}
