@@ -1,32 +1,59 @@
-import { db } from '../firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
+const express = require('express');
+const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 
-export default async function handler(req, res) {
-  const accountsRef = collection(db, "accounts");
+// Path to your JSON file
+const dataFile = path.join(__dirname, '../data/accounts.json');
 
-  if (req.method === 'GET') {
-    const snapshot = await getDocs(accountsRef);
-    const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.status(200).json({ accounts });
+// Load accounts from file
+function loadAccounts() {
+  if (!fs.existsSync(dataFile)) {
+    fs.writeFileSync(dataFile, JSON.stringify([]));
   }
-  else if (req.method === 'POST') {
-    const {
-      username, age, email, profile, price, mop, negotiable,
-      robuxBalance, limitedItems, inventory, games
-    } = req.body;
-
-    const docRef = await addDoc(accountsRef, {
-      username, age, email, profile, price, mop, negotiable,
-      robuxBalance, limitedItems, inventory, games
-    });
-    res.status(201).json({ message: 'Account added', id: docRef.id });
-  }
-  else if (req.method === 'DELETE') {
-    const { id } = req.body;
-    await deleteDoc(doc(accountsRef, id));
-    res.status(200).json({ message: 'Deleted' });
-  }
-  else {
-    res.status(405).end();
-  }
+  const data = fs.readFileSync(dataFile);
+  return JSON.parse(data);
 }
+
+// Save accounts to file
+function saveAccounts(accounts) {
+  fs.writeFileSync(dataFile, JSON.stringify(accounts, null, 2));
+}
+
+// GET all accounts
+router.get('/', (req, res) => {
+  const accounts = loadAccounts();
+  res.json({ accounts });
+});
+
+// ADD new account
+router.post('/', (req, res) => {
+  const accounts = loadAccounts();
+  const newAccount = {
+    id: Date.now().toString(),
+    username: req.body.username || '',
+    age: req.body.age || '',
+    email: req.body.email || '',
+    profile: req.body.profile || '',
+    price: req.body.price || '',
+    mop: req.body.mop || '',
+    negotiable: req.body.negotiable || '',
+    robuxBalance: req.body.robuxBalance || '',
+    limitedItems: req.body.limitedItems || '',
+    inventory: req.body.inventory || '',
+    games: req.body.games || []
+  };
+  accounts.push(newAccount);
+  saveAccounts(accounts);
+  res.json({ message: 'Account added.' });
+});
+
+// DELETE account
+router.delete('/', (req, res) => {
+  const accounts = loadAccounts();
+  const updatedAccounts = accounts.filter(acc => acc.id !== req.body.id);
+  saveAccounts(updatedAccounts);
+  res.json({ message: 'Account deleted.' });
+});
+
+module.exports = router;
