@@ -8,7 +8,10 @@ export default function Admin() {
     username: '',
     age: '13+',
     email: 'Verified',
-    profile: ''
+    profile: '',
+    price: '',
+    mop: 'Gcash',
+    negotiable: 'Yes'
   });
 
   const login = async () => {
@@ -46,7 +49,7 @@ export default function Admin() {
 
     if (res.ok) {
       fetchAccounts();
-      setForm({ username: '', age: '13+', email: 'Verified', profile: '' });
+      setForm({ username: '', age: '13+', email: 'Verified', profile: '', price: '', mop: 'Gcash', negotiable: 'Yes' });
     } else {
       alert('Error adding account');
     }
@@ -102,6 +105,13 @@ export default function Admin() {
             onChange={e => setForm({...form, profile: e.target.value})} 
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
+          <input 
+            type="text" 
+            placeholder="Price (PHP)" 
+            value={form.price} 
+            onChange={e => setForm({...form, price: e.target.value})} 
+            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+          />
           <select 
             value={form.age} 
             onChange={e => setForm({...form, age: e.target.value})} 
@@ -119,6 +129,23 @@ export default function Admin() {
             <option>Not Verified</option>
             <option>Add Email</option>
           </select>
+          <select 
+            value={form.mop} 
+            onChange={e => setForm({...form, mop: e.target.value})} 
+            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+          >
+            <option>Gcash</option>
+            <option>Paypal</option>
+          </select>
+          <select 
+            value={form.negotiable} 
+            onChange={e => setForm({...form, negotiable: e.target.value})} 
+            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+          >
+            <option>Yes</option>
+            <option>No</option>
+          </select>
+
           <button 
             onClick={addAccount} 
             style={{ padding: '10px 20px', background: 'green', color: '#fff', border: 'none' }}
@@ -133,6 +160,9 @@ export default function Admin() {
               <p><strong>Username:</strong> {acc.username}</p>
               <p><strong>Age:</strong> {acc.age}</p>
               <p><strong>Email:</strong> {acc.email}</p>
+              <p><strong>Price:</strong> ₱{acc.price}</p>
+              <p><strong>MOP:</strong> {acc.mop}</p>
+              <p><strong>Negotiable:</strong> {acc.negotiable}</p>
               <p><strong>Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
               <button 
                 onClick={() => deleteAccount(acc.id)} 
@@ -146,4 +176,4 @@ export default function Admin() {
       )}
     </div>
   );
-}
+  }
