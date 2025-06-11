@@ -9,7 +9,7 @@ export default function App() {
       <header>
         <h1>RBX Marketplace</h1>
         <nav>
-          <Link to="/">Home</Link> | <Link to="/admin">Admin</Link>
+          <Link to="/">Buying Page</Link> | <Link to="/admin">Listing Page</Link>
         </nav>
       </header>
       <Routes>
