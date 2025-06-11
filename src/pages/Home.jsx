@@ -14,8 +14,8 @@ export default function Home() {
     Swal.fire({
       title: 'Contact Me',
       html: `Contact me on:<br>
-        <a href="https://facebook.com/your-facebook" target="_blank">Facebook</a><br>
-        <a href="https://discord.gg/your-discord" target="_blank">Discord</a>`,
+        <a href="https://www.facebook.com/mix.nthe.clubb" target="_blank">Facebook</a><br>
+        <a href="https://discord.gg/P5xRPech" target="_blank">Discord</a>`,
       icon: 'info'
     });
   };
