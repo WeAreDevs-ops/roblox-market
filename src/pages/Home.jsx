@@ -28,6 +28,7 @@ export default function Home() {
           <h3>{acc.username}</h3>
           <p>Age: {acc.age}</p>
           <p>Email: {acc.email}</p>
+          <p>Profile: <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
           <button onClick={buyNow} className="buy">Buy Now</button>
         </div>
       ))}
