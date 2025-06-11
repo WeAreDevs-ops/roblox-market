@@ -6,8 +6,8 @@ export default function handler(req, res) {
     res.status(200).json({ accounts });
   }
   else if (req.method === 'POST') {
-    const { username, age, email } = req.body;
-    accounts.push({ id: counter++, username, age, email });
+    const { username, age, email, profile } = req.body;
+    accounts.push({ id: counter++, username, age, email, profile });
     res.status(201).json({ message: 'Account added' });
   }
   else if (req.method === 'DELETE') {
