@@ -209,7 +209,7 @@ export default function Admin() {
           <select value={form.accountType} onChange={e => setForm({...form, accountType: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}>
             <option>Global Account</option>
-            <option>PH Account</option>
+            <option>Vietnam Account</option>
           </select>
 
           <button 
