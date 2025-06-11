@@ -1,13 +1,14 @@
 export default function handler(req, res) {
+  const ADMIN_PASSWORD = 'supersecret';  // change this password
+
   if (req.method === 'POST') {
     const { password } = req.body;
-
-    if (password === 'your-admin-password') {
-      res.status(200).json({ success: true });
+    if (password === ADMIN_PASSWORD) {
+      res.status(200).json({ message: 'Logged in' });
     } else {
-      res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ message: 'Unauthorized' });
     }
   } else {
-    res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).end();
   }
 }
