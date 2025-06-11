@@ -7,9 +7,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <header>
-        <h1>RBX Marketplace</h1>
+        <h1>𝗔𝗰𝗰𝗼𝘂𝗻𝘁 𝗠𝗮𝗿𝗸𝗲𝘁𝗽𝗹𝗮𝗰𝗲</h1>
         <nav>
-          <Link to="/">BUY</Link> | <Link to="/admin">LISTING</Link>
+          <Link to="/">DASHBOARD</Link> | <Link to="/admin">LISTING</Link>
         </nav>
       </header>
       <Routes>
