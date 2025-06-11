@@ -122,6 +122,13 @@ export default function Home() {
         }}>
           <h3>{acc.username}</h3>
 
+          {/* ✅ Avatar Image Inserted Here */}
+          {acc.avatar && (
+            <div style={{ marginBottom: "10px" }}>
+              <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
+            </div>
+          )}
+
           <p><strong>🎂 Age:</strong> <span style={{ color: acc.age === '13+' ? 'green' : 'red', fontWeight: 'bold' }}>{acc.age}</span></p>
 
           <p><strong>📧 Email:</strong> <span style={{ color: acc.email === 'Verified' ? 'green' : 'orange', fontWeight: 'bold' }}>{acc.email}</span></p>
@@ -164,4 +171,4 @@ export default function Home() {
       )}
     </div>
   );
-                                               }
+          }
