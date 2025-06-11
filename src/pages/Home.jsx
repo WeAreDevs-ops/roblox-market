@@ -32,6 +32,10 @@ export default function Home() {
           <p>MOP: {acc.mop}</p>
           <p>Negotiable: {acc.negotiable}</p>
           <p>Profile: <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
+          <p>Robux Balance: {acc.robuxBalance || 'N/A'}</p>
+          <p>Limited Items: {acc.limitedItems || 'N/A'}</p>
+          <p>Inventory: {acc.inventory || 'N/A'}</p>
+          <p>Games: {acc.games?.filter(g => g).join(", ") || 'N/A'}</p>
           <button onClick={buyNow} className="buy" style={{ padding: '10px 20px', background: '#007bff', color: '#fff', border: 'none', marginTop: '10px' }}>
             Buy Now
           </button>
