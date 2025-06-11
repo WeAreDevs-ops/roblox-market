@@ -39,16 +39,48 @@ export default function Admin() {
     setAccounts(data.accounts);
   };
 
+  const fetchRobloxProfile = async (username) => {
+    try {
+      const res = await fetch("https://users.roblox.com/v1/usernames/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          usernames: [username],
+          excludeBannedUsers: false
+        })
+      });
+
+      const data = await res.json();
+      if (data?.data?.length > 0) {
+        const userId = data.data[0].id;
+        return `https://www.roblox.com/users/${userId}/profile`;
+      } else {
+        return "";
+      }
+    } catch (error) {
+      console.error("Error fetching Roblox profile:", error);
+      return "";
+    }
+  };
+
   const addAccount = async () => {
     if (!form.username.trim()) {
       alert("Please enter a username.");
       return;
     }
 
+    // Fetch Roblox profile automatically
+    const profileURL = await fetchRobloxProfile(form.username);
+
+    const newAccount = {
+      ...form,
+      profile: profileURL
+    };
+
     const res = await fetch('/api/accounts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
+      body: JSON.stringify(newAccount)
     });
 
     if (res.ok) {
@@ -107,18 +139,11 @@ export default function Admin() {
       ) : (
         <>
           <h2>Add Account</h2>
-          
-          {/* Username */}
-          <input 
-            type="text" placeholder="Username" value={form.username}
-            onChange={e => setForm({...form, username: e.target.value})}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-          />
 
-          {/* Roblox Profile */}
+          {/* Username only now */}
           <input 
-            type="text" placeholder="Roblox Profile URL" value={form.profile}
-            onChange={e => setForm({...form, profile: e.target.value})}
+            type="text" placeholder="Roblox Username" value={form.username}
+            onChange={e => setForm({...form, username: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
 
@@ -225,4 +250,4 @@ export default function Admin() {
       )}
     </div>
   );
-        }
+    }
