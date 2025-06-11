@@ -7,7 +7,8 @@ export default function Admin() {
   const [form, setForm] = useState({
     username: '',
     age: '13+',
-    email: 'Verified'
+    email: 'Verified',
+    profile: ''
   });
 
   const login = async () => {
@@ -45,7 +46,7 @@ export default function Admin() {
 
     if (res.ok) {
       fetchAccounts();
-      setForm({ username: '', age: '13+', email: 'Verified' });
+      setForm({ username: '', age: '13+', email: 'Verified', profile: '' });
     } else {
       alert('Error adding account');
     }
@@ -94,6 +95,13 @@ export default function Admin() {
             onChange={e => setForm({...form, username: e.target.value})} 
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
+          <input 
+            type="text" 
+            placeholder="Roblox Profile URL" 
+            value={form.profile} 
+            onChange={e => setForm({...form, profile: e.target.value})} 
+            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+          />
           <select 
             value={form.age} 
             onChange={e => setForm({...form, age: e.target.value})} 
@@ -125,6 +133,7 @@ export default function Admin() {
               <p><strong>Username:</strong> {acc.username}</p>
               <p><strong>Age:</strong> {acc.age}</p>
               <p><strong>Email:</strong> {acc.email}</p>
+              <p><strong>Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
               <button 
                 onClick={() => deleteAccount(acc.id)} 
                 style={{ padding: '5px 10px', background: 'red', color: '#fff', border: 'none' }}
