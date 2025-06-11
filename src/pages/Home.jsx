@@ -122,7 +122,6 @@ export default function Home() {
         }}>
           <h3>{acc.username}</h3>
 
-          {/* ✅ Avatar Image Inserted Here */}
           {acc.avatar && (
             <div style={{ marginBottom: "10px" }}>
               <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
@@ -149,6 +148,9 @@ export default function Home() {
 
           <p><strong>🎮 Games:</strong> <span style={{ fontWeight: 'bold' }}>{acc.games?.filter(g => g).join(", ")}</span></p>
 
+          {/* ✅ New Account Type */}
+          <p><strong>🌍 Account Type:</strong> <span style={{ fontWeight: 'bold' }}>{acc.accountType}</span></p>
+
           <button onClick={buyNow} style={{
             padding: '10px 20px',
             background: '#007bff',
@@ -171,4 +173,4 @@ export default function Home() {
       )}
     </div>
   );
-          }
+}
