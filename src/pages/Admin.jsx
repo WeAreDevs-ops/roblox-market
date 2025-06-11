@@ -7,7 +7,9 @@ export default function Admin() {
   const [form, setForm] = useState({
     username: '',
     age: '13+',
-    email: 'Verified'
+    email: 'Verified',
+    profileLink: '',
+    imageUrl: ''
   });
 
   const login = async () => {
@@ -32,11 +34,6 @@ export default function Admin() {
   };
 
   const addAccount = async () => {
-    if (!form.username.trim()) {
-      alert("Please enter a username.");
-      return;
-    }
-
     const res = await fetch('/api/accounts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -45,7 +42,7 @@ export default function Admin() {
 
     if (res.ok) {
       fetchAccounts();
-      setForm({ username: '', age: '13+', email: 'Verified' });
+      setForm({ username: '', age: '13+', email: 'Verified', profileLink: '', imageUrl: '' });
     } else {
       alert('Error adding account');
     }
@@ -58,83 +55,51 @@ export default function Admin() {
       body: JSON.stringify({ id })
     });
 
-    if (res.ok) {
-      fetchAccounts();
-    } else {
-      alert('Error deleting account');
-    }
+    if (res.ok) fetchAccounts();
   };
 
   return (
-    <div className="container" style={{ maxWidth: '500px', margin: '0 auto', padding: '20px' }}>
+    <div className="container">
       {!isLoggedIn ? (
         <>
           <h2>Admin Login</h2>
-          <input 
-            type="password" 
-            placeholder="Enter Password" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-          />
-          <button 
-            onClick={login} 
-            style={{ padding: '10px 20px', background: '#333', color: '#fff', border: 'none' }}
-          >
-            Login
-          </button>
+          <input type="password" placeholder="Enter Password" value={password} onChange={e => setPassword(e.target.value)} />
+          <button onClick={login}>Login</button>
         </>
       ) : (
         <>
           <h2>Add Account</h2>
-          <input 
-            type="text" 
-            placeholder="Username" 
-            value={form.username} 
-            onChange={e => setForm({...form, username: e.target.value})} 
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-          />
-          <select 
-            value={form.age} 
-            onChange={e => setForm({...form, age: e.target.value})} 
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-          >
+          <input type="text" placeholder="Username" value={form.username} onChange={e => setForm({...form, username: e.target.value})} />
+          <select value={form.age} onChange={e => setForm({...form, age: e.target.value})}>
             <option>13+</option>
             <option>{'<13'}</option>
           </select>
-          <select 
-            value={form.email} 
-            onChange={e => setForm({...form, email: e.target.value})} 
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-          >
+          <select value={form.email} onChange={e => setForm({...form, email: e.target.value})}>
             <option>Verified</option>
             <option>Not Verified</option>
             <option>Add Email</option>
           </select>
-          <button 
-            onClick={addAccount} 
-            style={{ padding: '10px 20px', background: 'green', color: '#fff', border: 'none' }}
-          >
-            Add Account
-          </button>
+          <input type="text" placeholder="Profile Link" value={form.profileLink} onChange={e => setForm({...form, profileLink: e.target.value})} />
+          <input type="text" placeholder="Image URL" value={form.imageUrl} onChange={e => setForm({...form, imageUrl: e.target.value})} />
+          <button onClick={addAccount}>Add Account</button>
 
-          <h2 style={{ marginTop: '30px' }}>All Listings</h2>
-          {accounts.length === 0 && <p>No accounts yet.</p>}
+          <h2>All Listings</h2>
           {accounts.map(acc => (
-            <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px' }}>
-              <p><strong>Username:</strong> {acc.username}</p>
-              <p><strong>Age:</strong> {acc.age}</p>
-              <p><strong>Email:</strong> {acc.email}</p>
-              <button 
-                onClick={() => deleteAccount(acc.id)} 
-                style={{ padding: '5px 10px', background: 'red', color: '#fff', border: 'none' }}
-              >
-                Delete
-              </button>
+            <div key={acc.id} className="account-card">
+              <img src={acc.imageUrl} alt="Avatar" />
+              <div className="account-info">
+                <h3>{acc.username}</h3>
+                <p>Age: {acc.age}</p>
+                <p>Email: {acc.email}</p>
+                <a href={acc.profileLink} target="_blank" rel="noreferrer">
+                  View Profile
+                </a>
+                <button onClick={() => deleteAccount(acc.id)}>Delete</button>
+              </div>
             </div>
           ))}
         </>
       )}
     </div>
   );
-      }
+}
