@@ -1,18 +1,22 @@
-let accounts = []; // This is just in-memory, you can replace with real DB later
-let counter = 1;
+import { db } from '../../firebase';
+import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
+  const accountsRef = collection(db, "accounts");
+
   if (req.method === 'GET') {
+    const snapshot = await getDocs(accountsRef);
+    const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.status(200).json({ accounts });
   }
   else if (req.method === 'POST') {
     const { username, age, email, profile, price, mop, negotiable } = req.body;
-    accounts.push({ id: counter++, username, age, email, profile, price, mop, negotiable });
-    res.status(201).json({ message: 'Account added' });
+    const docRef = await addDoc(accountsRef, { username, age, email, profile, price, mop, negotiable });
+    res.status(201).json({ message: 'Account added', id: docRef.id });
   }
   else if (req.method === 'DELETE') {
     const { id } = req.body;
-    accounts = accounts.filter(acc => acc.id !== id);
+    await deleteDoc(doc(accountsRef, id));
     res.status(200).json({ message: 'Deleted' });
   }
   else {
