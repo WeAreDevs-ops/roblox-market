@@ -128,18 +128,16 @@ export default function Home() {
             </div>
           )}
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            <span style={{ backgroundColor: acc.age === '13+' ? '#4CAF50' : '#f44336', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.age}</span>
-            <span style={{ backgroundColor: acc.email === 'Verified' ? '#4CAF50' : '#ff9800', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.email}</span>
-            <span style={{ backgroundColor: '#2196f3', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>₱{acc.price}</span>
-            <span style={{ backgroundColor: '#9c27b0', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.mop}</span>
-            <span style={{ backgroundColor: acc.negotiable === 'Yes' ? '#4CAF50' : '#f44336', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.negotiable}</span>
-            <span style={{ backgroundColor: '#795548', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.limitedItems}</span>
-            <span style={{ backgroundColor: '#607d8b', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.inventory}</span>
-            <span style={{ backgroundColor: '#03a9f4', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.games?.filter(g => g).join(", ")}</span>
-            <span style={{ backgroundColor: '#ff5722', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.accountType}</span>
-            <span style={{ backgroundColor: '#ff9800', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.robuxBalance} Robux</span>
-          </div>
+          <p><strong>🎂 Age:</strong> <span style={{ backgroundColor: acc.age === '13+' ? '#4CAF50' : '#f44336', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.age}</span></p>
+          <p><strong>📧 Email:</strong> <span style={{ backgroundColor: acc.email === 'Verified' ? '#4CAF50' : '#ff9800', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.email}</span></p>
+          <p><strong>💰 Price:</strong> <span style={{ backgroundColor: '#2196f3', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>₱{acc.price}</span></p>
+          <p><strong>💳 MOP:</strong> <span style={{ backgroundColor: '#9c27b0', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.mop}</span></p>
+          <p><strong>🤝 Negotiable:</strong> <span style={{ backgroundColor: acc.negotiable === 'Yes' ? '#4CAF50' : '#f44336', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.negotiable}</span></p>
+          <p><strong>💎 Limited Items:</strong> <span style={{ backgroundColor: '#795548', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.limitedItems}</span></p>
+          <p><strong>📦 Inventory:</strong> <span style={{ backgroundColor: '#607d8b', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.inventory}</span></p>
+          <p><strong>🎮 Games/Gamepass:</strong> <span style={{ backgroundColor: '#03a9f4', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.games?.filter(g => g).join(", ")}</span></p>
+          <p><strong>🌍 Account Type:</strong> <span style={{ backgroundColor: '#ff5722', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.accountType}</span></p>
+          <p><strong>💎 Robux Balance:</strong> <span style={{ backgroundColor: '#ff9800', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.robuxBalance} Robux</span></p>
 
           <p style={{ marginTop: "10px" }}>
             🔗 <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
@@ -162,9 +160,9 @@ export default function Home() {
         <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "20px" }}>
           <button onClick={() => setCurrentPage(prev => prev - 1)} disabled={currentPage === 1}>⬅️ Previous</button>
           <span>Page {currentPage} of {totalPages}</span>
-          <button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next ➡️</button>
+          <button onClick={() => setCurrentPage(prev =><button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next ➡️</button>
         </div>
       )}
     </div>
   );
-          }
+      }
