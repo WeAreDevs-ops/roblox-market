@@ -16,13 +16,12 @@ export default function Home() {
       .then(data => setAccounts(data.accounts));
   }, []);
 
-  const buyNow = (sellerContact) => {
+  const buyNow = () => {
     Swal.fire({
-      title: '📞 Contact Seller',
-      html: `
-        ${sellerContact?.facebook ? `<a href="${sellerContact.facebook}" target="_blank">Facebook</a><br>` : ''}
-        ${sellerContact?.discord ? `<a href="https://discord.gg/${sellerContact.discord}" target="_blank">Discord</a>` : ''}
-      `,
+      title: 'ðŸ“ž Contact Me',
+      html: `Contact me on:<br>
+        <a href="https://www.facebook.com/mix.nthe.clubb" target="_blank">Facebook</a><br>
+        <a href="https://discord.gg/P5xRPech" target="_blank">Discord</a>`,
       icon: 'info'
     });
   };
@@ -37,8 +36,7 @@ export default function Home() {
 
   let filteredAccounts = accounts.filter(acc => 
     acc.username.toLowerCase().includes(search.toLowerCase()) ||
-    acc.games?.join(", ").toLowerCase().includes(search.toLowerCase()) ||
-    acc.seller?.name?.toLowerCase().includes(search.toLowerCase())
+    acc.games?.join(", ").toLowerCase().includes(search.toLowerCase())
   );
 
   if (negotiableFilter !== "All") {
@@ -82,7 +80,7 @@ export default function Home() {
       <div style={{ marginBottom: "20px" }}>
         <input
           type="text"
-          placeholder="🔎 Search by username, game or seller..."
+          placeholder="ðŸ”Ž Search by username or game..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
           style={{
@@ -97,21 +95,21 @@ export default function Home() {
 
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
           <select value={negotiableFilter} onChange={(e) => { setNegotiableFilter(e.target.value); setCurrentPage(1); }}>
-            <option value="All">🤝 Negotiable (All)</option>
-            <option value="Yes">✅ Yes</option>
-            <option value="No">❌ No</option>
+            <option value="All">ðŸ¤ Negotiable (All)</option>
+            <option value="Yes">âœ… Yes</option>
+            <option value="No">âŒ No</option>
           </select>
 
           <select value={emailFilter} onChange={(e) => { setEmailFilter(e.target.value); setCurrentPage(1); }}>
-            <option value="All">📧 Email (All)</option>
-            <option value="Verified">✅ Verified</option>
-            <option value="Unverified">❌ Unverified</option>
+            <option value="All">ðŸ“§ Email (All)</option>
+            <option value="Verified">âœ… Verified</option>
+            <option value="Unverified">âŒ Unverified</option>
           </select>
 
           <select value={sortOrder} onChange={(e) => { setSortOrder(e.target.value); setCurrentPage(1); }}>
-            <option value="none">📊 Sort</option>
-            <option value="low-high">⬆️ Price Low - High</option>
-            <option value="high-low">⬇️ Price High - Low</option>
+            <option value="none">ðŸ“Š Sort</option>
+            <option value="low-high">â¬†ï¸ Price Low - High</option>
+            <option value="high-low">â¬‡ï¸ Price High - Low</option>
           </select>
 
           <button onClick={resetFilters} style={{
@@ -121,7 +119,7 @@ export default function Home() {
             border: "none",
             borderRadius: "5px"
           }}>
-            🔄 Reset
+            ðŸ”„ Reset
           </button>
         </div>
       </div>
@@ -144,49 +142,47 @@ export default function Home() {
             </div>
           )}
 
-          <p><strong>Seller:</strong> {acc.seller?.name || 'Unknown'}</p>
-
-          <p><strong>🎂 Age:</strong> 
+          <p><strong>ðŸŽ‚ Age:</strong> 
             <Tag text={acc.age} color={acc.age === '13+' ? '#28a745' : '#dc3545'} />
           </p>
 
-          <p><strong>📧 Email:</strong> 
+          <p><strong>ðŸ“§ Email:</strong> 
             <Tag text={acc.email} color={acc.email === 'Verified' ? '#17a2b8' : '#ffc107'} />
           </p>
 
-          <p><strong>💰 Price:</strong> 
-            <Tag text={`₱${acc.price}`} color="#007bff" />
+          <p><strong>ðŸ’° Price:</strong> 
+            <Tag text={`â‚±${acc.price}`} color="#007bff" />
           </p>
 
-          <p><strong>💳 MOP:</strong> <span style={{ fontWeight: 'bold' }}>{acc.mop}</span></p>
+          <p><strong>ðŸ’³ MOP:</strong> <span style={{ fontWeight: 'bold' }}>{acc.mop}</span></p>
 
-          <p><strong>🤝 Negotiable:</strong> 
+          <p><strong>ðŸ¤ Negotiable:</strong> 
             <Tag text={acc.negotiable} color={acc.negotiable === 'Yes' ? '#28a745' : '#dc3545'} />
           </p>
 
-          <p><strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
+          <p><strong>ðŸ”— Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
 
-          <p><strong>💎 Robux Balance:</strong> 
+          <p><strong>ðŸ’Ž Robux Balance:</strong> 
             <Tag text={acc.robuxBalance} color="#f5b942" />
           </p>
 
-          <p><strong>🎖️ Limited Items:</strong> 
+          <p><strong>ðŸŽ–ï¸ Limited Items:</strong> 
             <span style={{ fontWeight: 'bold' }}>{acc.limitedItems}</span>
           </p>
 
-          <p><strong>📦 Inventory:</strong> 
+          <p><strong>ðŸ“¦ Inventory:</strong> 
             <Tag text={acc.inventory} color="#6f42c1" />
           </p>
 
-          <p><strong>🎮 Games/Gamepass:</strong> 
+          <p><strong>ðŸŽ® Games/Gamepass:</strong> 
             <span style={{ fontWeight: 'bold' }}>{acc.games?.filter(g => g).join(", ")}</span>
           </p>
 
-          <p><strong>🌍 Account Type:</strong> 
+          <p><strong>ðŸŒ Account Type:</strong> 
             <Tag text={acc.accountType} color="#6f42c1" />
           </p>
 
-          <button onClick={() => buyNow(acc.contact)} style={{
+          <button onClick={buyNow} style={{
             padding: '10px 20px',
             background: '#007bff',
             color: '#fff',
@@ -194,18 +190,18 @@ export default function Home() {
             marginTop: '10px',
             borderRadius: '5px'
           }}>
-            Contact Seller
+            Buy Now
           </button>
         </div>
       ))}
 
       {totalPages > 1 && (
         <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "20px" }}>
-          <button onClick={() => setCurrentPage(prev => prev - 1)} disabled={currentPage === 1}>⬅️ Previous</button>
+          <button onClick={() => setCurrentPage(prev => prev - 1)} disabled={currentPage === 1}>â¬…ï¸ Previous</button>
           <span>Page {currentPage} of {totalPages}</span>
-          <button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next ➡️</button>
+          <button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next âž¡ï¸</button>
         </div>
       )}
     </div>
   );
-                                         }
+    }
