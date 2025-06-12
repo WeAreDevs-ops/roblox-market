@@ -1,36 +1,36 @@
-import admin from './firebaseAdmin';
+import { dbAdmin } from '../firebaseadmin';
+import { doc, setDoc } from 'firebase/firestore';
+import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { email, username, password } = req.body;
+  const { email, password } = req.body;
 
-  if (!email || !username || !password) {
-    return res.status(400).json({ message: 'Missing required fields' });
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required.' });
   }
 
   try {
-    const db = admin.firestore();
+    const sellersRef = dbAdmin.collection('sellers');
+    const docSnapshot = await sellersRef.doc(email).get();
 
-    // Check if user already exists by email
-    const snapshot = await db.collection('sellers').where('email', '==', email).get();
-    if (!snapshot.empty) {
-      return res.status(400).json({ message: 'Email already registered' });
+    if (docSnapshot.exists) {
+      return res.status(409).json({ message: 'Seller already exists.' });
     }
 
-    // Create new seller
-    await db.collection('sellers').add({
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await setDoc(doc(sellersRef, email), {
       email,
-      username,
-      password, // (Note: in production, hash this!)
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      password: hashedPassword
     });
 
-    return res.status(201).json({ message: 'Seller registered successfully' });
+    return res.status(201).json({ message: 'Seller registered successfully.' });
   } catch (error) {
     console.error('Error registering seller:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error.' });
   }
 }
