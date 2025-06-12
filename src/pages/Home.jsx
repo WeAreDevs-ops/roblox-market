@@ -18,7 +18,7 @@ export default function Home() {
 
   const buyNow = () => {
     Swal.fire({
-      title: '📞 Contact Me',
+      title: 'ðŸ“ž Contact Me',
       html: `Contact me on:<br>
         <a href="https://www.facebook.com/mix.nthe.clubb" target="_blank">Facebook</a><br>
         <a href="https://discord.gg/P5xRPech" target="_blank">Discord</a>`,
@@ -66,7 +66,7 @@ export default function Home() {
       <div style={{ marginBottom: "20px" }}>
         <input
           type="text"
-          placeholder="🔎 Search by username or game..."
+          placeholder="ðŸ”Ž Search by username or game..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
           style={{
@@ -81,21 +81,21 @@ export default function Home() {
 
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
           <select value={negotiableFilter} onChange={(e) => { setNegotiableFilter(e.target.value); setCurrentPage(1); }}>
-            <option value="All">🤝 Negotiable (All)</option>
-            <option value="Yes">✅ Yes</option>
-            <option value="No">❌ No</option>
+            <option value="All">ðŸ¤ Negotiable (All)</option>
+            <option value="Yes">âœ… Yes</option>
+            <option value="No">âŒ No</option>
           </select>
 
           <select value={emailFilter} onChange={(e) => { setEmailFilter(e.target.value); setCurrentPage(1); }}>
-            <option value="All">📧 Email (All)</option>
-            <option value="Verified">✅ Verified</option>
-            <option value="Unverified">❌ Unverified</option>
+            <option value="All">ðŸ“§ Email (All)</option>
+            <option value="Verified">âœ… Verified</option>
+            <option value="Unverified">âŒ Unverified</option>
           </select>
 
           <select value={sortOrder} onChange={(e) => { setSortOrder(e.target.value); setCurrentPage(1); }}>
-            <option value="none">📊 Sort</option>
-            <option value="low-high">⬆️ Price Low - High</option>
-            <option value="high-low">⬇️ Price High - Low</option>
+            <option value="none">ðŸ“Š Sort</option>
+            <option value="low-high">â¬†ï¸ Price Low - High</option>
+            <option value="high-low">â¬‡ï¸ Price High - Low</option>
           </select>
 
           <button onClick={resetFilters} style={{
@@ -105,7 +105,7 @@ export default function Home() {
             border: "none",
             borderRadius: "5px"
           }}>
-            🔄 Reset
+            ðŸ”„ Reset
           </button>
         </div>
       </div>
@@ -122,33 +122,25 @@ export default function Home() {
         }}>
           <h3>{acc.username}</h3>
 
-          {acc.avatar && (
-            <div style={{ marginBottom: "10px" }}>
-              <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
-            </div>
-          )}
+          <p><strong>ðŸŽ‚ Age:</strong> <span style={{ color: acc.age === '13+' ? 'green' : 'red', fontWeight: 'bold' }}>{acc.age}</span></p>
 
-          <p><strong>🎂 Age:</strong> <span style={{ backgroundColor: acc.age === '13+' ? '#a3e635' : '#f87171', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.age}</span></p>
+          <p><strong>ðŸ“§ Email:</strong> <span style={{ color: acc.email === 'Verified' ? 'green' : 'orange', fontWeight: 'bold' }}>{acc.email}</span></p>
 
-          <p><strong>📧 Email:</strong> <span style={{ backgroundColor: acc.email === 'Verified' ? '#34d399' : '#fbbf24', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.email}</span></p>
+          <p><strong>ðŸ’° Price:</strong> <span style={{ color: 'blue', fontWeight: 'bold' }}>â‚±{acc.price}</span></p>
 
-          <p><strong>💰 Price:</strong> <span style={{ backgroundColor: '#60a5fa', color: '#fff', padding: '3px 8px', borderRadius: '6px' }}>₱{acc.price}</span></p>
+          <p><strong>ðŸ’³ MOP:</strong> <span style={{ fontWeight: 'bold' }}>{acc.mop}</span></p>
 
-          <p><strong>💳 MOP:</strong> <span style={{ backgroundColor: '#facc15', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.mop}</span></p>
+          <p><strong>ðŸ¤ Negotiable:</strong> <span style={{ color: acc.negotiable === 'Yes' ? 'green' : 'red', fontWeight: 'bold' }}>{acc.negotiable}</span></p>
 
-          <p><strong>🤝 Negotiable:</strong> <span style={{ backgroundColor: acc.negotiable === 'Yes' ? '#34d399' : '#f87171', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.negotiable}</span></p>
+          <p><strong>ðŸ”— Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
 
-          <p><strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
+          <p><strong>ðŸ’Ž Robux Balance:</strong> <span style={{ fontWeight: 'bold' }}>{acc.robuxBalance}</span></p>
 
-          <p><strong>💎 Robux Balance:</strong> <span style={{ backgroundColor: '#4ade80', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.robuxBalance}</span></p>
+          <p><strong>ðŸŽ–ï¸ Limited Items:</strong> <span style={{ fontWeight: 'bold' }}>{acc.limitedItems}</span></p>
 
-          <p><strong>🎖️ Limited Items:</strong> <span style={{ backgroundColor: '#f472b6', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.limitedItems}</span></p>
+          <p><strong>ðŸ“¦ Inventory:</strong> <span style={{ fontWeight: 'bold' }}>{acc.inventory}</span></p>
 
-          <p><strong>📦 Inventory:</strong> <span style={{ backgroundColor: '#fcd34d', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.inventory}</span></p>
-
-          <p><strong>🎮 Games/Gamepass:</strong> <span style={{ backgroundColor: '#93c5fd', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.games?.filter(g => g).join(", ")}</span></p>
-
-          <p><strong>🌍 Account Type:</strong> <span style={{ backgroundColor: '#fbbf24', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.accountType}</span></p>
+          <p><strong>ðŸŽ® Games:</strong> <span style={{ fontWeight: 'bold' }}>{acc.games?.filter(g => g).join(", ")}</span></p>
 
           <button onClick={buyNow} style={{
             padding: '10px 20px',
@@ -165,11 +157,11 @@ export default function Home() {
 
       {totalPages > 1 && (
         <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "20px" }}>
-          <button onClick={() => setCurrentPage(prev => prev - 1)} disabled={currentPage === 1}>⬅️ Previous</button>
+          <button onClick={() => setCurrentPage(prev => prev - 1)} disabled={currentPage === 1}>â¬…ï¸ Previous</button>
           <span>Page {currentPage} of {totalPages}</span>
-          <button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next ➡️</button>
+          <button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next âž¡ï¸</button>
         </div>
       )}
     </div>
   );
-                           }
+                          }
