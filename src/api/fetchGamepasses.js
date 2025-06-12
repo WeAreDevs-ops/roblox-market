@@ -1,28 +1,39 @@
 import axios from 'axios';
 
-// Main function to get Gamepasses based on username
 export async function fetchGamepassesByUsername(username) {
   try {
-    // Step 1 — Convert Username to UserID
-    const usernameRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
+    // Step 1: Convert username to userId
+    const userIdRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
       usernames: [username],
       excludeBannedUsers: false
+    }, {
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" // Added user-agent
+      }
     });
 
-    if (!usernameRes.data.data.length) {
-      console.error("Username not found.");
+    if (!userIdRes.data?.data?.length) {
+      console.error("User not found");
       return [];
     }
 
-    const userId = usernameRes.data.data[0].id;
+    const userId = userIdRes.data.data[0].id;
 
-    // Step 2 — Fetch Gamepasses using UserID
-    const gamepassRes = await axios.get(`https://games.roblox.com/v2/users/${userId}/games?limit=10&sortOrder=Asc`);
+    // Step 2: Fetch games (Gamepasses owned by user)
+    const gamesRes = await axios.get(
+      `https://games.roblox.com/v2/users/${userId}/games?accessFilter=2&limit=50&sortOrder=Asc`,
+      {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" // Added user-agent
+        }
+      }
+    );
 
-    const gamepasses = gamepassRes.data.data.map(game => game.name);
-    return gamepasses;
-  } catch (error) {
-    console.error("Error fetching gamepasses:", error);
+    const games = gamesRes.data?.data?.map(game => game.name);
+    return games?.filter(g => g) || [];
+  } catch (err) {
+    console.error("Error fetching gamepasses:", err?.response?.data || err.message);
     return [];
   }
 }
