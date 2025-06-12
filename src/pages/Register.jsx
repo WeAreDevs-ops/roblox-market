@@ -1,54 +1,29 @@
-import React, { useState } from "react";
-import { useRouter } from "next/router";
+import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { register } = useAuth();
 
-  const handleRegister = async () => {
-    setLoading(true);
-    const res = await fetch("/api/registerSeller", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json();
-    setLoading(false);
-    if (res.ok) {
-      alert("Account registered successfully");
-      router.push("/login");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const res = await register(email, password);
+    if (res.success) {
+      alert('Registration successful!');
     } else {
-      alert(data.message || "Registration failed");
+      alert(res.message);
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "50px auto" }}>
-      <h2>Seller Register</h2>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-      />
-      <button
-        onClick={handleRegister}
-        style={{ width: "100%", padding: "10px", background: "#333", color: "#fff" }}
-        disabled={loading}
-      >
-        {loading ? "Registering..." : "Register"}
-      </button>
+    <div>
+      <h2>Register Seller Account</h2>
+      <form onSubmit={handleSubmit}>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required />
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" required />
+        <button type="submit">Register</button>
+      </form>
     </div>
   );
 }
