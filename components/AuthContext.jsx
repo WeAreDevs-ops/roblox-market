@@ -1,53 +1,35 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { app } from '../firebase';  // make sure your firebase.js is correctly set
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { useRouter } from "next/router";
 
 const AuthContext = createContext();
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
-
 export function AuthProvider({ children }) {
-  const auth = getAuth(app);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [seller, setSeller] = useState(null);
+  const router = useRouter();
 
-  // Check user login state on page load
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      setCurrentUser(user);
-      setLoading(false);
-    });
-
-    return unsubscribe;
+    const storedSeller = JSON.parse(localStorage.getItem("seller"));
+    if (storedSeller) setSeller(storedSeller);
   }, []);
 
-  // Sign Up function
-  const register = (email, password) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+  const login = (sellerData) => {
+    setSeller(sellerData);
+    localStorage.setItem("seller", JSON.stringify(sellerData));
   };
 
-  // Sign In function
-  const login = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password);
-  };
-
-  // Sign Out function
   const logout = () => {
-    return signOut(auth);
-  };
-
-  const value = {
-    currentUser,
-    register,
-    login,
-    logout
+    setSeller(null);
+    localStorage.removeItem("seller");
+    router.push("/login");
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
+    <AuthContext.Provider value={{ seller, login, logout }}>
+      {children}
     </AuthContext.Provider>
   );
+}
+
+export function useAuth() {
+  return useContext(AuthContext);
 }
