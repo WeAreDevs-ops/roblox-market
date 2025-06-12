@@ -154,7 +154,9 @@ export default function Home() {
             <Tag text={`₱${acc.price}`} color="#007bff" />
           </p>
 
-          <p><strong>💳 MOP:</strong> <span style={{ fontWeight: 'bold' }}>{acc.mop}</span></p>
+          <p><strong>💳 MOP:</strong> 
+            <Tag text={acc.mop} color="#28a745" />
+          </p>
 
           <p><strong>🤝 Negotiable:</strong> 
             <Tag text={acc.negotiable} color={acc.negotiable === 'Yes' ? '#28a745' : '#dc3545'} />
@@ -167,7 +169,7 @@ export default function Home() {
           </p>
 
           <p><strong>🎖️ Limited Items:</strong> 
-            <span style={{ fontWeight: 'bold' }}>{acc.limitedItems}</span>
+            <Tag text={acc.limitedItems} color="#28a745" />
           </p>
 
           <p><strong>📦 Inventory:</strong> 
@@ -175,7 +177,7 @@ export default function Home() {
           </p>
 
           <p><strong>🎮 Games/Gamepass:</strong> 
-            <span style={{ fontWeight: 'bold' }}>{acc.games?.filter(g => g).join(", ")}</span>
+            <Tag text={acc.games?.filter(g => g).join(", ")} color="#28a745" />
           </p>
 
           <p><strong>🌍 Account Type:</strong> 
@@ -204,4 +206,4 @@ export default function Home() {
       )}
     </div>
   );
-        }
+      }
