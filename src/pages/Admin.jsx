@@ -19,7 +19,7 @@ export default function Admin() {
     limitedItems: '',
     inventory: 'Public',
     accountType: 'Global Account',
-    games: []
+    games: ['', '', '']
   });
 
   const login = async () => {
@@ -147,7 +147,7 @@ export default function Admin() {
       limitedItems: '',
       inventory: 'Public',
       accountType: 'Global Account',
-      games: []
+      games: ['', '', '']
     });
   };
 
@@ -175,43 +175,65 @@ export default function Admin() {
         <>
           <h2>{editAccountId ? 'Edit Account' : 'Add Account'}</h2>
 
-          <input 
-            type="text" placeholder="Roblox Username" value={form.username}
-            onChange={e => setForm({...form, username: e.target.value})}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-          />
+          {/* ALL FIELDS RESTORED BELOW */}
 
-          <input 
-            type="text" placeholder="Price" value={form.price}
-            onChange={e => setForm({...form, price: e.target.value})}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-          />
+          <input type="text" placeholder="Username" value={form.username}
+            onChange={e => setForm({ ...form, username: e.target.value })} style={inputStyle} />
 
-          <button 
-            onClick={handleSubmit}
-            style={{ padding: '10px 20px', background: editAccountId ? 'orange' : 'green', color: '#fff', border: 'none', marginTop: '10px' }}>
+          <input type="text" placeholder="Age" value={form.age}
+            onChange={e => setForm({ ...form, age: e.target.value })} style={inputStyle} />
+
+          <input type="text" placeholder="Email (Verified/Unverified)" value={form.email}
+            onChange={e => setForm({ ...form, email: e.target.value })} style={inputStyle} />
+
+          <input type="text" placeholder="Price" value={form.price}
+            onChange={e => setForm({ ...form, price: e.target.value })} style={inputStyle} />
+
+          <input type="text" placeholder="MOP" value={form.mop}
+            onChange={e => setForm({ ...form, mop: e.target.value })} style={inputStyle} />
+
+          <input type="text" placeholder="Negotiable" value={form.negotiable}
+            onChange={e => setForm({ ...form, negotiable: e.target.value })} style={inputStyle} />
+
+          <input type="text" placeholder="Robux Balance" value={form.robuxBalance}
+            onChange={e => setForm({ ...form, robuxBalance: e.target.value })} style={inputStyle} />
+
+          <input type="text" placeholder="Limited Items" value={form.limitedItems}
+            onChange={e => setForm({ ...form, limitedItems: e.target.value })} style={inputStyle} />
+
+          <input type="text" placeholder="Inventory" value={form.inventory}
+            onChange={e => setForm({ ...form, inventory: e.target.value })} style={inputStyle} />
+
+          <input type="text" placeholder="Account Type" value={form.accountType}
+            onChange={e => setForm({ ...form, accountType: e.target.value })} style={inputStyle} />
+
+          <button onClick={handleSubmit} style={{
+            padding: '10px 20px',
+            background: editAccountId ? 'orange' : 'green',
+            color: '#fff',
+            border: 'none',
+            marginTop: '10px'
+          }}>
             {editAccountId ? 'Update Account' : 'Add Account'}
           </button>
 
-          <h3>Account List</h3>
-          <input
-            type="text"
-            placeholder="Search username"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-          />
+          <h3>Accounts List</h3>
+          <input type="text" placeholder="Search" value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)} style={inputStyle} />
 
           {filteredAccounts.map(acc => (
-            <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px' }}>
-              <strong>{acc.username}</strong><br />
-              Price: ₱{acc.price}<br />
-              <button onClick={() => editAccount(acc)} style={{ marginRight: '10px' }}>Edit</button>
-              <button onClick={() => deleteAccount(acc.id)}>Delete</button>
+            <div key={acc.id} style={{ border: '1px solid #ddd', padding: '10px', marginTop: '10px' }}>
+              <b>{acc.username}</b> - ₱{acc.price}
+              <div>
+                <button onClick={() => editAccount(acc)} style={{ marginRight: '10px' }}>Edit</button>
+                <button onClick={() => deleteAccount(acc.id)}>Delete</button>
+              </div>
             </div>
           ))}
         </>
       )}
     </div>
   );
-    }
+}
+
+const inputStyle = { width: '100%', padding: '10px', marginBottom: '10px' };
