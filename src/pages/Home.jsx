@@ -128,20 +128,27 @@ export default function Home() {
             </div>
           )}
 
-          <p><strong>🎂 Age:</strong> <span style={{ backgroundColor: acc.age === '13+' ? '#4CAF50' : '#f44336', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.age}</span></p>
-          <p><strong>📧 Email:</strong> <span style={{ backgroundColor: acc.email === 'Verified' ? '#4CAF50' : '#ff9800', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.email}</span></p>
-          <p><strong>💰 Price:</strong> <span style={{ backgroundColor: '#2196f3', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>₱{acc.price}</span></p>
-          <p><strong>💳 MOP:</strong> <span style={{ backgroundColor: '#9c27b0', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.mop}</span></p>
-          <p><strong>🤝 Negotiable:</strong> <span style={{ backgroundColor: acc.negotiable === 'Yes' ? '#4CAF50' : '#f44336', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.negotiable}</span></p>
-          <p><strong>💎 Limited Items:</strong> <span style={{ backgroundColor: '#795548', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.limitedItems}</span></p>
-          <p><strong>📦 Inventory:</strong> <span style={{ backgroundColor: '#607d8b', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.inventory}</span></p>
-          <p><strong>🎮 Games/Gamepass:</strong> <span style={{ backgroundColor: '#03a9f4', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.games?.filter(g => g).join(", ")}</span></p>
-          <p><strong>🌍 Account Type:</strong> <span style={{ backgroundColor: '#ff5722', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.accountType}</span></p>
-          <p><strong>💎 Robux Balance:</strong> <span style={{ backgroundColor: '#ff9800', color: '#fff', padding: '5px 10px', borderRadius: '5px' }}>{acc.robuxBalance} Robux</span></p>
+          <p><strong>🎂 Age:</strong> <span style={{ backgroundColor: acc.age === '13+' ? '#a3e635' : '#f87171', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.age}</span></p>
 
-          <p style={{ marginTop: "10px" }}>
-            🔗 <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
-          </p>
+          <p><strong>📧 Email:</strong> <span style={{ backgroundColor: acc.email === 'Verified' ? '#34d399' : '#fbbf24', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.email}</span></p>
+
+          <p><strong>💰 Price:</strong> <span style={{ backgroundColor: '#60a5fa', color: '#fff', padding: '3px 8px', borderRadius: '6px' }}>₱{acc.price}</span></p>
+
+          <p><strong>💳 MOP:</strong> <span style={{ backgroundColor: '#facc15', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.mop}</span></p>
+
+          <p><strong>🤝 Negotiable:</strong> <span style={{ backgroundColor: acc.negotiable === 'Yes' ? '#34d399' : '#f87171', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.negotiable}</span></p>
+
+          <p><strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
+
+          <p><strong>💎 Robux Balance:</strong> <span style={{ backgroundColor: '#4ade80', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.robuxBalance}</span></p>
+
+          <p><strong>🎖️ Limited Items:</strong> <span style={{ backgroundColor: '#f472b6', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.limitedItems}</span></p>
+
+          <p><strong>📦 Inventory:</strong> <span style={{ backgroundColor: '#fcd34d', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.inventory}</span></p>
+
+          <p><strong>🎮 Games/Gamepass:</strong> <span style={{ backgroundColor: '#93c5fd', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.games?.filter(g => g).join(", ")}</span></p>
+
+          <p><strong>🌍 Account Type:</strong> <span style={{ backgroundColor: '#fbbf24', color: '#000', padding: '3px 8px', borderRadius: '6px' }}>{acc.accountType}</span></p>
 
           <button onClick={buyNow} style={{
             padding: '10px 20px',
@@ -160,9 +167,9 @@ export default function Home() {
         <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "20px" }}>
           <button onClick={() => setCurrentPage(prev => prev - 1)} disabled={currentPage === 1}>⬅️ Previous</button>
           <span>Page {currentPage} of {totalPages}</span>
-          <button onClick={() => setCurrentPage(prev =><button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next ➡️</button>
+          <button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next ➡️</button>
         </div>
       )}
     </div>
   );
-      }
+                           }
