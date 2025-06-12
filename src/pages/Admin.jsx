@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchGamepassesByUsername } from '@/api/fetchGamepasses';  // ✅ safer import for production
+import { fetchGamepassesByUsername } from './api/fetchGamepasses';  // ✅ fixed relative path
 
 export default function Admin() {
   const [password, setPassword] = useState('');
@@ -169,8 +169,6 @@ export default function Admin() {
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
 
-          {/* You can add additional form fields here as needed */}
-
           <button 
             onClick={handleSubmit}
             style={{ padding: '10px 20px', background: editAccountId ? 'orange' : 'green', color: '#fff', border: 'none', marginTop: '10px' }}>
@@ -198,4 +196,4 @@ export default function Admin() {
       )}
     </div>
   );
-        }
+                             }
