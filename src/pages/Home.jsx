@@ -143,45 +143,45 @@ export default function Home() {
           )}
 
           <p><strong>🎂 Age:</strong> 
-            <Tag text={acc.age} color="#BDB76B" />
+            <Tag text={acc.age} color="#243c6b" />
           </p>
 
           <p><strong>📧 Email:</strong> 
-            <Tag text={acc.email} color="#BDB76B" />
+            <Tag text={acc.email} color="#243c6b" />
           </p>
 
           <p><strong>💰 Price:</strong> 
-            <Tag text={`₱${acc.price}`} color="#BDB76B" />
+            <Tag text={`₱${acc.price}`} color="#243c6b" />
           </p>
 
           <p><strong>💳 MOP:</strong> 
-            <Tag text={acc.mop} color="#BDB76B" />
+            <Tag text={acc.mop} color="#243c6b" />
           </p>
 
           <p><strong>🤝 Negotiable:</strong> 
-            <Tag text={acc.negotiable} color="#BDB76B" />
+            <Tag text={acc.negotiable} color="#243c6b" />
           </p>
 
           <p><strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
 
           <p><strong>💎 Robux Balance:</strong> 
-            <Tag text={acc.robuxBalance} color="#BDB76B" />
+            <Tag text={acc.robuxBalance} color="#243c6b" />
           </p>
 
           <p><strong>🎖️ Limited Items:</strong> 
-            <Tag text={acc.limitedItems} color="#BDB76B" />
+            <Tag text={acc.limitedItems} color="#243c6b" />
           </p>
 
           <p><strong>📦 Inventory:</strong> 
-            <Tag text={acc.inventory} color="#BDB76B" />
+            <Tag text={acc.inventory} color="#243c6b" />
           </p>
 
           <p><strong>🎮 Games/Gamepass:</strong> 
-            <Tag text={acc.games?.filter(g => g).join(", ")} color="#BDB76B" />
+            <Tag text={acc.games?.filter(g => g).join(", ")} color="#243c6b" />
           </p>
 
           <p><strong>🌍 Account Type:</strong> 
-            <Tag text={acc.accountType} color="#BDB76B" />
+            <Tag text={acc.accountType} color="#243c6b" />
           </p>
 
           <button onClick={buyNow} style={{
