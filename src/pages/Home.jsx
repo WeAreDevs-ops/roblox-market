@@ -18,7 +18,7 @@ export default function Home() {
 
   const buyNow = () => {
     Swal.fire({
-      title: 'ðŸ“ž Contact Me',
+      title: '📞 Contact Me',
       html: `Contact me on:<br>
         <a href="https://www.facebook.com/mix.nthe.clubb" target="_blank">Facebook</a><br>
         <a href="https://discord.gg/P5xRPech" target="_blank">Discord</a>`,
@@ -80,7 +80,7 @@ export default function Home() {
       <div style={{ marginBottom: "20px" }}>
         <input
           type="text"
-          placeholder="ðŸ”Ž Search by username or game..."
+          placeholder="🔎 Search by username or game..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
           style={{
@@ -95,21 +95,21 @@ export default function Home() {
 
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
           <select value={negotiableFilter} onChange={(e) => { setNegotiableFilter(e.target.value); setCurrentPage(1); }}>
-            <option value="All">ðŸ¤ Negotiable (All)</option>
-            <option value="Yes">âœ… Yes</option>
-            <option value="No">âŒ No</option>
+            <option value="All">🤝 Negotiable (All)</option>
+            <option value="Yes">✅ Yes</option>
+            <option value="No">❌ No</option>
           </select>
 
           <select value={emailFilter} onChange={(e) => { setEmailFilter(e.target.value); setCurrentPage(1); }}>
-            <option value="All">ðŸ“§ Email (All)</option>
-            <option value="Verified">âœ… Verified</option>
-            <option value="Unverified">âŒ Unverified</option>
+            <option value="All">📧 Email (All)</option>
+            <option value="Verified">✅ Verified</option>
+            <option value="Unverified">❌ Unverified</option>
           </select>
 
           <select value={sortOrder} onChange={(e) => { setSortOrder(e.target.value); setCurrentPage(1); }}>
-            <option value="none">ðŸ“Š Sort</option>
-            <option value="low-high">â¬†ï¸ Price Low - High</option>
-            <option value="high-low">â¬‡ï¸ Price High - Low</option>
+            <option value="none">📊 Sort</option>
+            <option value="low-high">⬇️ Price Low - High</option>
+            <option value="high-low">⬆️ Price High - Low</option>
           </select>
 
           <button onClick={resetFilters} style={{
@@ -119,7 +119,7 @@ export default function Home() {
             border: "none",
             borderRadius: "5px"
           }}>
-            ðŸ”„ Reset
+            🔄 Reset
           </button>
         </div>
       </div>
@@ -142,43 +142,43 @@ export default function Home() {
             </div>
           )}
 
-          <p><strong>ðŸŽ‚ Age:</strong> 
+          <p><strong>🎂 Age:</strong> 
             <Tag text={acc.age} color={acc.age === '13+' ? '#28a745' : '#dc3545'} />
           </p>
 
-          <p><strong>ðŸ“§ Email:</strong> 
+          <p><strong>📧 Email:</strong> 
             <Tag text={acc.email} color={acc.email === 'Verified' ? '#17a2b8' : '#ffc107'} />
           </p>
 
-          <p><strong>ðŸ’° Price:</strong> 
-            <Tag text={`â‚±${acc.price}`} color="#007bff" />
+          <p><strong>💰 Price:</strong> 
+            <Tag text={`₱${acc.price}`} color="#007bff" />
           </p>
 
-          <p><strong>ðŸ’³ MOP:</strong> <span style={{ fontWeight: 'bold' }}>{acc.mop}</span></p>
+          <p><strong>💳 MOP:</strong> <span style={{ fontWeight: 'bold' }}>{acc.mop}</span></p>
 
-          <p><strong>ðŸ¤ Negotiable:</strong> 
+          <p><strong>🤝 Negotiable:</strong> 
             <Tag text={acc.negotiable} color={acc.negotiable === 'Yes' ? '#28a745' : '#dc3545'} />
           </p>
 
-          <p><strong>ðŸ”— Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
+          <p><strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
 
-          <p><strong>ðŸ’Ž Robux Balance:</strong> 
+          <p><strong>💎 Robux Balance:</strong> 
             <Tag text={acc.robuxBalance} color="#f5b942" />
           </p>
 
-          <p><strong>ðŸŽ–ï¸ Limited Items:</strong> 
+          <p><strong>🎖️ Limited Items:</strong> 
             <span style={{ fontWeight: 'bold' }}>{acc.limitedItems}</span>
           </p>
 
-          <p><strong>ðŸ“¦ Inventory:</strong> 
+          <p><strong>📦 Inventory:</strong> 
             <Tag text={acc.inventory} color="#6f42c1" />
           </p>
 
-          <p><strong>ðŸŽ® Games/Gamepass:</strong> 
+          <p><strong>🎮 Games/Gamepass:</strong> 
             <span style={{ fontWeight: 'bold' }}>{acc.games?.filter(g => g).join(", ")}</span>
           </p>
 
-          <p><strong>ðŸŒ Account Type:</strong> 
+          <p><strong>🌍 Account Type:</strong> 
             <Tag text={acc.accountType} color="#6f42c1" />
           </p>
 
@@ -197,11 +197,11 @@ export default function Home() {
 
       {totalPages > 1 && (
         <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "20px" }}>
-          <button onClick={() => setCurrentPage(prev => prev - 1)} disabled={currentPage === 1}>â¬…ï¸ Previous</button>
+          <button onClick={() => setCurrentPage(prev => prev - 1)} disabled={currentPage === 1}>⬅️ Previous</button>
           <span>Page {currentPage} of {totalPages}</span>
-          <button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next âž¡ï¸</button>
+          <button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next ➡️</button>
         </div>
       )}
     </div>
   );
-    }
+        }
