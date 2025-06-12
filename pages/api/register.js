@@ -1,26 +1,31 @@
-import fs from 'fs';
-import path from 'path';
-
-const filePath = path.join(process.cwd(), 'data', 'sellers.json');
+import admin from '../../api/firebaseAdmin';
 
 export default async function handler(req, res) {
-  if (req.method === 'POST') {
-    const { email, password, name, facebook, discord } = req.body;
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
 
-    let sellers = [];
-    if (fs.existsSync(filePath)) {
-      sellers = JSON.parse(fs.readFileSync(filePath));
-    }
+  const { email, password, name, facebook, discord } = req.body;
 
-    if (sellers.find(s => s.email === email)) {
-      return res.status(400).json({ message: 'Seller already exists.' });
-    }
+  try {
+    // Create user in Firebase Authentication
+    const userRecord = await admin.auth().createUser({
+      email,
+      password,
+      displayName: name
+    });
 
-    sellers.push({ email, password, name, facebook, discord });
+    // Store additional data in Firestore
+    await admin.firestore().collection('sellers').doc(userRecord.uid).set({
+      name,
+      facebook,
+      discord,
+      createdAt: new Date(),
+    });
 
-    fs.writeFileSync(filePath, JSON.stringify(sellers));
     res.status(200).json({ message: 'Seller registered successfully.' });
-  } else {
-    res.status(405).json({ message: 'Method not allowed' });
+  } catch (error) {
+    console.error('Error registering seller:', error);
+    res.status(500).json({ message: 'Failed to register seller.', error: error.message });
   }
 }
