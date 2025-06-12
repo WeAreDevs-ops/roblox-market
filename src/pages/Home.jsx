@@ -16,12 +16,13 @@ export default function Home() {
       .then(data => setAccounts(data.accounts));
   }, []);
 
-  const buyNow = () => {
+  const buyNow = (sellerContact) => {
     Swal.fire({
-      title: '📞 Contact Me',
-      html: `Contact me on:<br>
-        <a href="https://www.facebook.com/mix.nthe.clubb" target="_blank">Facebook</a><br>
-        <a href="https://discord.gg/P5xRPech" target="_blank">Discord</a>`,
+      title: '📞 Contact Seller',
+      html: `
+        ${sellerContact?.facebook ? `<a href="${sellerContact.facebook}" target="_blank">Facebook</a><br>` : ''}
+        ${sellerContact?.discord ? `<a href="https://discord.gg/${sellerContact.discord}" target="_blank">Discord</a>` : ''}
+      `,
       icon: 'info'
     });
   };
@@ -36,7 +37,8 @@ export default function Home() {
 
   let filteredAccounts = accounts.filter(acc => 
     acc.username.toLowerCase().includes(search.toLowerCase()) ||
-    acc.games?.join(", ").toLowerCase().includes(search.toLowerCase())
+    acc.games?.join(", ").toLowerCase().includes(search.toLowerCase()) ||
+    acc.seller?.name?.toLowerCase().includes(search.toLowerCase())
   );
 
   if (negotiableFilter !== "All") {
@@ -80,7 +82,7 @@ export default function Home() {
       <div style={{ marginBottom: "20px" }}>
         <input
           type="text"
-          placeholder="🔎 Search by username or game..."
+          placeholder="🔎 Search by username, game or seller..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
           style={{
@@ -142,6 +144,8 @@ export default function Home() {
             </div>
           )}
 
+          <p><strong>Seller:</strong> {acc.seller?.name || 'Unknown'}</p>
+
           <p><strong>🎂 Age:</strong> 
             <Tag text={acc.age} color={acc.age === '13+' ? '#28a745' : '#dc3545'} />
           </p>
@@ -182,7 +186,7 @@ export default function Home() {
             <Tag text={acc.accountType} color="#6f42c1" />
           </p>
 
-          <button onClick={buyNow} style={{
+          <button onClick={() => buyNow(acc.contact)} style={{
             padding: '10px 20px',
             background: '#007bff',
             color: '#fff',
@@ -190,7 +194,7 @@ export default function Home() {
             marginTop: '10px',
             borderRadius: '5px'
           }}>
-            Buy Now
+            Contact Seller
           </button>
         </div>
       ))}
@@ -204,4 +208,4 @@ export default function Home() {
       )}
     </div>
   );
-                               }
+                                         }
