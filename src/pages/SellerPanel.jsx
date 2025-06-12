@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import Swal from 'sweetalert2';
+import { AuthContext } from '../../context/AuthContext';  // Adjust path based on your structure
 
 export default function SellerPanel() {
+  const { currentUser } = useContext(AuthContext);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -24,22 +26,17 @@ export default function SellerPanel() {
     }
   });
 
-  // TEMP: you will later replace this with real seller auth info
-  const seller = {
-    id: 'SELLER_ID_SAMPLE',
-    name: 'Sample Seller',
-    email: 'seller@example.com'
-  };
-
   useEffect(() => {
+    if (!currentUser) return;
+
     fetch('/api/accounts')
       .then(res => res.json())
       .then(data => {
-        const sellerAccounts = data.accounts.filter(acc => acc.seller?.email === seller.email);
+        const sellerAccounts = data.accounts.filter(acc => acc.seller?.email === currentUser.email);
         setAccounts(sellerAccounts);
         setLoading(false);
       });
-  }, []);
+  }, [currentUser]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -56,6 +53,8 @@ export default function SellerPanel() {
   };
 
   const handleAddAccount = () => {
+    if (!currentUser) return;
+
     const newAccount = {
       ...formData,
       price: parseFloat(formData.price),
@@ -64,8 +63,9 @@ export default function SellerPanel() {
       inventory: parseInt(formData.inventory),
       games: formData.games.split(',').map(g => g.trim()),
       seller: {
-        name: seller.name,
-        email: seller.email,
+        name: currentUser.displayName || "Unknown Seller",
+        email: currentUser.email,
+        uid: currentUser.uid,
       },
     };
 
@@ -99,6 +99,10 @@ export default function SellerPanel() {
       }
     });
   };
+
+  if (!currentUser) {
+    return <div>Please login as seller to access seller panel</div>;
+  }
 
   return (
     <div className="container">
@@ -144,4 +148,4 @@ export default function SellerPanel() {
       }
     </div>
   );
-        }
+          }
