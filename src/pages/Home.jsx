@@ -199,13 +199,11 @@ export default function Home() {
 
       {totalPages > 1 && (
         <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "20px" }}>
-          <button onClick={() => setCurrentPage(prev => prev - 1)} 
-            disabled={currentPage === 1}>⬅️ Previous</button>
+          <button onClick={() => setCurrentPage(prev => prev - 1)} disabled={currentPage === 1}>⬅️ Previous</button>
           <span>Page {currentPage} of {totalPages}</span>
-          <button onClick={() => setCurrentPage(prev => prev + 1)} 
-            disabled={currentPage === totalPages}>Next ➡️</button>
+          <button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next ➡️</button>
         </div>
       )}
     </div>
   );
-      }
+}
