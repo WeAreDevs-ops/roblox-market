@@ -59,6 +59,20 @@ export default function Home() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const displayedAccounts = filteredAccounts.slice(startIndex, startIndex + itemsPerPage);
 
+  const Tag = ({ text, color }) => (
+    <span style={{
+      backgroundColor: color,
+      color: '#fff',
+      padding: '3px 10px',
+      borderRadius: '20px',
+      fontSize: '0.85rem',
+      marginLeft: '8px',
+      fontWeight: 'bold'
+    }}>
+      {text}
+    </span>
+  );
+
   return (
     <div className="container">
       <h2>Available Accounts</h2>
@@ -128,28 +142,45 @@ export default function Home() {
             </div>
           )}
 
-          <p><strong>🎂 Age:</strong> <span style={{ color: acc.age === '13+' ? 'green' : 'red', fontWeight: 'bold' }}>{acc.age}</span></p>
+          <p><strong>🎂 Age:</strong> 
+            <Tag text={acc.age} color={acc.age === '13+' ? '#28a745' : '#dc3545'} />
+          </p>
 
-          <p><strong>📧 Email:</strong> <span style={{ color: acc.email === 'Verified' ? 'green' : 'orange', fontWeight: 'bold' }}>{acc.email}</span></p>
+          <p><strong>📧 Email:</strong> 
+            <Tag text={acc.email} color={acc.email === 'Verified' ? '#17a2b8' : '#ffc107'} />
+          </p>
 
-          <p><strong>💰 Price:</strong> <span style={{ color: 'blue', fontWeight: 'bold' }}>₱{acc.price}</span></p>
+          <p><strong>💰 Price:</strong> 
+            <Tag text={`₱${acc.price}`} color="#007bff" />
+          </p>
 
           <p><strong>💳 MOP:</strong> <span style={{ fontWeight: 'bold' }}>{acc.mop}</span></p>
 
-          <p><strong>🤝 Negotiable:</strong> <span style={{ color: acc.negotiable === 'Yes' ? 'green' : 'red', fontWeight: 'bold' }}>{acc.negotiable}</span></p>
+          <p><strong>🤝 Negotiable:</strong> 
+            <Tag text={acc.negotiable} color={acc.negotiable === 'Yes' ? '#28a745' : '#dc3545'} />
+          </p>
 
           <p><strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
 
-          <p><strong>💎 Robux Balance:</strong> <span style={{ fontWeight: 'bold' }}>{acc.robuxBalance}</span></p>
+          <p><strong>💎 Robux Balance:</strong> 
+            <Tag text={acc.robuxBalance} color="#f5b942" />
+          </p>
 
-          <p><strong>🎖️ Limited Items:</strong> <span style={{ fontWeight: 'bold' }}>{acc.limitedItems}</span></p>
+          <p><strong>🎖️ Limited Items:</strong> 
+            <span style={{ fontWeight: 'bold' }}>{acc.limitedItems}</span>
+          </p>
 
-          <p><strong>📦 Inventory:</strong> <span style={{ fontWeight: 'bold' }}>{acc.inventory}</span></p>
+          <p><strong>📦 Inventory:</strong> 
+            <Tag text={acc.inventory} color="#6f42c1" />
+          </p>
 
-          <p><strong>🎮 Games/Gamepass:</strong> <span style={{ fontWeight: 'bold' }}>{acc.games?.filter(g => g).join(", ")}</span></p>
+          <p><strong>🎮 Games/Gamepass:</strong> 
+            <span style={{ fontWeight: 'bold' }}>{acc.games?.filter(g => g).join(", ")}</span>
+          </p>
 
-          {/* ✅ New Account Type */}
-          <p><strong>🌍 Account Type:</strong> <span style={{ fontWeight: 'bold' }}>{acc.accountType}</span></p>
+          <p><strong>🌍 Account Type:</strong> 
+            <Tag text={acc.accountType} color="#6f42c1" />
+          </p>
 
           <button onClick={buyNow} style={{
             padding: '10px 20px',
@@ -173,4 +204,4 @@ export default function Home() {
       )}
     </div>
   );
-}
+                                               }
