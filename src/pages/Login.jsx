@@ -1,56 +1,31 @@
-import React, { useState } from "react";
-import { useRouter } from "next/router";
-import { useAuth } from "../components/AuthContext";
+import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useRouter } from 'next/router';
 
 export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async () => {
-    setLoading(true);
-    const res = await fetch("/api/loginSeller", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json();
-    setLoading(false);
-    if (res.ok) {
-      login(data.seller);
-      router.push("/sellerpanel");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const res = await login(email, password);
+    if (res.success) {
+      router.push('/dashboard');
     } else {
-      alert(data.message || "Login failed");
+      alert(res.message);
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "50px auto" }}>
+    <div>
       <h2>Seller Login</h2>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-      />
-      <button
-        onClick={handleLogin}
-        style={{ width: "100%", padding: "10px", background: "#333", color: "#fff" }}
-        disabled={loading}
-      >
-        {loading ? "Logging in..." : "Login"}
-      </button>
+      <form onSubmit={handleSubmit}>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required />
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
     </div>
   );
-    }
+}
