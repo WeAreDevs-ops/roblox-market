@@ -146,7 +146,7 @@ export default function Home() {
 
           <p><strong>📦 Inventory:</strong> <span style={{ fontWeight: 'bold' }}>{acc.inventory}</span></p>
 
-          <p><strong>🎮 Games/Gamepass :</strong> <span style={{ fontWeight: 'bold' }}>{acc.games?.filter(g => g).join(", ")}</span></p>
+          <p><strong>🎮 Games/Gamepass:</strong> <span style={{ fontWeight: 'bold' }}>{acc.games?.filter(g => g).join(", ")}</span></p>
 
           {/* ✅ New Account Type */}
           <p><strong>🌍 Account Type:</strong> <span style={{ fontWeight: 'bold' }}>{acc.accountType}</span></p>
