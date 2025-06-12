@@ -59,20 +59,6 @@ export default function Home() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const displayedAccounts = filteredAccounts.slice(startIndex, startIndex + itemsPerPage);
 
-  const Tag = ({ text, color }) => (
-    <span style={{
-      backgroundColor: color,
-      color: '#fff',
-      padding: '3px 10px',
-      borderRadius: '20px',
-      fontSize: '0.85rem',
-      marginLeft: '8px',
-      fontWeight: 'bold'
-    }}>
-      {text}
-    </span>
-  );
-
   return (
     <div className="container">
       <h2>Available Accounts</h2>
@@ -142,47 +128,17 @@ export default function Home() {
             </div>
           )}
 
-          <p><strong>🎂 Age:</strong> 
-            <Tag text={acc.age} color={acc.age === '13+' ? '#43b581' : '#f04747'} />
-          </p>
-
-          <p><strong>📧 Email:</strong> 
-            <Tag text={acc.email} color={acc.email === 'Verified' ? '#7289da' : '#faa61a'} />
-          </p>
-
-          <p><strong>💰 Price:</strong> 
-            <Tag text={`₱${acc.price}`} color="#ff4757" />
-          </p>
-
-          <p><strong>💳 MOP:</strong> 
-            <Tag text={acc.mop} color="#ffa502" />
-          </p>
-
-          <p><strong>🤝 Negotiable:</strong> 
-            <Tag text={acc.negotiable} color={acc.negotiable === 'Yes' ? '#2ed573' : '#e84118'} />
-          </p>
-
+          <p><strong>🎂 Age:</strong> {acc.age}</p>
+          <p><strong>📧 Email:</strong> {acc.email}</p>
+          <p><strong>💰 Price:</strong> ₱{acc.price}</p>
+          <p><strong>💳 MOP:</strong> {acc.mop}</p>
+          <p><strong>🤝 Negotiable:</strong> {acc.negotiable}</p>
           <p><strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
-
-          <p><strong>💎 Robux Balance:</strong> 
-            <Tag text={acc.robuxBalance} color="#2ecc71" />
-          </p>
-
-          <p><strong>🎖️ Limited Items:</strong> 
-            <Tag text={acc.limitedItems} color="#f368e0" />
-          </p>
-
-          <p><strong>📦 Inventory:</strong> 
-            <Tag text={acc.inventory} color="#ff6348" />
-          </p>
-
-          <p><strong>🎮 Games/Gamepass:</strong> 
-            <Tag text={acc.games?.filter(g => g).join(", ")} color="#1e90ff" />
-          </p>
-
-          <p><strong>🌍 Account Type:</strong> 
-            <Tag text={acc.accountType} color="#5352ed" />
-          </p>
+          <p><strong>💎 Robux Balance:</strong> {acc.robuxBalance}</p>
+          <p><strong>🎖️ Limited Items:</strong> {acc.limitedItems}</p>
+          <p><strong>📦 Inventory:</strong> {acc.inventory}</p>
+          <p><strong>🎮 Games/Gamepass:</strong> {acc.games?.filter(g => g).join(", ")}</p>
+          <p><strong>🌍 Account Type:</strong> {acc.accountType}</p>
 
           <button onClick={buyNow} style={{
             padding: '10px 20px',
@@ -199,12 +155,13 @@ export default function Home() {
 
       {totalPages > 1 && (
         <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "20px" }}>
-          <button onClick={() => setCurrentPage(prev => prev - 1)} disabled={currentPage === 1}>⬅️ Previous</button>
+          <button onClick={() => setCurrentPage(prev => prev - 1)} 
+            disabled={currentPage === 1}>⬅️ Previous</button>
           <span>Page {currentPage} of {totalPages}</span>
-          <button onClick={() => setCurrentPage(prev => prev + 1)} disabled={currentPage === totalPages}>Next ➡️</button>
+          <button onClick={() => setCurrentPage(prev => prev + 1)} 
+            disabled={currentPage === totalPages}>Next ➡️</button>
         </div>
       )}
     </div>
   );
-
-}
+             }
