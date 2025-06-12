@@ -177,7 +177,7 @@ export default function Home() {
           </p>
 
           <p><strong>🎮 Games/Gamepass:</strong> 
-            <Tag text={(acc.games && acc.games.length > 0) ? acc.games.filter(g => g).join(", ") : "None"} color="#1e90ff" />
+            <Tag text={acc.games?.filter(g => g).join(", ")} color="#1e90ff" />
           </p>
 
           <p><strong>🌍 Account Type:</strong> 
