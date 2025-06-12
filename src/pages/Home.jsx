@@ -177,7 +177,11 @@ export default function Home() {
           </p>
 
           <p><strong>🎮 Games/Gamepass:</strong> 
-            <Tag text={acc.games?.filter(g => g).join(", ")} color="#243c6b" />
+            {acc.games && acc.games.filter(g => g).length > 0 ? (
+              <Tag text={acc.games.filter(g => g).join(", ")} color="#243c6b" />
+            ) : (
+              <Tag text="No Gamepass Found" color="#999" />
+            )}
           </p>
 
           <p><strong>🌍 Account Type:</strong> 
@@ -206,4 +210,4 @@ export default function Home() {
       )}
     </div>
   );
-      }
+}
