@@ -1,36 +1,24 @@
-import { dbAdmin } from '../firebaseadmin';
-import { doc, setDoc } from 'firebase/firestore';
-import bcrypt from 'bcryptjs';
+import admin from './firebaseAdmin';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
+    return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required.' });
-  }
+  const { email, password, name, facebook, discord } = req.body;
 
   try {
-    const sellersRef = dbAdmin.collection('sellers');
-    const docSnapshot = await sellersRef.doc(email).get();
-
-    if (docSnapshot.exists) {
-      return res.status(409).json({ message: 'Seller already exists.' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await setDoc(doc(sellersRef, email), {
+    const userRecord = await admin.auth().createUser({
       email,
-      password: hashedPassword
+      password,
+      displayName: name,
     });
 
-    return res.status(201).json({ message: 'Seller registered successfully.' });
+    // You can also save facebook/discord to Firestore if you want later
+
+    return res.status(200).json({ message: 'Seller registered successfully.', userId: userRecord.uid });
   } catch (error) {
-    console.error('Error registering seller:', error);
-    return res.status(500).json({ message: 'Internal server error.' });
+    console.error(error);
+    return res.status(400).json({ message: error.message });
   }
 }
