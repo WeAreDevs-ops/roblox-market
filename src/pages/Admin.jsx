@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchGamepassesByUsername } from './api/fetchGamepasses';  // ✅ fixed relative path
+import { fetchGamepassesByUsername } from '../api/fetchGamepasses';
 
 export default function Admin() {
   const [password, setPassword] = useState('');
@@ -19,7 +19,7 @@ export default function Admin() {
     limitedItems: '',
     inventory: 'Public',
     accountType: 'Global Account',
-    games: ['', '', '']
+    games: []
   });
 
   const login = async () => {
@@ -85,21 +85,33 @@ export default function Admin() {
 
     const newAccount = { ...form, profile: profileURL, games: fetchedGames };
 
-    const requestMethod = editAccountId ? 'PUT' : 'POST';
-    const requestBody = editAccountId ? { id: editAccountId, ...newAccount } : newAccount;
+    if (editAccountId) {
+      const res = await fetch('/api/accounts', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editAccountId, ...newAccount })
+      });
 
-    const res = await fetch('/api/accounts', {
-      method: requestMethod,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
-    });
-
-    if (res.ok) {
-      fetchAccounts();
-      if (editAccountId) setEditAccountId(null);
-      resetForm();
+      if (res.ok) {
+        fetchAccounts();
+        setEditAccountId(null);
+        resetForm();
+      } else {
+        alert('Error updating account');
+      }
     } else {
-      alert('Error saving account');
+      const res = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAccount)
+      });
+
+      if (res.ok) {
+        fetchAccounts();
+        resetForm();
+      } else {
+        alert('Error adding account');
+      }
     }
   };
 
@@ -135,7 +147,7 @@ export default function Admin() {
       limitedItems: '',
       inventory: 'Public',
       accountType: 'Global Account',
-      games: ['', '', '']
+      games: []
     });
   };
 
@@ -169,31 +181,37 @@ export default function Admin() {
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
 
+          <input 
+            type="text" placeholder="Price" value={form.price}
+            onChange={e => setForm({...form, price: e.target.value})}
+            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+          />
+
           <button 
             onClick={handleSubmit}
             style={{ padding: '10px 20px', background: editAccountId ? 'orange' : 'green', color: '#fff', border: 'none', marginTop: '10px' }}>
             {editAccountId ? 'Update Account' : 'Add Account'}
           </button>
 
-          <h3 style={{ marginTop: '30px' }}>Account List</h3>
-
-          <input 
-            type="text" 
-            placeholder="Search by username" 
-            value={searchTerm} 
-            onChange={e => setSearchTerm(e.target.value)} 
+          <h3>Account List</h3>
+          <input
+            type="text"
+            placeholder="Search username"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
 
           {filteredAccounts.map(acc => (
-            <div key={acc.id} style={{ padding: '10px', borderBottom: '1px solid #ccc' }}>
-              <p><strong>{acc.username}</strong> - ₱{acc.price}</p>
+            <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px' }}>
+              <strong>{acc.username}</strong><br />
+              Price: ₱{acc.price}<br />
               <button onClick={() => editAccount(acc)} style={{ marginRight: '10px' }}>Edit</button>
-              <button onClick={() => deleteAccount(acc.id)} style={{ color: 'red' }}>Delete</button>
+              <button onClick={() => deleteAccount(acc.id)}>Delete</button>
             </div>
           ))}
         </>
       )}
     </div>
   );
-                             }
+    }
