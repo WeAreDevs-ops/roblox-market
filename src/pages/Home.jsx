@@ -143,7 +143,7 @@ export default function Home() {
           )}
 
           <p><strong>🎂 Age:</strong> 
-            <Tag text={acc.age} color={acc.age === '13+' ? '#28a745' : '#dc3545'} />
+            <Tag text={acc.age} color="#DAF7A6" />
           </p>
 
           <p><strong>📧 Email:</strong> 
