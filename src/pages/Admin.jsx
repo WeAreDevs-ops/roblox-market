@@ -21,12 +21,6 @@ export default function Admin() {
     games: ['', '', '']
   });
 
-  const [sellerForm, setSellerForm] = useState({
-    username: '',
-    email: '',
-    password: '',
-  });
-
   const login = async () => {
     const res = await fetch('/api/login', {
       method: 'POST',
@@ -86,6 +80,7 @@ export default function Admin() {
     const newAccount = { ...form, profile: profileURL };
 
     if (editAccountId) {
+      // Update existing account
       const res = await fetch('/api/accounts', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -100,6 +95,7 @@ export default function Admin() {
         alert('Error updating account');
       }
     } else {
+      // Create new account
       const res = await fetch('/api/accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -155,64 +151,20 @@ export default function Admin() {
     acc.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSellerRegister = async () => {
-    if (!sellerForm.username || !sellerForm.email || !sellerForm.password) {
-      alert("Please fill out all seller registration fields");
-      return;
-    }
-
-    const res = await fetch('/api/sellers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(sellerForm)
-    });
-
-    if (res.ok) {
-      alert('Seller registered successfully');
-      setSellerForm({ username: '', email: '', password: '' });
-    } else {
-      alert('Error registering seller');
-    }
-  };return (
+  return (
     <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
       {!isLoggedIn ? (
         <>
           <h2>Admin Login</h2>
           <input 
             type="password" 
-            placeholder="Enter Admin Password" 
+            placeholder="Enter Password" 
             value={password} 
             onChange={e => setPassword(e.target.value)} 
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
           <button onClick={login} style={{ padding: '10px 20px', background: '#333', color: '#fff', border: 'none' }}>
             Login
-          </button>
-
-          <h2 style={{ marginTop: '40px' }}>Seller Registration</h2>
-          <input 
-            type="text" 
-            placeholder="Seller Username" 
-            value={sellerForm.username}
-            onChange={e => setSellerForm({...sellerForm, username: e.target.value})}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-          />
-          <input 
-            type="email" 
-            placeholder="Seller Email" 
-            value={sellerForm.email}
-            onChange={e => setSellerForm({...sellerForm, email: e.target.value})}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-          />
-          <input 
-            type="password" 
-            placeholder="Seller Password" 
-            value={sellerForm.password}
-            onChange={e => setSellerForm({...sellerForm, password: e.target.value})}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
-          />
-          <button onClick={handleSellerRegister} style={{ padding: '10px 20px', background: '#007bff', color: '#fff', border: 'none' }}>
-            Register Seller
           </button>
         </>
       ) : (
@@ -315,7 +267,7 @@ export default function Admin() {
               <p><strong>Username:</strong> {acc.username}</p>
               <p><strong>Age:</strong> {acc.age}</p>
               <p><strong>Email:</strong> {acc.email}</p>
-              <p><strong>Price:</strong> ₱{acc.price}</p>
+              <p><strong>Price:</strong> â‚±{acc.price}</p>
               <p><strong>MOP:</strong> {acc.mop}</p>
               <p><strong>Negotiable:</strong> {acc.negotiable}</p>
               <p><strong>Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
@@ -337,4 +289,4 @@ export default function Admin() {
       )}
     </div>
   );
-            }
+  }
