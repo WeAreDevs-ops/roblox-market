@@ -143,43 +143,45 @@ export default function Home() {
           )}
 
           <p><strong>🎂 Age:</strong> 
-            <Tag text={acc.age} color={acc.age === '13+' ? '#28a745' : '#dc3545'} />
+            <Tag text={acc.age} color={acc.age === '13+' ? '#43b581' : '#f04747'} />
           </p>
 
           <p><strong>📧 Email:</strong> 
-            <Tag text={acc.email} color={acc.email === 'Verified' ? '#17a2b8' : '#ffc107'} />
+            <Tag text={acc.email} color={acc.email === 'Verified' ? '#7289da' : '#faa61a'} />
           </p>
 
           <p><strong>💰 Price:</strong> 
-            <Tag text={`₱${acc.price}`} color="#007bff" />
+            <Tag text={`₱${acc.price}`} color="#ff4757" />
           </p>
 
-          <p><strong>💳 MOP:</strong> <span style={{ fontWeight: 'bold' }}>{acc.mop}</span></p>
+          <p><strong>💳 MOP:</strong> 
+            <Tag text={acc.mop} color="#ffa502" />
+          </p>
 
           <p><strong>🤝 Negotiable:</strong> 
-            <Tag text={acc.negotiable} color={acc.negotiable === 'Yes' ? '#28a745' : '#dc3545'} />
+            <Tag text={acc.negotiable} color={acc.negotiable === 'Yes' ? '#2ed573' : '#e84118'} />
           </p>
 
           <p><strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
 
           <p><strong>💎 Robux Balance:</strong> 
-            <Tag text={acc.robuxBalance} color="#f5b942" />
+            <Tag text={acc.robuxBalance} color="#2ecc71" />
           </p>
 
           <p><strong>🎖️ Limited Items:</strong> 
-            <span style={{ fontWeight: 'bold' }}>{acc.limitedItems}</span>
+            <Tag text={acc.limitedItems} color="#f368e0" />
           </p>
 
           <p><strong>📦 Inventory:</strong> 
-            <Tag text={acc.inventory} color="#6f42c1" />
+            <Tag text={acc.inventory} color="#ff6348" />
           </p>
 
           <p><strong>🎮 Games/Gamepass:</strong> 
-            <span style={{ fontWeight: 'bold' }}>{acc.games?.filter(g => g).join(", ")}</span>
+            <Tag text={acc.games?.filter(g => g).join(", ")} color="#1e90ff" />
           </p>
 
           <p><strong>🌍 Account Type:</strong> 
-            <Tag text={acc.accountType} color="#6f42c1" />
+            <Tag text={acc.accountType} color="#5352ed" />
           </p>
 
           <button onClick={buyNow} style={{
@@ -204,4 +206,4 @@ export default function Home() {
       )}
     </div>
   );
-      }
+            }
