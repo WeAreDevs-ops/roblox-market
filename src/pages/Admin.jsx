@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchGamepassesByUsername } from '../api/fetchGamepasses';
+import { fetchGamepassesByUsername } from '@/api/fetchGamepasses';  // ✅ safer import for production
 
 export default function Admin() {
   const [password, setPassword] = useState('');
@@ -78,7 +78,6 @@ export default function Admin() {
       profileURL = await fetchRobloxProfile(form.username);
     }
 
-    // Automatically fetch gamepasses when username entered
     let fetchedGames = form.games;
     if (!editAccountId) {
       fetchedGames = await fetchGamepassesByUsername(form.username);
@@ -86,33 +85,21 @@ export default function Admin() {
 
     const newAccount = { ...form, profile: profileURL, games: fetchedGames };
 
-    if (editAccountId) {
-      const res = await fetch('/api/accounts', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: editAccountId, ...newAccount })
-      });
+    const requestMethod = editAccountId ? 'PUT' : 'POST';
+    const requestBody = editAccountId ? { id: editAccountId, ...newAccount } : newAccount;
 
-      if (res.ok) {
-        fetchAccounts();
-        setEditAccountId(null);
-        resetForm();
-      } else {
-        alert('Error updating account');
-      }
+    const res = await fetch('/api/accounts', {
+      method: requestMethod,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (res.ok) {
+      fetchAccounts();
+      if (editAccountId) setEditAccountId(null);
+      resetForm();
     } else {
-      const res = await fetch('/api/accounts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newAccount)
-      });
-
-      if (res.ok) {
-        fetchAccounts();
-        resetForm();
-      } else {
-        alert('Error adding account');
-      }
+      alert('Error saving account');
     }
   };
 
@@ -182,18 +169,31 @@ export default function Admin() {
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
 
-          {/* other fields remain same */}
-          {/* no more need for game input manually */}
+          {/* You can add additional form fields here as needed */}
 
-          {/* continue your existing fields */}
-          
           <button 
             onClick={handleSubmit}
             style={{ padding: '10px 20px', background: editAccountId ? 'orange' : 'green', color: '#fff', border: 'none', marginTop: '10px' }}>
             {editAccountId ? 'Update Account' : 'Add Account'}
           </button>
 
-          {/* your existing account list display below remain same */}
+          <h3 style={{ marginTop: '30px' }}>Account List</h3>
+
+          <input 
+            type="text" 
+            placeholder="Search by username" 
+            value={searchTerm} 
+            onChange={e => setSearchTerm(e.target.value)} 
+            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+          />
+
+          {filteredAccounts.map(acc => (
+            <div key={acc.id} style={{ padding: '10px', borderBottom: '1px solid #ccc' }}>
+              <p><strong>{acc.username}</strong> - ₱{acc.price}</p>
+              <button onClick={() => editAccount(acc)} style={{ marginRight: '10px' }}>Edit</button>
+              <button onClick={() => deleteAccount(acc.id)} style={{ color: 'red' }}>Delete</button>
+            </div>
+          ))}
         </>
       )}
     </div>
