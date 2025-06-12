@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import axios from 'axios';
 
 export default async function handler(req, res) {
@@ -46,6 +46,22 @@ export default async function handler(req, res) {
     const { id } = req.body;
     await deleteDoc(doc(accountsRef, id));
     res.status(200).json({ message: 'Deleted' });
+  }
+  else if (req.method === 'PUT') {
+    const { id, ...updatedData } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: 'Missing document ID' });
+    }
+
+    try {
+      const docRef = doc(accountsRef, id);
+      await updateDoc(docRef, updatedData);
+      res.status(200).json({ message: 'Updated successfully' });
+    } catch (error) {
+      console.error("Failed to update document:", error.message);
+      res.status(500).json({ message: 'Failed to update document' });
+    }
   }
   else {
     res.status(405).end();
