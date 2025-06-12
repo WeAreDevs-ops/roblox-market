@@ -4,6 +4,8 @@ export default function Admin() {
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [accounts, setAccounts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editAccountId, setEditAccountId] = useState(null);
   const [form, setForm] = useState({
     username: '',
     age: '13+',
@@ -15,7 +17,7 @@ export default function Admin() {
     robuxBalance: '',
     limitedItems: '',
     inventory: 'Public',
-    accountType: 'Global Account',  // <-- added
+    accountType: 'Global Account',
     games: ['', '', '']
   });
 
@@ -64,39 +66,48 @@ export default function Admin() {
     }
   };
 
-  const addAccount = async () => {
+  const handleSubmit = async () => {
     if (!form.username.trim()) {
       alert("Please enter a username.");
       return;
     }
 
-    const profileURL = await fetchRobloxProfile(form.username);
+    let profileURL = form.profile;
+    if (!editAccountId) {
+      profileURL = await fetchRobloxProfile(form.username);
+    }
+
     const newAccount = { ...form, profile: profileURL };
 
-    const res = await fetch('/api/accounts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newAccount)
-    });
-
-    if (res.ok) {
-      fetchAccounts();
-      setForm({
-        username: '',
-        age: '13+',
-        email: 'Verified',
-        profile: '',
-        price: '',
-        mop: 'Gcash',
-        negotiable: 'Yes',
-        robuxBalance: '',
-        limitedItems: '',
-        inventory: 'Public',
-        accountType: 'Global Account',
-        games: ['', '', '']
+    if (editAccountId) {
+      // Update existing account
+      const res = await fetch('/api/accounts', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editAccountId, ...newAccount })
       });
+
+      if (res.ok) {
+        fetchAccounts();
+        setEditAccountId(null);
+        resetForm();
+      } else {
+        alert('Error updating account');
+      }
     } else {
-      alert('Error adding account');
+      // Create new account
+      const res = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAccount)
+      });
+
+      if (res.ok) {
+        fetchAccounts();
+        resetForm();
+      } else {
+        alert('Error adding account');
+      }
     }
   };
 
@@ -114,6 +125,32 @@ export default function Admin() {
     }
   };
 
+  const editAccount = (account) => {
+    setEditAccountId(account.id);
+    setForm(account);
+  };
+
+  const resetForm = () => {
+    setForm({
+      username: '',
+      age: '13+',
+      email: 'Verified',
+      profile: '',
+      price: '',
+      mop: 'Gcash',
+      negotiable: 'Yes',
+      robuxBalance: '',
+      limitedItems: '',
+      inventory: 'Public',
+      accountType: 'Global Account',
+      games: ['', '', '']
+    });
+  };
+
+  const filteredAccounts = accounts.filter(acc =>
+    acc.username.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
       {!isLoggedIn ? (
@@ -126,16 +163,13 @@ export default function Admin() {
             onChange={e => setPassword(e.target.value)} 
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
-          <button 
-            onClick={login} 
-            style={{ padding: '10px 20px', background: '#333', color: '#fff', border: 'none' }}
-          >
+          <button onClick={login} style={{ padding: '10px 20px', background: '#333', color: '#fff', border: 'none' }}>
             Login
           </button>
         </>
       ) : (
         <>
-          <h2>Add Account</h2>
+          <h2>{editAccountId ? 'Edit Account' : 'Add Account'}</h2>
 
           <input 
             type="text" placeholder="Roblox Username" value={form.username}
@@ -164,7 +198,7 @@ export default function Admin() {
           {[0,1,2].map(i => (
             <input 
               key={i}
-              type="text" placeholder={`Game ${i+1}`} value={form.games[i]}
+              type="text" placeholder={`Game ${i+1}`} value={form.games[i] || ''}
               onChange={e => {
                 const newGames = [...form.games];
                 newGames[i] = e.target.value;
@@ -205,7 +239,6 @@ export default function Admin() {
             <option>Private</option>
           </select>
 
-          {/* Account Type field */}
           <select value={form.accountType} onChange={e => setForm({...form, accountType: e.target.value})}
             style={{ width: '100%', padding: '10px', marginBottom: '10px' }}>
             <option>Global Account</option>
@@ -213,14 +246,23 @@ export default function Admin() {
           </select>
 
           <button 
-            onClick={addAccount}
-            style={{ padding: '10px 20px', background: 'green', color: '#fff', border: 'none', marginTop: '10px' }}>
-            Add Account
+            onClick={handleSubmit}
+            style={{ padding: '10px 20px', background: editAccountId ? 'orange' : 'green', color: '#fff', border: 'none', marginTop: '10px' }}>
+            {editAccountId ? 'Update Account' : 'Add Account'}
           </button>
 
           <h2 style={{ marginTop: '30px' }}>All Listings</h2>
-          {accounts.length === 0 && <p>No accounts yet.</p>}
-          {accounts.map(acc => (
+
+          <input
+            type="text"
+            placeholder="Search Username"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+          />
+
+          {filteredAccounts.length === 0 && <p>No accounts found.</p>}
+          {filteredAccounts.map(acc => (
             <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginTop: '10px' }}>
               <p><strong>Username:</strong> {acc.username}</p>
               <p><strong>Age:</strong> {acc.age}</p>
@@ -235,9 +277,11 @@ export default function Admin() {
               <p><strong>Account Type:</strong> {acc.accountType || 'Global Account'}</p>
               <p><strong>Games:</strong> {acc.games?.filter(g => g).join(", ")}</p>
 
-              <button onClick={() => deleteAccount(acc.id)} 
-                style={{ padding: '5px 10px', background: 'red', color: '#fff', border: 'none' }}>
+              <button onClick={() => deleteAccount(acc.id)} style={{ padding: '5px 10px', background: 'red', color: '#fff', border: 'none', marginRight: '5px' }}>
                 Delete
+              </button>
+              <button onClick={() => editAccount(acc)} style={{ padding: '5px 10px', background: 'blue', color: '#fff', border: 'none' }}>
+                Edit
               </button>
             </div>
           ))}
@@ -245,4 +289,4 @@ export default function Admin() {
       )}
     </div>
   );
-        }
+  }
