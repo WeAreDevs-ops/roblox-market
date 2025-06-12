@@ -1,4 +1,5 @@
-import admin from './firebaseAdmin';
+import { dbAdmin } from '../firebaseadmin';
+import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -8,27 +9,26 @@ export default async function handler(req, res) {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ message: 'Missing required fields' });
+    return res.status(400).json({ message: 'Email and password are required.' });
   }
 
   try {
-    const db = admin.firestore();
+    const sellerDoc = await dbAdmin.collection('sellers').doc(email).get();
 
-    const snapshot = await db.collection('sellers').where('email', '==', email).get();
-
-    if (snapshot.empty) {
-      return res.status(400).json({ message: 'Seller not found' });
+    if (!sellerDoc.exists) {
+      return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
-    const sellerData = snapshot.docs[0].data();
+    const sellerData = sellerDoc.data();
+    const isMatch = await bcrypt.compare(password, sellerData.password);
 
-    if (sellerData.password !== password) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
-    return res.status(200).json({ message: 'Login successful', seller: { email: sellerData.email, username: sellerData.username } });
+    return res.status(200).json({ message: 'Login successful.' });
   } catch (error) {
     console.error('Error logging in seller:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error.' });
   }
 }
