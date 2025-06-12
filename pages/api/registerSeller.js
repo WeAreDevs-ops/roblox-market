@@ -7,6 +7,10 @@ export default async function handler(req, res) {
 
   const { email, password, name, facebook, discord } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Missing fields.' });
+  }
+
   try {
     const userRecord = await admin.auth().createUser({
       email,
@@ -14,11 +18,18 @@ export default async function handler(req, res) {
       displayName: name,
     });
 
-    // You can also save facebook/discord to Firestore if you want later
+    const db = admin.firestore();
 
-    return res.status(200).json({ message: 'Seller registered successfully.', userId: userRecord.uid });
+    await db.collection('sellers').doc(userRecord.uid).set({
+      email,
+      name,
+      facebook,
+      discord,
+    });
+
+    return res.status(200).json({ message: 'Seller registered successfully.' });
   } catch (error) {
     console.error(error);
-    return res.status(400).json({ message: error.message });
+    return res.status(500).json({ message: 'Error registering seller.' });
   }
 }
