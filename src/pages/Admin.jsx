@@ -18,7 +18,7 @@ export default function Admin() {
     limitedItems: '',
     inventory: 'Public',
     accountType: 'Global Account',
-    games: []
+    games: {}  // now it's an object instead of array
   });
 
   const login = async () => {
@@ -76,14 +76,14 @@ export default function Admin() {
 
       const data = await res.json();
       if (res.ok) {
-        return data.gamepasses || [];
+        return data.gamepasses || {};
       } else {
         console.error('Error fetching gamepasses:', data.error);
-        return [];
+        return {};
       }
     } catch (err) {
       console.error('Fetch error:', err);
-      return [];
+      return {};
     }
   };
 
@@ -153,7 +153,7 @@ export default function Admin() {
       limitedItems: '',
       inventory: 'Public',
       accountType: 'Global Account',
-      games: []
+      games: {}
     });
   };
 
@@ -220,7 +220,11 @@ export default function Admin() {
             <div key={acc.id} style={{ border: '1px solid #ddd', padding: '10px', marginTop: '10px' }}>
               <b>{acc.username}</b> - ₱{acc.price}
               <div style={{ marginTop: '5px' }}>
-                {acc.games && acc.games.length > 0 ? acc.games.join(", ") : "No Gamepasses"}
+                {acc.games && Object.keys(acc.games).length > 0
+                  ? Object.entries(acc.games).map(([game, count]) => (
+                      <div key={game}>{game} ({count})</div>
+                    ))
+                  : "No Gamepasses"}
               </div>
               <div>
                 <button onClick={() => editAccount(acc)} style={{ marginRight: '10px' }}>Edit</button>
