@@ -1,100 +1,92 @@
+import { promises as fs } from 'fs';
+import path from 'path';
 import axios from 'axios';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { userId } = req.body;
+  const { username } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({ error: 'Missing userId' });
+  if (!username) {
+    return res.status(400).json({ error: 'Username is required' });
   }
 
   try {
-    let allGamepasses = [];
-    let cursor = null;
+    // 1️⃣ Get UserID from Username
+    const userRes = await axios.post('https://users.roblox.com/v1/usernames/users', {
+      usernames: [username],
+      excludeBannedUsers: false
+    });
 
-    // Fetch all gamepasses (handle pagination)
+    const userData = userRes.data?.data?.[0];
+    if (!userData) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const userId = userData.id;
+
+    // 2️⃣ Get all universeIds owned by user
+    let universes = [];
+    let nextPageCursor = null;
+
     do {
-      const response = await axios.get(
-        `https://inventory.roblox.com/v1/users/${userId}/assets/34?limit=100&cursor=${cursor || ''}`
-      );
+      const universeRes = await axios.get(`https://develop.roblox.com/v1/universes?creatorType=User&creatorTargetId=${userId}&limit=50${nextPageCursor ? `&cursor=${nextPageCursor}` : ''}`);
+      universes = universes.concat(universeRes.data.data);
+      nextPageCursor = universeRes.data.nextPageCursor;
+    } while (nextPageCursor);
 
-      allGamepasses = allGamepasses.concat(response.data.data);
-      cursor = response.data.nextPageCursor;
-    } while (cursor);
-
-    if (allGamepasses.length === 0) {
-      return res.status(200).json({ games: {} });
+    if (universes.length === 0) {
+      return res.status(200).json({ gamepasses: {} });
     }
 
-    // Map universeId to count
-    const universeCountMap = {};
+    // 3️⃣ Loop through universes and collect placeIds
+    const gamepassesResult = {};
 
-    // Collect all universeIds
-    const universeIds = allGamepasses.map(item => item.assetId);
+    for (const universe of universes) {
+      const universeId = universe.id;
+      const gameName = universe.name;
 
-    // Fetch product info to get universeIds
-    const productInfoResponse = await axios.post(
-      'https://apis.roblox.com/marketplace-items/v1/items/details',
-      { itemIds: universeIds },
-      { headers: { 'Content-Type': 'application/json' } }
-    );
+      // 4️⃣ Get places under this universe
+      const placeRes = await axios.get(`https://develop.roblox.com/v1/universes/${universeId}/places?limit=50`);
+      const places = placeRes.data.data;
 
-    // Now map universeIds to count
-    productInfoResponse.data.data.forEach(item => {
-      const universeId = item.creatorTargetId;
+      for (const place of places) {
+        const placeId = place.id;
 
-      if (!universeId) return;
+        // 5️⃣ Fetch gamepasses for each placeId
+        let gamepasses = [];
+        let gamepassCursor = null;
 
-      if (universeCountMap[universeId]) {
-        universeCountMap[universeId]++;
-      } else {
-        universeCountMap[universeId] = 1;
+        do {
+          const gamepassRes = await axios.get(`https://www.roblox.com/places/${placeId}/game-passes?cursor=${gamepassCursor || ''}`);
+          const html = gamepassRes.data;
+
+          // 6️⃣ Extract gamepasses via RegEx (because Roblox doesn't have clean API for this anymore)
+          const regex = /data-pass-id="(\d+)"[\s\S]*?class="text-name">([^<]+)<\/div>/g;
+          let match;
+          while ((match = regex.exec(html)) !== null) {
+            gamepasses.push({
+              id: match[1],
+              name: match[2]
+            });
+          }
+
+          // Roblox does not have cursor for web page, so we break
+          gamepassCursor = null;
+        } while (gamepassCursor);
+
+        if (gamepasses.length > 0) {
+          gamepassesResult[gameName] = (gamepassesResult[gameName] || 0) + gamepasses.length;
+        }
       }
-    });
-
-    // Now fetch game names for these universeIds
-    const universeIdList = Object.keys(universeCountMap);
-    const gameNameMap = {};
-
-    // Roblox API only accepts max 100 universeIds per request
-    const chunkArray = (arr, size) => {
-      const result = [];
-      for (let i = 0; i < arr.length; i += size) {
-        result.push(arr.slice(i, i + size));
-      }
-      return result;
-    };
-
-    const universeChunks = chunkArray(universeIdList, 100);
-
-    for (const chunk of universeChunks) {
-      const gamesResponse = await axios.get(
-        `https://games.roblox.com/v1/games?universeIds=${chunk.join(',')}`
-      );
-
-      gamesResponse.data.data.forEach(game => {
-        gameNameMap[game.id] = game.name;
-      });
     }
 
-    // Final formatted result: { gameName: count }
-    const result = {};
+    return res.status(200).json({ gamepasses: gamepassesResult });
 
-    Object.entries(universeCountMap).forEach(([universeId, count]) => {
-      const gameName = gameNameMap[universeId] || 'Unknown Game';
-      if (result[gameName]) {
-        result[gameName] += count;
-      } else {
-        result[gameName] = count;
-      }
-    });
-
-    return res.status(200).json({ games: result });
-  } catch (error) {
-    console.error('Error fetching gamepasses:', error);
-    return res.status(500).json({ error: 'Failed to fetch gamepasses' });
+  } catch (err) {
+    console.error('Error:', err);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
-}
+      }
