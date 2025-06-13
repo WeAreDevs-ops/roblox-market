@@ -12,11 +12,10 @@ export default async function handler(req, res) {
   }
 
   else if (req.method === 'POST') {
-    const { username, age, price, mop, robuxBalance, limitedItems, inventory, accountType, gamepassName, gamepassAmount } = req.body;
-
-    // we auto-set email and negotiable
-    const email = "Verified";
-    const negotiable = "Yes";
+    const {
+      username, age, email, price, mop, negotiable,
+      robuxBalance, limitedItems, inventory, accountType, gamepass
+    } = req.body;
 
     let profile = "";
     let avatar = "";
@@ -42,20 +41,9 @@ export default async function handler(req, res) {
     }
 
     const docRef = await addDoc(accountsRef, {
-      username,
-      age,
-      email,
-      profile,
-      avatar,
-      price,
-      mop,
-      negotiable,
-      robuxBalance,
-      limitedItems,
-      inventory,
-      accountType,
-      gamepassName: gamepassName || "",
-      gamepassAmount: gamepassAmount || 0
+      username, age, email, price, mop, negotiable,
+      robuxBalance, limitedItems, inventory, accountType, gamepass,
+      profile, avatar
     });
 
     res.status(201).json({ message: 'Account added', id: docRef.id });
