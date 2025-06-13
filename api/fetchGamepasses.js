@@ -11,11 +11,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get userId by username using RoProxy
-    const userRes = await axios.get(`https://users.roproxy.com/v1/usernames/users`, {
-      data: { usernames: [username] },
-      headers: { "Content-Type": "application/json" }
-    });
+    // Correct request to fetch userId by username (POST not GET)
+    const userRes = await axios.post(`https://users.roproxy.com/v1/usernames/users`, 
+      { usernames: [username] }, 
+      { headers: { "Content-Type": "application/json" } }
+    );
 
     if (userRes.data.data.length === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -25,7 +25,6 @@ export default async function handler(req, res) {
 
     // Get recently played games
     const recentRes = await axios.get(`https://games.roproxy.com/v2/users/${userId}/recently-played`);
-
     const games = {};
 
     for (const game of recentRes.data.data) {
