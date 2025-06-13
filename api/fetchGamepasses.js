@@ -1,50 +1,44 @@
+// myproject/api/fetchGamepasses.js
 import axios from 'axios';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
+  if (req.method !== 'POST') return res.status(405).json({error:'Only POST allowed'});
   const { username } = req.body;
+  if (!username) return res.status(400).json({error:'username required'});
 
   try {
-    // Get User ID
-    const userRes = await axios.post('https://users.roblox.com/v1/usernames/users', {
-      usernames: [username],
-      excludeBannedUsers: false
-    });
+    // 1. Get userId
+    const users = await axios.post(
+      'https://users.roblox.com/v1/usernames/users',
+      {usernames: [username]},
+      {headers: {'Content-Type':'application/json'}}
+    );
+    const u = users.data?.data?.[0];
+    if (!u) return res.status(404).json({error:'User not found'});
+    const uid = u.id;
 
-    if (!userRes.data?.data?.length) {
-      return res.status(404).json({ error: 'User not found' });
+    // 2. Get user's games
+    const gamesRes = await axios.get(
+      `https://games.roproxy.com/v2/users/${uid}/games?accessFilter=2&limit=50&sortOrder=Asc`
+    );
+    const games = gamesRes.data?.data || [];
+
+    // 3. For each game, fetch gamepasses
+    const results = {};
+    for (let g of games) {
+      const gpRes = await axios.get(
+        `https://games.roproxy.com/v1/games/${g.id}/game-passes?limit=100&sortOrder=Asc`
+      );
+      const passes = gpRes.data?.data;
+      if (passes?.length) results[g.name] = passes.length;
+      // small delay optional
     }
 
-    const userId = userRes.data.data[0].id;
-
-    // Fetch all gamepasses directly
-    const passesRes = await axios.get(`https://catalog.roblox.com/v1/search/items?CreatorType=User&CreatorTargetId=${userId}&Category=GamePasses&Limit=100`);
-    const passes = passesRes.data?.data || [];
-
-    if (passes.length === 0) {
-      return res.status(200).json({ gamepasses: [] });
-    }
-
-    // Group gamepasses by game name
-    const gameCounts = {};
-
-    passes.forEach(pass => {
-      const gameName = pass.name.split(" ")[0] || "Unknown"; // crude extract
-      if (gameCounts[gameName]) {
-        gameCounts[gameName]++;
-      } else {
-        gameCounts[gameName] = 1;
-      }
-    });
-
-    const result = Object.entries(gameCounts).map(([game, count]) => `${game} (${count})`);
-
-    return res.status(200).json({ gamepasses: result });
+    return res.status(200).json({ gamepasses: results });
   } catch (err) {
-    console.error('Error:', err.message);
-    return res.status(500).json({ error: 'Failed to fetch gamepasses' });
+    console.error(err);
+    const code = err.response?.status || 500;
+    const msg = err.response?.data?.errors?.[0]?.message || err.message;
+    return res.status(code).json({ error: msg });
   }
 }
