@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { fetchGamepassesByUsername } from '../api/fetchGamepasses';
 
 export default function Admin() {
   const [password, setPassword] = useState('');
@@ -64,6 +63,27 @@ export default function Admin() {
     } catch (error) {
       console.error("Error fetching Roblox profile:", error);
       return "";
+    }
+  };
+
+  const fetchGamepassesByUsername = async (username) => {
+    try {
+      const res = await fetch('/api/fetchGamepasses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        return data.gamepasses || [];
+      } else {
+        console.error('Error fetching gamepasses:', data.error);
+        return [];
+      }
+    } catch (err) {
+      console.error('Fetch error:', err);
+      return [];
     }
   };
 
@@ -199,6 +219,9 @@ export default function Admin() {
           {filteredAccounts.map(acc => (
             <div key={acc.id} style={{ border: '1px solid #ddd', padding: '10px', marginTop: '10px' }}>
               <b>{acc.username}</b> - ₱{acc.price}
+              <div style={{ marginTop: '5px' }}>
+                {acc.games && acc.games.length > 0 ? acc.games.join(", ") : "No Gamepasses"}
+              </div>
               <div>
                 <button onClick={() => editAccount(acc)} style={{ marginRight: '10px' }}>Edit</button>
                 <button onClick={() => deleteAccount(acc.id)}>Delete</button>
