@@ -2,49 +2,66 @@ import axios from 'axios';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ message: 'Method not allowed' });
   }
 
   const { username } = req.body;
+
   if (!username) {
-    return res.status(400).json({ error: 'Missing username' });
+    return res.status(400).json({ message: 'Missing username' });
   }
 
   try {
-    // Correct request to fetch userId by username (POST not GET)
-    const userRes = await axios.post(`https://users.roproxy.com/v1/usernames/users`, 
-      { usernames: [username] }, 
-      { headers: { "Content-Type": "application/json" } }
-    );
+    // Get userId from username
+    const userIdRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
+      usernames: [username]
+    }, {
+      headers: { "Content-Type": "application/json" }
+    });
 
-    if (userRes.data.data.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+    if (!userIdRes.data?.data?.length) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    const userId = userRes.data.data[0].id;
+    const userId = userIdRes.data.data[0].id;
 
-    // Get recently played games
-    const recentRes = await axios.get(`https://games.roproxy.com/v2/users/${userId}/recently-played`);
+    // Get owned gamepasses (AssetTypeId: 34)
+    const gamepassesRes = await axios.get(`https://inventory.roproxy.com/v1/users/${userId}/assets/34`);
+    const gamepasses = gamepassesRes.data.data;
+
+    if (!gamepasses.length) {
+      return res.status(200).json({ games: {} });  // no gamepasses
+    }
+
+    // Group gamepasses by game (optional: advanced mapping if you want)
     const games = {};
 
-    for (const game of recentRes.data.data) {
-      try {
-        // For each game, get gamepasses
-        const gamepassRes = await axios.get(`https://avatar.roproxy.com/v1/users/${userId}/game-passes?placeId=${game.placeId}`);
+    for (const pass of gamepasses) {
+      const gamepassId = pass.id;
 
-        const count = gamepassRes.data.data.length;
-        if (count > 0) {
-          games[game.name] = count;
+      // Get game info for each gamepass (gameId)
+      try {
+        const gamepassInfo = await axios.get(`https://apis.roproxy.com/game-passes/v1/game-passes/${gamepassId}`);
+        const gameId = gamepassInfo.data?.associatedPlaceId || "Unknown";
+
+        // Get game name
+        const gameInfo = await axios.get(`https://games.roblox.com/v1/games?universeIds=${gameId}`);
+        const gameName = gameInfo.data?.data?.[0]?.name || "Unknown Game";
+
+        if (games[gameName]) {
+          games[gameName]++;
+        } else {
+          games[gameName] = 1;
         }
-      } catch (innerErr) {
-        console.log(`Failed fetching gamepasses for game ${game.name}: ${innerErr.message}`);
+      } catch (err) {
+        console.warn(`Failed fetching game info for gamepass ${gamepassId}`);
       }
     }
 
     res.status(200).json({ games });
 
-  } catch (err) {
-    console.error('Roblox API error:', err.message);
-    res.status(500).json({ error: 'Failed fetching gamepasses' });
+  } catch (error) {
+    console.error("Roblox API error:", error.message);
+    res.status(500).json({ message: 'Failed to fetch gamepasses' });
   }
 }
