@@ -1,79 +1,71 @@
 import axios from 'axios';
 
+const GAMES_TO_CHECK = [
+  { name: "Blox Fruits", universeId: 2753915549 },
+  { name: "Pet Simulator X", universeId: 6284583030 },
+  { name: "Adopt Me!", universeId: 920587237 },
+  { name: "BedWars", universeId: 6872265039 },
+  { name: "DOORS", universeId: 6516141723 },
+  { name: "Brookhaven 🏡RP", universeId: 4924922222 },
+  { name: "Murder Mystery 2", universeId: 142823291 },
+  { name: "Arsenal", universeId: 111958650 },
+  { name: "Bee Swarm Simulator", universeId: 1537690962 }
+];
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Only POST requests allowed' });
+    return res.status(405).end();
   }
 
   const { username } = req.body;
+
   if (!username) {
-    return res.status(400).json({ message: 'Username is required' });
+    return res.status(400).json({ error: 'Username is required.' });
   }
 
   try {
-    // Get userId from username
+    // Resolve username to userId
     const userRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
       usernames: [username]
-    }, {
-      headers: { "Content-Type": "application/json" }
-    });
+    }, { headers: { "Content-Type": "application/json" } });
 
     if (!userRes.data?.data?.length) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ error: 'User not found.' });
     }
 
     const userId = userRes.data.data[0].id;
+    const ownedGames = {};
 
-    // Define both endpoints
-    const robloxAPI = `https://inventory.roblox.com/v1/users/${userId}/assets/34`;
-    const roproxyAPI = `https://inventory.roproxy.com/v1/users/${userId}/assets/34`;
-
-    let gamepasses = [];
-
-    try {
-      const response = await axios.get(robloxAPI);
-      gamepasses = response.data.data;
-      console.log("✅ Used real Roblox API");
-    } catch (err) {
-      console.warn("⚠️ Roblox API failed, switching to Roproxy...");
+    for (const game of GAMES_TO_CHECK) {
       try {
-        const fallbackRes = await axios.get(roproxyAPI);
-        gamepasses = fallbackRes.data.data;
-        console.log("✅ Used Roproxy API");
-      } catch (fallbackErr) {
-        console.error("❌ Both APIs failed", fallbackErr.message);
-        return res.status(500).json({ message: 'Failed fetching gamepasses from both sources' });
+        const gamepassesRes = await axios.get(`https://games.roblox.com/v1/games/${game.universeId}/game-passes`);
+        const gamepasses = gamepassesRes.data?.data || [];
+
+        let ownedCount = 0;
+
+        for (const gamepass of gamepasses) {
+          try {
+            const ownershipRes = await axios.get(`https://api.roblox.com/GamePasses/${gamepass.id}/IsOwned?userId=${userId}`);
+            if (ownershipRes.data?.Owned) {
+              ownedCount++;
+            }
+          } catch (innerErr) {
+            console.error(`Failed checking ownership for gamepass ${gamepass.id}:`, innerErr.message);
+          }
+        }
+
+        if (ownedCount > 0) {
+          ownedGames[game.name] = ownedCount;
+        }
+
+      } catch (gameErr) {
+        console.error(`Failed fetching gamepasses for ${game.name}:`, gameErr.message);
       }
     }
 
-    // Group gamepasses by game (productId = game id)
-    const gameCounts = {};
-    gamepasses.forEach(item => {
-      const placeId = item.assetId;
-      if (!gameCounts[placeId]) {
-        gameCounts[placeId] = 1;
-      } else {
-        gameCounts[placeId]++;
-      }
-    });
-
-    const result = {};
-
-    // Now get place name from placeId using Roproxy
-    for (const placeId of Object.keys(gameCounts)) {
-      try {
-        const placeInfo = await axios.get(`https://games.roproxy.com/v1/games?universeIds=${placeId}`);
-        const name = placeInfo?.data?.data?.[0]?.name || `Game ID: ${placeId}`;
-        result[name] = gameCounts[placeId];
-      } catch (err) {
-        console.warn(`⚠️ Failed getting game name for ${placeId}, using ID`);
-        result[`Game ID: ${placeId}`] = gameCounts[placeId];
-      }
-    }
-
-    return res.status(200).json(result);
+    res.status(200).json({ games: ownedGames });
   } catch (error) {
-    console.error("❌ Roblox API error:", error.message);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    console.error("Main API error:", error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-  }
+}
