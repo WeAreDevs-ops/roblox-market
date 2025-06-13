@@ -36,7 +36,7 @@ export default function Home() {
 
   let filteredAccounts = accounts.filter(acc => 
     acc.username.toLowerCase().includes(search.toLowerCase()) ||
-    acc.games?.join(", ").toLowerCase().includes(search.toLowerCase())
+    Object.keys(acc.games || {}).join(", ").toLowerCase().includes(search.toLowerCase())
   );
 
   if (negotiableFilter !== "All") {
@@ -177,8 +177,10 @@ export default function Home() {
           </p>
 
           <p><strong>🎮 Games/Gamepass:</strong> 
-            {acc.games && acc.games.filter(g => g).length > 0 ? (
-              <Tag text={acc.games.filter(g => g).join(", ")} color="#243c6b" />
+            {acc.games && Object.keys(acc.games).length > 0 ? (
+              Object.entries(acc.games).map(([game, count]) => (
+                <Tag key={game} text={`${game} (${count})`} color="#243c6b" />
+              ))
             ) : (
               <Tag text="No Gamepass Found" color="#999" />
             )}
@@ -210,4 +212,4 @@ export default function Home() {
       )}
     </div>
   );
-}
+                                               }
