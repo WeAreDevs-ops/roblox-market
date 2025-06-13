@@ -1,6 +1,3 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -13,14 +10,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Step 1: Get userId from username
+    // Convert username to userId
     const userRes = await fetch("https://users.roblox.com/v1/usernames/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        usernames: [username],
-        excludeBannedUsers: false
-      })
+      body: JSON.stringify({ usernames: [username], excludeBannedUsers: false })
     });
 
     const userData = await userRes.json();
@@ -29,7 +23,6 @@ export default async function handler(req, res) {
     }
     const userId = userData.data[0].id;
 
-    // Step 2: Fetch all universes/games
     let games = {};
     let nextPageCursor = null;
 
@@ -37,16 +30,23 @@ export default async function handler(req, res) {
       const universeRes = await fetch(`https://develop.roblox.com/v1/users/${userId}/universes?limit=50${nextPageCursor ? `&cursor=${nextPageCursor}` : ''}`);
       const universeData = await universeRes.json();
 
+      if (!universeData.data.length) {
+        console.log("No universes found for user:", username);
+        break;
+      }
+
       for (const universe of universeData.data) {
         const universeId = universe.id;
-
-        // Step 3: Get Gamepasses for each universe
         let gamepassCursor = null;
         let totalGamepasses = 0;
 
         do {
           const gamepassRes = await fetch(`https://apis.roblox.com/game-passes/v1/game-passes?universeId=${universeId}&limit=100${gamepassCursor ? `&cursor=${gamepassCursor}` : ''}`);
           const gamepassData = await gamepassRes.json();
+
+          if (!gamepassData.data.length) {
+            break; // No gamepasses in this universe
+          }
 
           totalGamepasses += gamepassData.data.length;
           gamepassCursor = gamepassData.nextPageCursor;
@@ -59,6 +59,10 @@ export default async function handler(req, res) {
 
       nextPageCursor = universeData.nextPageCursor;
     } while (nextPageCursor);
+
+    if (Object.keys(games).length === 0) {
+      return res.status(404).json({ error: 'No Gamepasses Found' });
+    }
 
     return res.status(200).json({ gamepasses: games });
   } catch (err) {
