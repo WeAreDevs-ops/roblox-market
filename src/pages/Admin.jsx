@@ -33,11 +33,22 @@ export default function Admin() {
     setAccounts(data.accounts);
   };
 
-  const handleLogin = () => {
-    if (adminPassword === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      setIsAuthorized(true);
-    } else {
-      Swal.fire("Access Denied", "Invalid admin password!", "error");
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminPassword })
+      });
+
+      if (response.ok) {
+        setIsAuthorized(true);
+      } else {
+        Swal.fire("Access Denied", "Invalid admin password!", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Failed to login!", "error");
     }
   };
 
@@ -49,7 +60,7 @@ export default function Admin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = editMode ? '/api/accounts' : '/api/accounts';
+      const url = '/api/accounts';
       const method = editMode ? 'PUT' : 'POST';
       const payload = editMode ? { id: editId, ...formData } : formData;
 
@@ -153,9 +164,6 @@ export default function Admin() {
           <input type="text" name="username" value={formData.username} onChange={handleChange} required />
         </div>
 
-        {/* same form fields here exactly like before */}
-        {/* I won't repeat the form inputs here to keep this reply clean. All fields are still there like age, email, price, mop, negotiable, robuxBalance, limitedItems, inventory, gamepass, accountType */}
-
         <div style={{ marginBottom: "10px" }}>
           <label>Age:</label>
           <select name="age" value={formData.age} onChange={handleChange}>
@@ -253,4 +261,4 @@ export default function Admin() {
       ))}
     </div>
   );
-        }
+      }
