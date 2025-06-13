@@ -28,12 +28,10 @@ export default function Home() {
     (acc.gamepass || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  // Apply email filter
   if (emailFilter) {
     filteredAccounts = filteredAccounts.filter(acc => acc.email === emailFilter);
   }
 
-  // Apply sort
   if (sortOption === "low-high") {
     filteredAccounts = filteredAccounts.sort((a, b) => a.price - b.price);
   } else if (sortOption === "high-low") {
@@ -89,15 +87,15 @@ export default function Home() {
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
-            <Tag text={`🎂 Age: ${acc.age}`} color="#243c6b" />
-            <Tag text={`📧 Email: ${acc.email}`} color="#243c6b" />
-            <Tag text={`💰 Price: ₱${acc.price}`} color="#243c6b" />
-            <Tag text={`💳 MOP: ${acc.mop}`} color="#243c6b" />
-            <Tag text={`🤝 Negotiable: ${acc.negotiable}`} color="#243c6b" />
-            <Tag text={`💎 Robux: ${acc.robuxBalance}`} color="#243c6b" />
-            <Tag text={`🎖 Limited: ${acc.limitedItems}`} color="#243c6b" />
-            <Tag text={`📦 Inventory: ${acc.inventory}`} color="#243c6b" />
-            <Tag text={`🌍 Type: ${acc.accountType}`} color="#243c6b" />
+            <Tag text={acc.age} color="#243c6b" />
+            <Tag text={acc.email} color="#243c6b" />
+            <Tag text={`₱${acc.price}`} color="#243c6b" />
+            <Tag text={acc.mop} color="#243c6b" />
+            <Tag text={acc.negotiable} color="#243c6b" />
+            <Tag text={acc.robuxBalance} color="#243c6b" />
+            <Tag text={acc.limitedItems} color="#243c6b" />
+            <Tag text={acc.inventory} color="#243c6b" />
+            <Tag text={acc.accountType} color="#243c6b" />
           </div>
 
           <div style={{ marginTop: "10px" }}>
@@ -107,7 +105,9 @@ export default function Home() {
           <div style={{ marginTop: "10px" }}>
             <strong>🎮 Gamepass:</strong>{" "}
             {acc.gamepass && acc.gamepass.trim() !== "" ? (
-              <Tag text={acc.gamepass} color="#243c6b" />
+              acc.gamepass.split(",").map((game, index) => (
+                <Tag key={index} text={game.trim()} color="#243c6b" />
+              ))
             ) : (
               <Tag text="No Gamepass Found" color="#999" />
             )}
@@ -120,4 +120,4 @@ export default function Home() {
       ))}
     </div>
   );
-}
+            }
