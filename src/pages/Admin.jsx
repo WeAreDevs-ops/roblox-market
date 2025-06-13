@@ -1,99 +1,144 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 
 export default function Admin() {
-  const [accounts, setAccounts] = useState([]);
-  const [form, setForm] = useState({
-    username: '',
-    age: '',
-    email: '',
-    price: '',
-    mop: '',
-    negotiable: 'Yes',
-    robuxBalance: '',
-    limitedItems: '',
-    inventory: '',
-    gamepass: '',
-    accountType: ''
+  const [formData, setFormData] = useState({
+    username: "",
+    age: "13+",
+    email: "Verified",
+    price: "",
+    mop: "Gcash",
+    negotiable: "Yes",
+    robuxBalance: "",
+    limitedItems: "",
+    inventory: "Public",
+    gamepass: "", // fixed: originally games
+    accountType: "Global Account"
   });
 
-  useEffect(() => {
-    fetchAccounts();
-  }, []);
-
-  const fetchAccounts = async () => {
-    const res = await fetch('/api/accounts');
-    const data = await res.json();
-    setAccounts(data.accounts);
-  };
-
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/accounts', form);
-      setForm({
-        username: '',
-        age: '',
-        email: '',
-        price: '',
-        mop: '',
-        negotiable: 'Yes',
-        robuxBalance: '',
-        limitedItems: '',
-        inventory: '',
-        gamepass: '',
-        accountType: ''
+      const response = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
       });
-      fetchAccounts();
-    } catch (error) {
-      console.error("Failed saving account", error);
-      alert("Failed to save account.");
-    }
-  };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this account?")) {
-      await axios.delete('/api/accounts', { data: { id } });
-      fetchAccounts();
+      if (response.ok) {
+        Swal.fire('Success', 'Account saved!', 'success');
+        setFormData({
+          username: "",
+          age: "13+",
+          email: "Verified",
+          price: "",
+          mop: "Gcash",
+          negotiable: "Yes",
+          robuxBalance: "",
+          limitedItems: "",
+          inventory: "Public",
+          gamepass: "", // fixed
+          accountType: "Global Account"
+        });
+      } else {
+        Swal.fire('Error', 'Failed to save account', 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'An unexpected error occurred', 'error');
     }
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Admin Panel</h2>
+    <div className="container" style={{ padding: "20px" }}>
+      <h2 style={{ marginBottom: "20px" }}>Admin Panel</h2>
+      <form onSubmit={handleSubmit}>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
-        <input type="text" name="username" placeholder="Username" value={form.username} onChange={handleChange} required /><br />
-        <input type="text" name="age" placeholder="Age" value={form.age} onChange={handleChange} required /><br />
-        <input type="text" name="email" placeholder="Email" value={form.email} onChange={handleChange} required /><br />
-        <input type="text" name="price" placeholder="Price" value={form.price} onChange={handleChange} required /><br />
-        <input type="text" name="mop" placeholder="Mode of Payment" value={form.mop} onChange={handleChange} required /><br />
-        <select name="negotiable" value={form.negotiable} onChange={handleChange}>
-          <option value="Yes">Negotiable: Yes</option>
-          <option value="No">Negotiable: No</option>
-        </select><br />
-        <input type="text" name="robuxBalance" placeholder="Robux Balance" value={form.robuxBalance} onChange={handleChange} /><br />
-        <input type="text" name="limitedItems" placeholder="Limited Items" value={form.limitedItems} onChange={handleChange} /><br />
-        <input type="text" name="inventory" placeholder="Inventory" value={form.inventory} onChange={handleChange} /><br />
-        <input type="text" name="gamepass" placeholder="Gamepass" value={form.gamepass} onChange={handleChange} /><br />
-        <input type="text" name="accountType" placeholder="Account Type" value={form.accountType} onChange={handleChange} /><br />
+        <div style={{ marginBottom: "10px" }}>
+          <label>Username:</label>
+          <input type="text" name="username" value={formData.username} onChange={handleChange} required />
+        </div>
 
-        <button type="submit">Add Account</button>
+        <div style={{ marginBottom: "10px" }}>
+          <label>Age:</label>
+          <select name="age" value={formData.age} onChange={handleChange}>
+            <option value="13+">13+</option>
+            <option value="Under 13">Under 13</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Email:</label>
+          <select name="email" value={formData.email} onChange={handleChange}>
+            <option value="Verified">Verified</option>
+            <option value="Unverified">Unverified</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Price:</label>
+          <input type="number" name="price" value={formData.price} onChange={handleChange} required />
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Mode of Payment (MOP):</label>
+          <select name="mop" value={formData.mop} onChange={handleChange}>
+            <option value="Gcash">Gcash</option>
+            <option value="Paymaya">Paymaya</option>
+            <option value="Paypal">Paypal</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Negotiable:</label>
+          <select name="negotiable" value={formData.negotiable} onChange={handleChange}>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Robux Balance:</label>
+          <input type="number" name="robuxBalance" value={formData.robuxBalance} onChange={handleChange} />
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Limited Items:</label>
+          <input type="number" name="limitedItems" value={formData.limitedItems} onChange={handleChange} />
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Inventory:</label>
+          <select name="inventory" value={formData.inventory} onChange={handleChange}>
+            <option value="Public">Public</option>
+            <option value="Private">Private</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Gamepass:</label>
+          <input type="text" name="gamepass" value={formData.gamepass} onChange={handleChange} />
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Account Type:</label>
+          <select name="accountType" value={formData.accountType} onChange={handleChange}>
+            <option value="Global Account">Global Account</option>
+            <option value="PH Account">PH Account</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
+
+        <button type="submit" style={{ padding: "10px 20px", background: "#007bff", color: "#fff", border: "none", borderRadius: "5px" }}>
+          Save Account
+        </button>
       </form>
-
-      <h3>Existing Accounts</h3>
-      <ul>
-        {accounts.map(acc => (
-          <li key={acc.id}>
-            {acc.username}
-            <button onClick={() => handleDelete(acc.id)} style={{ marginLeft: '10px', color: 'red' }}>Delete</button>
-          </li>
-        ))}
-      </ul>
     </div>
   );
-}
+            }
