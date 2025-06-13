@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 
 export default function Admin() {
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
   const [formData, setFormData] = useState({
     username: "",
     age: "13+",
@@ -13,21 +15,30 @@ export default function Admin() {
     limitedItems: "",
     inventory: "Public",
     gamepass: "",
-    accountType: "Global Account",
-    password: ""
+    accountType: "Global Account"
   });
 
   const [accounts, setAccounts] = useState([]);
   const [search, setSearch] = useState("");
+  const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState(null);
 
   useEffect(() => {
-    fetchAccounts();
-  }, []);
+    if (isAuthorized) fetchAccounts();
+  }, [isAuthorized]);
 
   const fetchAccounts = async () => {
     const res = await fetch('/api/accounts');
     const data = await res.json();
     setAccounts(data.accounts);
+  };
+
+  const handleLogin = () => {
+    if (adminPassword === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+      setIsAuthorized(true);
+    } else {
+      Swal.fire("Access Denied", "Invalid admin password!", "error");
+    }
   };
 
   const handleChange = (e) => {
@@ -38,14 +49,18 @@ export default function Admin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/accounts', {
-        method: 'POST',
+      const url = editMode ? '/api/accounts' : '/api/accounts';
+      const method = editMode ? 'PUT' : 'POST';
+      const payload = editMode ? { id: editId, ...formData } : formData;
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
-        Swal.fire('Success', 'Account added!', 'success');
+        Swal.fire('Success', editMode ? 'Account updated!' : 'Account added!', 'success');
         setFormData({
           username: "",
           age: "13+",
@@ -57,12 +72,13 @@ export default function Admin() {
           limitedItems: "",
           inventory: "Public",
           gamepass: "",
-          accountType: "Global Account",
-          password: ""
+          accountType: "Global Account"
         });
+        setEditMode(false);
+        setEditId(null);
         fetchAccounts();
       } else {
-        Swal.fire('Error', 'Failed to add account', 'error');
+        Swal.fire('Error', 'Failed to save account', 'error');
       }
     } catch (error) {
       console.error(error);
@@ -88,13 +104,48 @@ export default function Admin() {
     }
   };
 
+  const handleEdit = (account) => {
+    setFormData({
+      username: account.username || "",
+      age: account.age || "13+",
+      email: account.email || "Verified",
+      price: account.price || "",
+      mop: account.mop || "Gcash",
+      negotiable: account.negotiable || "Yes",
+      robuxBalance: account.robuxBalance || "",
+      limitedItems: account.limitedItems || "",
+      inventory: account.inventory || "Public",
+      gamepass: account.gamepass || "",
+      accountType: account.accountType || "Global Account"
+    });
+    setEditMode(true);
+    setEditId(account.id);
+  };
+
   const filteredAccounts = accounts.filter(acc =>
     acc.username.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (!isAuthorized) {
+    return (
+      <div className="container" style={{ padding: "20px" }}>
+        <h2>Admin Panel Login</h2>
+        <input
+          type="password"
+          placeholder="Enter admin password"
+          value={adminPassword}
+          onChange={(e) => setAdminPassword(e.target.value)}
+          style={{ marginBottom: "10px", padding: "10px", width: "300px" }}
+        />
+        <br />
+        <button onClick={handleLogin} style={{ padding: "10px 20px" }}>Login</button>
+      </div>
+    );
+  }
+
   return (
     <div className="container" style={{ padding: "20px" }}>
-      <h2 style={{ marginBottom: "20px" }}>Admin Panel</h2>
+      <h2>Admin Panel</h2>
 
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: "10px" }}>
@@ -102,10 +153,8 @@ export default function Admin() {
           <input type="text" name="username" value={formData.username} onChange={handleChange} required />
         </div>
 
-        <div style={{ marginBottom: "10px" }}>
-          <label>Password:</label>
-          <input type="text" name="password" value={formData.password} onChange={handleChange} required />
-        </div>
+        {/* same form fields here exactly like before */}
+        {/* I won't repeat the form inputs here to keep this reply clean. All fields are still there like age, email, price, mop, negotiable, robuxBalance, limitedItems, inventory, gamepass, accountType */}
 
         <div style={{ marginBottom: "10px" }}>
           <label>Age:</label>
@@ -129,7 +178,7 @@ export default function Admin() {
         </div>
 
         <div style={{ marginBottom: "10px" }}>
-          <label>Mode of Payment (MOP):</label>
+          <label>MOP:</label>
           <select name="mop" value={formData.mop} onChange={handleChange}>
             <option value="Gcash">Gcash</option>
             <option value="Paymaya">Paymaya</option>
@@ -179,7 +228,7 @@ export default function Admin() {
         </div>
 
         <button type="submit" style={{ padding: "10px 20px", background: "#007bff", color: "#fff", border: "none", borderRadius: "5px" }}>
-          Add Account
+          {editMode ? "Update Account" : "Add Account"}
         </button>
       </form>
 
@@ -193,7 +242,10 @@ export default function Admin() {
         <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
           <strong>{acc.username}</strong> - ₱{acc.price}
           <div style={{ marginTop: "5px" }}>
-            <button onClick={() => handleDelete(acc.id)} style={{ background: "red", color: "white", border: "none", padding: "5px 10px", marginRight: "10px" }}>
+            <button onClick={() => handleEdit(acc)} style={{ background: "orange", color: "white", border: "none", padding: "5px 10px", marginRight: "10px" }}>
+              Edit
+            </button>
+            <button onClick={() => handleDelete(acc.id)} style={{ background: "red", color: "white", border: "none", padding: "5px 10px" }}>
               Delete
             </button>
           </div>
@@ -201,4 +253,4 @@ export default function Admin() {
       ))}
     </div>
   );
-          }
+        }
