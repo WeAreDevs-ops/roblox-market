@@ -2,49 +2,75 @@ import axios from 'axios';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).end();
+    return res.status(405).json({ message: 'Method not allowed' });
   }
 
   const { username } = req.body;
 
-  if (!username || username.trim() === "") {
-    return res.status(400).json({ error: "Invalid username provided." });
+  if (!username) {
+    return res.status(400).json({ message: 'Missing username' });
   }
 
   try {
-    // First get the UserId
-    const userIdRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
+    // Step 1: Get UserId from Username
+    const userRes = await axios.post('https://users.roblox.com/v1/usernames/users', {
       usernames: [username]
     }, {
       headers: { "Content-Type": "application/json" }
     });
 
-    if (!userIdRes.data || userIdRes.data.data.length === 0) {
-      return res.status(404).json({ error: "Username not found" });
+    if (!userRes.data?.data?.length) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    const userId = userIdRes.data.data[0].id;
+    const userId = userRes.data.data[0].id;
 
-    // Then get the user's owned games
-    const gamesRes = await axios.get(`https://games.roblox.com/v2/users/${userId}/games?limit=50`);
-    const games = gamesRes.data.data;
+    // Step 2: Get all gamepasses owned by user using Roproxy
+    const inventoryRes = await axios.get(`https://inventory.roproxy.com/v2/users/${userId}/inventory?assetTypes=34`);
 
-    let gamepasses = {};
+    const items = inventoryRes.data?.data || [];
 
-    for (const game of games) {
+    if (items.length === 0) {
+      return res.status(200).json({ games: {} });
+    }
+
+    // Step 3: Process gamepasses
+    const gameCounts = {};
+
+    // Limit concurrent requests (to avoid hitting rate limit)
+    const fetchGameDetails = async (assetId) => {
       try {
-        const passesRes = await axios.get(`https://games.roproxy.com/v1/games/${game.id}/game-passes?limit=100`);
-        const passes = passesRes.data.data;
-        gamepasses[game.name] = passes.length;
-      } catch (innerErr) {
-        console.error(`Failed fetching gamepasses for game ${game.id}: ${innerErr.message}`);
-        gamepasses[game.name] = 0;
+        const gamepassRes = await axios.get(`https://games.roproxy.com/v1/game-passes/${assetId}`);
+        const placeId = gamepassRes.data?.associatedPlaceId;
+
+        if (!placeId) return;
+
+        const placeRes = await axios.get(`https://games.roproxy.com/v1/games?universeIds=${placeId}`);
+        const gameName = placeRes.data?.data?.[0]?.name || "Unknown";
+
+        if (gameCounts[gameName]) {
+          gameCounts[gameName]++;
+        } else {
+          gameCounts[gameName] = 1;
+        }
+      } catch (err) {
+        console.error(`Error fetching for assetId ${assetId}:`, err.message);
       }
+    };
+
+    // Await all gamepass requests with concurrency limit
+    const concurrencyLimit = 5;
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    for (let i = 0; i < items.length; i += concurrencyLimit) {
+      const batch = items.slice(i, i + concurrencyLimit);
+      await Promise.all(batch.map(item => fetchGameDetails(item.assetId)));
+      await delay(500); // small delay to avoid being ratelimited
     }
 
-    res.status(200).json({ gamepasses });
+    return res.status(200).json({ games: gameCounts });
   } catch (error) {
-    console.error("❌ Failed fetching gamepasses:", error.message);
-    res.status(500).json({ error: 'Failed to fetch gamepasses' });
+    console.error("❌ Roblox API error:", error.message);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 }
