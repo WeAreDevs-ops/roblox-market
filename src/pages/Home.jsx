@@ -80,7 +80,7 @@ export default function Home() {
       <div style={{ marginBottom: "20px" }}>
         <input
           type="text"
-          placeholder="🔎 Search by username or game..."
+          placeholder="🔎 Search by username or gamepass..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
           style={{
@@ -189,4 +189,4 @@ export default function Home() {
       )}
     </div>
   );
-}
+          }
