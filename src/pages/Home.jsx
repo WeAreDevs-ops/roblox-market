@@ -15,7 +15,7 @@ export default function Home() {
 
   const buyNow = () => {
     Swal.fire({
-      title: '📞 Contact Me',
+      title: 'Contact Me',
       html: `Contact me on:<br>
         <a href="https://www.facebook.com/mix.nthe.clubb" target="_blank">Facebook</a><br>
         <a href="https://discord.gg/P5xRPech" target="_blank">Discord</a>`,
