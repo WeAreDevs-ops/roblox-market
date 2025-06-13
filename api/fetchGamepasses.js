@@ -25,16 +25,25 @@ export default async function handler(req, res) {
     }
     const userId = userData.id;
 
-    // Now fetch all Gamepasses using AssetTypeId 34
+    // Try fetching inventory
     let gamepassCount = 0;
     let nextPageCursor = null;
 
-    do {
-      const inventoryRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/34?limit=100${nextPageCursor ? `&cursor=${nextPageCursor}` : ''}`);
-      const { data } = inventoryRes;
-      gamepassCount += data.data.length;
-      nextPageCursor = data.nextPageCursor;
-    } while (nextPageCursor);
+    try {
+      do {
+        const inventoryRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/34?limit=100${nextPageCursor ? `&cursor=${nextPageCursor}` : ''}`);
+        const { data } = inventoryRes;
+        gamepassCount += data.data.length;
+        nextPageCursor = data.nextPageCursor;
+      } while (nextPageCursor);
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        console.warn('Inventory is private or gamepasses not found');
+        return res.status(200).json({ totalGamepasses: 0 });
+      } else {
+        throw err;
+      }
+    }
 
     return res.status(200).json({ totalGamepasses: gamepassCount });
   } catch (err) {
