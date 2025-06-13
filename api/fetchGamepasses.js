@@ -2,66 +2,78 @@ import axios from 'axios';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return res.status(405).json({ message: 'Only POST requests allowed' });
   }
 
   const { username } = req.body;
-
   if (!username) {
-    return res.status(400).json({ message: 'Missing username' });
+    return res.status(400).json({ message: 'Username is required' });
   }
 
   try {
     // Get userId from username
-    const userIdRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
+    const userRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
       usernames: [username]
     }, {
       headers: { "Content-Type": "application/json" }
     });
 
-    if (!userIdRes.data?.data?.length) {
+    if (!userRes.data?.data?.length) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const userId = userIdRes.data.data[0].id;
+    const userId = userRes.data.data[0].id;
 
-    // Get owned gamepasses (AssetTypeId: 34)
-    const gamepassesRes = await axios.get(`https://inventory.roproxy.com/v1/users/${userId}/assets/34`);
-    const gamepasses = gamepassesRes.data.data;
+    // Define both endpoints
+    const robloxAPI = `https://inventory.roblox.com/v1/users/${userId}/assets/34`;
+    const roproxyAPI = `https://inventory.roproxy.com/v1/users/${userId}/assets/34`;
 
-    if (!gamepasses.length) {
-      return res.status(200).json({ games: {} });  // no gamepasses
-    }
+    let gamepasses = [];
 
-    // Group gamepasses by game (optional: advanced mapping if you want)
-    const games = {};
-
-    for (const pass of gamepasses) {
-      const gamepassId = pass.id;
-
-      // Get game info for each gamepass (gameId)
+    try {
+      const response = await axios.get(robloxAPI);
+      gamepasses = response.data.data;
+      console.log("✅ Used real Roblox API");
+    } catch (err) {
+      console.warn("⚠️ Roblox API failed, switching to Roproxy...");
       try {
-        const gamepassInfo = await axios.get(`https://apis.roproxy.com/game-passes/v1/game-passes/${gamepassId}`);
-        const gameId = gamepassInfo.data?.associatedPlaceId || "Unknown";
-
-        // Get game name
-        const gameInfo = await axios.get(`https://games.roblox.com/v1/games?universeIds=${gameId}`);
-        const gameName = gameInfo.data?.data?.[0]?.name || "Unknown Game";
-
-        if (games[gameName]) {
-          games[gameName]++;
-        } else {
-          games[gameName] = 1;
-        }
-      } catch (err) {
-        console.warn(`Failed fetching game info for gamepass ${gamepassId}`);
+        const fallbackRes = await axios.get(roproxyAPI);
+        gamepasses = fallbackRes.data.data;
+        console.log("✅ Used Roproxy API");
+      } catch (fallbackErr) {
+        console.error("❌ Both APIs failed", fallbackErr.message);
+        return res.status(500).json({ message: 'Failed fetching gamepasses from both sources' });
       }
     }
 
-    res.status(200).json({ games });
+    // Group gamepasses by game (productId = game id)
+    const gameCounts = {};
+    gamepasses.forEach(item => {
+      const placeId = item.assetId;
+      if (!gameCounts[placeId]) {
+        gameCounts[placeId] = 1;
+      } else {
+        gameCounts[placeId]++;
+      }
+    });
 
+    const result = {};
+
+    // Now get place name from placeId using Roproxy
+    for (const placeId of Object.keys(gameCounts)) {
+      try {
+        const placeInfo = await axios.get(`https://games.roproxy.com/v1/games?universeIds=${placeId}`);
+        const name = placeInfo?.data?.data?.[0]?.name || `Game ID: ${placeId}`;
+        result[name] = gameCounts[placeId];
+      } catch (err) {
+        console.warn(`⚠️ Failed getting game name for ${placeId}, using ID`);
+        result[`Game ID: ${placeId}`] = gameCounts[placeId];
+      }
+    }
+
+    return res.status(200).json(result);
   } catch (error) {
-    console.error("Roblox API error:", error.message);
-    res.status(500).json({ message: 'Failed to fetch gamepasses' });
+    console.error("❌ Roblox API error:", error.message);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
-}
+  }
