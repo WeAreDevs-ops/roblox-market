@@ -1,8 +1,9 @@
 export default function handler(req, res) {
   if (req.method === 'POST') {
     const { password } = req.body;
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-    if (password === 'supersecret') {
+    if (password === ADMIN_PASSWORD) {
       res.status(200).json({ success: true });
     } else {
       res.status(401).json({ error: 'Unauthorized' });
