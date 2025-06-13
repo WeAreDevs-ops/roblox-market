@@ -9,16 +9,13 @@ export default function Admin() {
   const [form, setForm] = useState({
     username: '',
     age: '13+',
-    email: 'Verified',
-    profile: '',
     price: '',
     mop: 'Gcash',
-    negotiable: 'Yes',
+    inventory: 'Public',
     robuxBalance: '',
     limitedItems: '',
-    inventory: 'Public',
+    gamepass: '',
     accountType: 'Global Account',
-    games: {}
   });
 
   const login = async () => {
@@ -62,42 +59,15 @@ export default function Admin() {
     }
   };
 
-  const fetchGamepassesByUsername = async (username) => {
-    try {
-      const passesRes = await fetch('/api/fetchGamepasses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username })
-      });
-
-      const passesData = await passesRes.json();
-      if (passesRes.ok) {
-        return passesData.gamepasses || {};
-      } else {
-        return {};
-      }
-    } catch {
-      return {};
-    }
-  };
-
   const handleSubmit = async () => {
     if (!form.username.trim()) {
       alert("Please enter a username.");
       return;
     }
 
-    let profileURL = form.profile;
-    if (!editAccountId) {
-      profileURL = await fetchRobloxProfile(form.username);
-    }
+    let profileURL = await fetchRobloxProfile(form.username);
 
-    let fetchedGames = form.games;
-    if (!editAccountId) {
-      fetchedGames = await fetchGamepassesByUsername(form.username);
-    }
-
-    const newAccount = { ...form, profile: profileURL, games: fetchedGames };
+    const newAccount = { ...form, profile: profileURL };
 
     const method = editAccountId ? 'PUT' : 'POST';
     const res = await fetch('/api/accounts', {
@@ -136,9 +106,9 @@ export default function Admin() {
 
   const resetForm = () => {
     setForm({
-      username: '', age: '13+', email: 'Verified', profile: '', price: '',
-      mop: 'Gcash', negotiable: 'Yes', robuxBalance: '', limitedItems: '',
-      inventory: 'Public', accountType: 'Global Account', games: {}
+      username: '', age: '13+', price: '', mop: 'Gcash',
+      inventory: 'Public', robuxBalance: '', limitedItems: '',
+      gamepass: '', accountType: 'Global Account'
     });
   };
 
@@ -157,16 +127,36 @@ export default function Admin() {
       ) : (
         <>
           <h2>{editAccountId ? 'Edit Account' : 'Add Account'}</h2>
+
           <input type="text" placeholder="Username" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Age" value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Price" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="MOP" value={form.mop} onChange={e => setForm({ ...form, mop: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Negotiable" value={form.negotiable} onChange={e => setForm({ ...form, negotiable: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Robux Balance" value={form.robuxBalance} onChange={e => setForm({ ...form, robuxBalance: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Limited Items" value={form.limitedItems} onChange={e => setForm({ ...form, limitedItems: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Inventory" value={form.inventory} onChange={e => setForm({ ...form, inventory: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Account Type" value={form.accountType} onChange={e => setForm({ ...form, accountType: e.target.value })} style={inputStyle} />
+
+          <select value={form.age} onChange={e => setForm({ ...form, age: e.target.value })} style={inputStyle}>
+            <option value="13+">13+</option>
+            <option value="<13">&lt;13</option>
+          </select>
+
+          <input type="number" placeholder="Price (₱)" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} style={inputStyle} />
+
+          <select value={form.mop} onChange={e => setForm({ ...form, mop: e.target.value })} style={inputStyle}>
+            <option value="Gcash">Gcash</option>
+            <option value="Paypal">Paypal</option>
+          </select>
+
+          <select value={form.inventory} onChange={e => setForm({ ...form, inventory: e.target.value })} style={inputStyle}>
+            <option value="Public">Public</option>
+            <option value="Private">Private</option>
+          </select>
+
+          <input type="number" placeholder="Robux Balance" value={form.robuxBalance} onChange={e => setForm({ ...form, robuxBalance: e.target.value })} style={inputStyle} />
+
+          <input type="number" placeholder="Limited / UGC" value={form.limitedItems} onChange={e => setForm({ ...form, limitedItems: e.target.value })} style={inputStyle} />
+
+          <input type="text" placeholder="Gamepass (Name + Count)" value={form.gamepass} onChange={e => setForm({ ...form, gamepass: e.target.value })} style={inputStyle} />
+
+          <select value={form.accountType} onChange={e => setForm({ ...form, accountType: e.target.value })} style={inputStyle}>
+            <option value="Global Account">Global Account</option>
+            <option value="Vietnam Account">Vietnam Account</option>
+          </select>
 
           <button onClick={handleSubmit} style={{
             padding: '10px 20px',
@@ -184,13 +174,7 @@ export default function Admin() {
           {filteredAccounts.map(acc => (
             <div key={acc.id} style={{ border: '1px solid #ddd', padding: '10px', marginTop: '10px' }}>
               <b>{acc.username}</b> - ₱{acc.price}
-              <div style={{ marginTop: '5px' }}>
-                {acc.games && Object.keys(acc.games).length > 0
-                  ? Object.entries(acc.games).map(([game, count]) => (
-                    <div key={game}>{game} ({count})</div>
-                  ))
-                  : "No Gamepasses"}
-              </div>
+              <div>Gamepass: {acc.gamepass || "N/A"}</div>
               <div>
                 <button onClick={() => editAccount(acc)} style={{ marginRight: '10px' }}>Edit</button>
                 <button onClick={() => deleteAccount(acc.id)}>Delete</button>
