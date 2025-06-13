@@ -1,13 +1,68 @@
-export async function fetchGamepassesByUsername(username) {
-  try {
-    const res = await fetch('/api/fetchGamepasses', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({username})
-    });
-    const data = await res.json();
-    return res.ok ? data.gamepasses || {} : {};
-  } catch {
-    return {};
+import { promises as fs } from 'fs';
+import path from 'path';
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
-}
+
+  const { username } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ error: 'Username is required' });
+  }
+
+  try {
+    // Step 1: Get userId from username
+    const userRes = await fetch("https://users.roblox.com/v1/usernames/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        usernames: [username],
+        excludeBannedUsers: false
+      })
+    });
+
+    const userData = await userRes.json();
+    if (!userData?.data?.length) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const userId = userData.data[0].id;
+
+    // Step 2: Fetch all universes/games
+    let games = {};
+    let nextPageCursor = null;
+
+    do {
+      const universeRes = await fetch(`https://develop.roblox.com/v1/users/${userId}/universes?limit=50${nextPageCursor ? `&cursor=${nextPageCursor}` : ''}`);
+      const universeData = await universeRes.json();
+
+      for (const universe of universeData.data) {
+        const universeId = universe.id;
+
+        // Step 3: Get Gamepasses for each universe
+        let gamepassCursor = null;
+        let totalGamepasses = 0;
+
+        do {
+          const gamepassRes = await fetch(`https://apis.roblox.com/game-passes/v1/game-passes?universeId=${universeId}&limit=100${gamepassCursor ? `&cursor=${gamepassCursor}` : ''}`);
+          const gamepassData = await gamepassRes.json();
+
+          totalGamepasses += gamepassData.data.length;
+          gamepassCursor = gamepassData.nextPageCursor;
+        } while (gamepassCursor);
+
+        if (totalGamepasses > 0) {
+          games[universe.name] = totalGamepasses;
+        }
+      }
+
+      nextPageCursor = universeData.nextPageCursor;
+    } while (nextPageCursor);
+
+    return res.status(200).json({ gamepasses: games });
+  } catch (err) {
+    console.error('Fetch error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+      }
