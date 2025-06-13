@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   const { username } = req.body;
 
   try {
-    // Fetch user ID from username
+    // Get User ID
     const userRes = await axios.post('https://users.roblox.com/v1/usernames/users', {
       usernames: [username],
       excludeBannedUsers: false
@@ -20,26 +20,29 @@ export default async function handler(req, res) {
 
     const userId = userRes.data.data[0].id;
 
-    // Fetch games owned by the user
-    const gamesRes = await axios.get(`https://games.roblox.com/v2/users/${userId}/games?limit=100`);
-    const games = gamesRes.data?.data || [];
+    // Fetch all gamepasses directly
+    const passesRes = await axios.get(`https://catalog.roblox.com/v1/search/items?CreatorType=User&CreatorTargetId=${userId}&Category=GamePasses&Limit=100`);
+    const passes = passesRes.data?.data || [];
 
-    const gamepassCounts = [];
-
-    for (const game of games) {
-      try {
-        const passesRes = await axios.get(`https://games.roblox.com/v1/games/${game.id}/game-passes?limit=100`);
-        const passes = passesRes.data?.data || [];
-
-        if (passes.length > 0) {
-          gamepassCounts.push(`${game.name} (${passes.length})`);
-        }
-      } catch (err) {
-        console.error(`Error fetching passes for game ${game.id}:`, err.message);
-      }
+    if (passes.length === 0) {
+      return res.status(200).json({ gamepasses: [] });
     }
 
-    return res.status(200).json({ gamepasses: gamepassCounts });
+    // Group gamepasses by game name
+    const gameCounts = {};
+
+    passes.forEach(pass => {
+      const gameName = pass.name.split(" ")[0] || "Unknown"; // crude extract
+      if (gameCounts[gameName]) {
+        gameCounts[gameName]++;
+      } else {
+        gameCounts[gameName] = 1;
+      }
+    });
+
+    const result = Object.entries(gameCounts).map(([game, count]) => `${game} (${count})`);
+
+    return res.status(200).json({ gamepasses: result });
   } catch (err) {
     console.error('Error:', err.message);
     return res.status(500).json({ error: 'Failed to fetch gamepasses' });
