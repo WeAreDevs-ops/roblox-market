@@ -10,19 +10,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    // First, get userId from username
-    const userRes = await fetch('https://users.roblox.com/v1/usernames/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        usernames: [username],
-        excludeBannedUsers: false
-      })
+    // Convert username to userId
+    const userRes = await fetch("https://users.roblox.com/v1/usernames/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usernames: [username], excludeBannedUsers: false })
     });
 
     const userData = await userRes.json();
 
-    if (!userData.data || userData.data.length === 0) {
+    if (!userData?.data?.length) {
       return res.status(404).json({ error: 'User not found' });
     }
 
