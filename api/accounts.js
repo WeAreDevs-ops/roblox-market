@@ -9,18 +9,16 @@ export default async function handler(req, res) {
     const snapshot = await getDocs(accountsRef);
     const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.status(200).json({ accounts });
-  } 
+  }
   else if (req.method === 'POST') {
-    const { username, age, email, price, mop, negotiable, robuxBalance, limitedItems, inventory, games, accountType } = req.body;
-
-    if (!username || username.trim() === "") {
-      return res.status(400).json({ error: "Invalid username provided." });
-    }
+    const { username, age, email, price, mop, negotiable, robuxBalance, limitedItems, inventory, accountType } = req.body;
 
     let profile = "";
     let avatar = "";
+    let games = {};
 
     try {
+      // Roblox User Info
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
         usernames: [username]
       }, {
@@ -35,9 +33,13 @@ export default async function handler(req, res) {
         if (avatarRes.data?.data?.length > 0) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
+
+        // Call fetchGamepasses internally
+        const gpRes = await axios.post(`${process.env.NEXT_PUBLIC_SITE_URL}/api/fetchGamepasses`, { username });
+        games = gpRes.data?.games || {};
       }
     } catch (error) {
-      console.error("Failed to fetch Roblox user info:", error.message);
+      console.error("Failed fetching Roblox data:", error.message);
     }
 
     const docRef = await addDoc(accountsRef, {
@@ -45,12 +47,12 @@ export default async function handler(req, res) {
     });
 
     res.status(201).json({ message: 'Account added', id: docRef.id });
-  } 
+  }
   else if (req.method === 'DELETE') {
     const { id } = req.body;
     await deleteDoc(doc(accountsRef, id));
     res.status(200).json({ message: 'Deleted' });
-  } 
+  }
   else if (req.method === 'PUT') {
     const { id, ...updatedData } = req.body;
 
@@ -66,7 +68,7 @@ export default async function handler(req, res) {
       console.error("Failed to update document:", error.message);
       res.status(500).json({ message: 'Failed to update document' });
     }
-  } 
+  }
   else {
     res.status(405).end();
   }
