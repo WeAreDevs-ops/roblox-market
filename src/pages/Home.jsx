@@ -36,7 +36,7 @@ export default function Home() {
 
   let filteredAccounts = accounts.filter(acc => 
     acc.username.toLowerCase().includes(search.toLowerCase()) ||
-    (Array.isArray(acc.games) ? acc.games.join(", ").toLowerCase().includes(search.toLowerCase()) : false)
+    Object.keys(acc.games || {}).join(", ").toLowerCase().includes(search.toLowerCase())
   );
 
   if (negotiableFilter !== "All") {
@@ -142,43 +142,21 @@ export default function Home() {
             </div>
           )}
 
-          <p><strong>🎂 Age:</strong> 
-            <Tag text={acc.age} color="#243c6b" />
-          </p>
-
-          <p><strong>📧 Email:</strong> 
-            <Tag text={acc.email} color="#243c6b" />
-          </p>
-
-          <p><strong>💰 Price:</strong> 
-            <Tag text={`₱${acc.price}`} color="#243c6b" />
-          </p>
-
-          <p><strong>💳 MOP:</strong> 
-            <Tag text={acc.mop} color="#243c6b" />
-          </p>
-
-          <p><strong>🤝 Negotiable:</strong> 
-            <Tag text={acc.negotiable} color="#243c6b" />
-          </p>
-
+          <p><strong>🎂 Age:</strong> <Tag text={acc.age} color="#243c6b" /></p>
+          <p><strong>📧 Email:</strong> <Tag text={acc.email} color="#243c6b" /></p>
+          <p><strong>💰 Price:</strong> <Tag text={`₱${acc.price}`} color="#243c6b" /></p>
+          <p><strong>💳 MOP:</strong> <Tag text={acc.mop} color="#243c6b" /></p>
+          <p><strong>🤝 Negotiable:</strong> <Tag text={acc.negotiable} color="#243c6b" /></p>
           <p><strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
-
-          <p><strong>💎 Robux Balance:</strong> 
-            <Tag text={acc.robuxBalance} color="#243c6b" />
-          </p>
-
-          <p><strong>🎖️ Limited Items:</strong> 
-            <Tag text={acc.limitedItems} color="#243c6b" />
-          </p>
-
-          <p><strong>📦 Inventory:</strong> 
-            <Tag text={acc.inventory} color="#243c6b" />
-          </p>
+          <p><strong>💎 Robux Balance:</strong> <Tag text={acc.robuxBalance} color="#243c6b" /></p>
+          <p><strong>🎖️ Limited Items:</strong> <Tag text={acc.limitedItems} color="#243c6b" /></p>
+          <p><strong>📦 Inventory:</strong> <Tag text={acc.inventory} color="#243c6b" /></p>
 
           <p><strong>🎮 Games/Gamepass:</strong> 
-            {Array.isArray(acc.games) && acc.games.length > 0 ? (
-              <Tag text={acc.games.join(", ")} color="#243c6b" />
+            {acc.games && Object.keys(acc.games).length > 0 ? (
+              Object.entries(acc.games).map(([game, count]) => (
+                <Tag key={game} text={`${game} (${count})`} color="#243c6b" />
+              ))
             ) : (
               <Tag text="No Gamepass Found" color="#999" />
             )}
@@ -210,4 +188,4 @@ export default function Home() {
       )}
     </div>
   );
-            }
+                                 }
