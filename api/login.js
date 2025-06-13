@@ -1,7 +1,8 @@
 export default function handler(req, res) {
   if (req.method === 'POST') {
     const { password } = req.body;
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+    const ADMIN_PASSWORD = 'supersecret'; // <-- Hardcoded password here
 
     if (password === ADMIN_PASSWORD) {
       res.status(200).json({ success: true });
