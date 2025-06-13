@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export async function fetchGamepassesByUsername(username) {
   try {
-    // Convert username to userId
+    // Step 1: Convert username to userId
     const userIdRes = await axios.post(
       "https://users.roblox.com/v1/usernames/users",
       {
@@ -10,10 +10,7 @@ export async function fetchGamepassesByUsername(username) {
         excludeBannedUsers: false
       },
       {
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
+        headers: { "Content-Type": "application/json" }
       }
     );
 
@@ -24,21 +21,21 @@ export async function fetchGamepassesByUsername(username) {
 
     const userId = userIdRes.data.data[0].id;
 
-    // Fetch gamepasses with proper headers
-    const gamepassesRes = await axios.get(
-      `https://catalog.roblox.com/v1/search/items/details?Category=GamePass&CreatorTargetId=${userId}&Limit=30`,
-      {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-          'Accept': 'application/json'
-        }
-      }
+    // Step 2: Use Roblox Games API to fetch owned games
+    const gamesRes = await axios.get(
+      `https://games.roblox.com/v2/users/${userId}/games?limit=10`
     );
 
-    const passes = gamepassesRes.data?.data || [];
-    const gamepassNames = passes.map(pass => pass.name);
+    const games = gamesRes.data?.data || [];
 
-    return gamepassNames.length > 0 ? gamepassNames : ["No Gamepasses"];
+    if (games.length === 0) {
+      return ["No Gamepasses Found"];
+    }
+
+    // Step 3: Return the list of game names
+    const gameNames = games.map(game => game.name);
+    return gameNames;
+
   } catch (err) {
     console.error("Error fetching gamepasses:", err?.response?.data || err.message);
     return ["Error Fetching"];
