@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     res.status(200).json({ accounts });
   }
   else if (req.method === 'POST') {
-    const { username, age, email, price, mop, negotiable, robuxBalance, limitedItems, inventory, games, accountType } = req.body;
+    const { username, age, email, price, mop, negotiable, robuxBalance, limitedItems, inventory, gamepass, accountType } = req.body;
 
     let profile = "";
     let avatar = "";
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     }
 
     const docRef = await addDoc(accountsRef, {
-      username, age, email, profile, avatar, price, mop, negotiable, robuxBalance, limitedItems, inventory, games, accountType
+      username, age, email, profile, avatar, price, mop, negotiable, robuxBalance, limitedItems, inventory, gamepass, accountType
     });
 
     res.status(201).json({ message: 'Account added', id: docRef.id });
