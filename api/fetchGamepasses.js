@@ -12,8 +12,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Step 1: Get UserId from Username
-    const userRes = await axios.post('https://users.roblox.com/v1/usernames/users', {
+    // Step 1: Get UserId from Username (via Roproxy)
+    const userRes = await axios.post('https://users.roproxy.com/v1/usernames/users', {
       usernames: [username]
     }, {
       headers: { "Content-Type": "application/json" }
@@ -25,19 +25,17 @@ export default async function handler(req, res) {
 
     const userId = userRes.data.data[0].id;
 
-    // Step 2: Get all gamepasses owned by user using Roproxy
-    const inventoryRes = await axios.get(`https://inventory.roproxy.com/v2/users/${userId}/inventory?assetTypes=34`);
-
+    // Step 2: Use Roblox official inventory API directly (for GamePass: assetTypeId=34)
+    const inventoryRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory/34`);
     const items = inventoryRes.data?.data || [];
 
     if (items.length === 0) {
       return res.status(200).json({ games: {} });
     }
 
-    // Step 3: Process gamepasses
     const gameCounts = {};
 
-    // Limit concurrent requests (to avoid hitting rate limit)
+    // Process gamepasses
     const fetchGameDetails = async (assetId) => {
       try {
         const gamepassRes = await axios.get(`https://games.roproxy.com/v1/game-passes/${assetId}`);
@@ -48,24 +46,14 @@ export default async function handler(req, res) {
         const placeRes = await axios.get(`https://games.roproxy.com/v1/games?universeIds=${placeId}`);
         const gameName = placeRes.data?.data?.[0]?.name || "Unknown";
 
-        if (gameCounts[gameName]) {
-          gameCounts[gameName]++;
-        } else {
-          gameCounts[gameName] = 1;
-        }
+        gameCounts[gameName] = (gameCounts[gameName] || 0) + 1;
       } catch (err) {
         console.error(`Error fetching for assetId ${assetId}:`, err.message);
       }
     };
 
-    // Await all gamepass requests with concurrency limit
-    const concurrencyLimit = 5;
-    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-    for (let i = 0; i < items.length; i += concurrencyLimit) {
-      const batch = items.slice(i, i + concurrencyLimit);
-      await Promise.all(batch.map(item => fetchGameDetails(item.assetId)));
-      await delay(500); // small delay to avoid being ratelimited
+    for (const item of items) {
+      await fetchGameDetails(item.assetId);
     }
 
     return res.status(200).json({ games: gameCounts });
