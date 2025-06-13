@@ -12,9 +12,9 @@ export default async function handler(req, res) {
   }
 
   else if (req.method === 'POST') {
-    const { username, age, price, mop, robuxBalance, limitedItems, inventory, games, accountType } = req.body;
+    const { username, age, price, mop, robuxBalance, limitedItems, inventory, accountType, gamepassName, gamepassAmount } = req.body;
 
-    // Default values (these are always present in your admin.jsx)
+    // we auto-set email and negotiable
     const email = "Verified";
     const negotiable = "Yes";
 
@@ -42,7 +42,20 @@ export default async function handler(req, res) {
     }
 
     const docRef = await addDoc(accountsRef, {
-      username, age, email, profile, avatar, price, mop, negotiable, robuxBalance, limitedItems, inventory, games, accountType
+      username,
+      age,
+      email,
+      profile,
+      avatar,
+      price,
+      mop,
+      negotiable,
+      robuxBalance,
+      limitedItems,
+      inventory,
+      accountType,
+      gamepassName: gamepassName || "",
+      gamepassAmount: gamepassAmount || 0
     });
 
     res.status(201).json({ message: 'Account added', id: docRef.id });
