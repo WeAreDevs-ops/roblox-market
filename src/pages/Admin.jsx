@@ -7,29 +7,19 @@ export default function Admin() {
   const [searchTerm, setSearchTerm] = useState('');
   const [editAccountId, setEditAccountId] = useState(null);
   const [form, setForm] = useState({
-    username: '',
-    age: '13+',
-    email: 'Verified',
-    profile: '',
-    price: '',
-    mop: 'Gcash',
-    negotiable: 'Yes',
-    robuxBalance: '',
-    limitedItems: '',
-    inventory: 'Public',
-    accountType: 'Global Account',
-    games: {}  // now it's an object instead of array
+    username: '', age: '13+', email: 'Verified', profile: '',
+    price: '', mop: 'Gcash', negotiable: 'Yes',
+    robuxBalance: '', limitedItems: '', inventory: 'Public',
+    accountType: 'Global Account', games: {}
   });
 
   const login = async () => {
     const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password })
     });
-
     if (res.ok) {
-      setIsLoggedIn(true);
+      setIsLogged(true);
       fetchAccounts();
     } else {
       alert('Wrong password');
@@ -42,72 +32,52 @@ export default function Admin() {
     setAccounts(data.accounts);
   };
 
-  const fetchRobloxProfile = async (username) => {
+  const fetchRobloxProfileAndGamepasses = async (username) => {
     try {
       const res = await fetch("https://users.roblox.com/v1/usernames/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          usernames: [username],
-          excludeBannedUsers: false
-        })
+        body: JSON.stringify({ usernames: [username], excludeBannedUsers: false })
       });
 
       const data = await res.json();
       if (data?.data?.length > 0) {
         const userId = data.data[0].id;
-        return `https://www.roblox.com/users/${userId}/profile`;
-      } else {
-        return "";
-      }
-    } catch (error) {
-      console.error("Error fetching Roblox profile:", error);
-      return "";
-    }
-  };
+        const profileURL = `https://www.roblox.com/users/${userId}/profile`;
 
-  const fetchGamepassesByUsername = async (username) => {
-    try {
-      const res = await fetch('/api/fetchGamepasses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username })
-      });
+        const passesRes = await fetch('/api/fetchGamepasses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
+        });
 
-      const data = await res.json();
-      if (res.ok) {
-        return data.gamepasses || {};
-      } else {
-        console.error('Error fetching gamepasses:', data.error);
-        return {};
+        const passesData = await passesRes.json();
+        return { profileURL, gamepasses: passesData.gamepasses || {} };
       }
+      return { profileURL: "", gamepasses: {} };
     } catch (err) {
-      console.error('Fetch error:', err);
-      return {};
+      console.error('Error:', err);
+      return { profileURL: "", gamepasses: {} };
     }
   };
 
   const handleSubmit = async () => {
-    if (!form.username.trim()) {
-      alert("Please enter a username.");
-      return;
-    }
+    if (!form.username.trim()) return alert("Please enter a username.");
 
     let profileURL = form.profile;
-    if (!editAccountId) {
-      profileURL = await fetchRobloxProfile(form.username);
-    }
-
     let fetchedGames = form.games;
+
     if (!editAccountId) {
-      fetchedGames = await fetchGamepassesByUsername(form.username);
+      const { profileURL: fetchedProfile, gamepasses } = await fetchRobloxProfileAndGamepasses(form.username);
+      profileURL = fetchedProfile;
+      fetchedGames = gamepasses;
     }
 
     const newAccount = { ...form, profile: profileURL, games: fetchedGames };
 
     const method = editAccountId ? 'PUT' : 'POST';
     const res = await fetch('/api/accounts', {
-      method: method,
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editAccountId ? { id: editAccountId, ...newAccount } : newAccount)
     });
@@ -128,11 +98,8 @@ export default function Admin() {
       body: JSON.stringify({ id })
     });
 
-    if (res.ok) {
-      fetchAccounts();
-    } else {
-      alert('Error deleting account');
-    }
+    if (res.ok) fetchAccounts();
+    else alert('Error deleting account');
   };
 
   const editAccount = (account) => {
@@ -142,18 +109,10 @@ export default function Admin() {
 
   const resetForm = () => {
     setForm({
-      username: '',
-      age: '13+',
-      email: 'Verified',
-      profile: '',
-      price: '',
-      mop: 'Gcash',
-      negotiable: 'Yes',
-      robuxBalance: '',
-      limitedItems: '',
-      inventory: 'Public',
-      accountType: 'Global Account',
-      games: {}
+      username: '', age: '13+', email: 'Verified', profile: '',
+      price: '', mop: 'Gcash', negotiable: 'Yes',
+      robuxBalance: '', limitedItems: '', inventory: 'Public',
+      accountType: 'Global Account', games: {}
     });
   };
 
@@ -166,48 +125,20 @@ export default function Admin() {
       {!isLoggedIn ? (
         <>
           <h2>Admin Login</h2>
-          <input 
-            type="password" 
-            placeholder="Enter Password" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-            style={inputStyle}
-          />
-          <button onClick={login} style={buttonStyle}>
-            Login
-          </button>
+          <input type="password" placeholder="Enter Password"
+            value={password} onChange={e => setPassword(e.target.value)} style={inputStyle} />
+          <button onClick={login} style={buttonStyle}>Login</button>
         </>
       ) : (
         <>
           <h2>{editAccountId ? 'Edit Account' : 'Add Account'}</h2>
-
           <input type="text" placeholder="Username" value={form.username}
             onChange={e => setForm({ ...form, username: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Age" value={form.age}
-            onChange={e => setForm({ ...form, age: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Email" value={form.email}
-            onChange={e => setForm({ ...form, email: e.target.value })} style={inputStyle} />
           <input type="text" placeholder="Price" value={form.price}
             onChange={e => setForm({ ...form, price: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="MOP" value={form.mop}
-            onChange={e => setForm({ ...form, mop: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Negotiable" value={form.negotiable}
-            onChange={e => setForm({ ...form, negotiable: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Robux Balance" value={form.robuxBalance}
-            onChange={e => setForm({ ...form, robuxBalance: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Limited Items" value={form.limitedItems}
-            onChange={e => setForm({ ...form, limitedItems: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Inventory" value={form.inventory}
-            onChange={e => setForm({ ...form, inventory: e.target.value })} style={inputStyle} />
-          <input type="text" placeholder="Account Type" value={form.accountType}
-            onChange={e => setForm({ ...form, accountType: e.target.value })} style={inputStyle} />
-
           <button onClick={handleSubmit} style={{
-            padding: '10px 20px',
-            background: editAccountId ? 'orange' : 'green',
-            color: '#fff',
-            border: 'none',
-            marginTop: '10px'
+            padding: '10px 20px', background: editAccountId ? 'orange' : 'green',
+            color: '#fff', border: 'none', marginTop: '10px'
           }}>
             {editAccountId ? 'Update Account' : 'Add Account'}
           </button>
