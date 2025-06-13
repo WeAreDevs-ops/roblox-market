@@ -10,21 +10,13 @@ export default async function handler(req, res) {
     const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.status(200).json({ accounts });
   }
+
   else if (req.method === 'POST') {
-    // Safely parse email (if missing from frontend, default to empty string)
-    const {
-      username, 
-      age, 
-      email = "", // <-- this prevents undefined error
-      price, 
-      mop, 
-      negotiable, 
-      robuxBalance, 
-      limitedItems, 
-      inventory, 
-      games, 
-      accountType 
-    } = req.body;
+    const { username, age, price, mop, robuxBalance, limitedItems, inventory, games, accountType } = req.body;
+
+    // Default values (these are always present in your admin.jsx)
+    const email = "Verified";
+    const negotiable = "Yes";
 
     let profile = "";
     let avatar = "";
@@ -55,11 +47,13 @@ export default async function handler(req, res) {
 
     res.status(201).json({ message: 'Account added', id: docRef.id });
   }
+
   else if (req.method === 'DELETE') {
     const { id } = req.body;
     await deleteDoc(doc(accountsRef, id));
     res.status(200).json({ message: 'Deleted' });
   }
+
   else if (req.method === 'PUT') {
     const { id, ...updatedData } = req.body;
 
@@ -76,7 +70,8 @@ export default async function handler(req, res) {
       res.status(500).json({ message: 'Failed to update document' });
     }
   }
+
   else {
     res.status(405).end();
   }
-                            }
+}
