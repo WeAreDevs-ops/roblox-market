@@ -19,7 +19,7 @@ export default function Admin() {
     limitedItems: '',
     inventory: 'Public',
     accountType: 'Global Account',
-    games: ['', '', '']
+    games: []
   });
 
   const login = async () => {
@@ -85,33 +85,19 @@ export default function Admin() {
 
     const newAccount = { ...form, profile: profileURL, games: fetchedGames };
 
-    if (editAccountId) {
-      const res = await fetch('/api/accounts', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: editAccountId, ...newAccount })
-      });
+    const method = editAccountId ? 'PUT' : 'POST';
+    const res = await fetch('/api/accounts', {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editAccountId ? { id: editAccountId, ...newAccount } : newAccount)
+    });
 
-      if (res.ok) {
-        fetchAccounts();
-        setEditAccountId(null);
-        resetForm();
-      } else {
-        alert('Error updating account');
-      }
+    if (res.ok) {
+      fetchAccounts();
+      if (editAccountId) setEditAccountId(null);
+      resetForm();
     } else {
-      const res = await fetch('/api/accounts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newAccount)
-      });
-
-      if (res.ok) {
-        fetchAccounts();
-        resetForm();
-      } else {
-        alert('Error adding account');
-      }
+      alert('Error saving account');
     }
   };
 
@@ -147,7 +133,7 @@ export default function Admin() {
       limitedItems: '',
       inventory: 'Public',
       accountType: 'Global Account',
-      games: ['', '', '']
+      games: []
     });
   };
 
@@ -165,9 +151,9 @@ export default function Admin() {
             placeholder="Enter Password" 
             value={password} 
             onChange={e => setPassword(e.target.value)} 
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
+            style={inputStyle}
           />
-          <button onClick={login} style={{ padding: '10px 20px', background: '#333', color: '#fff', border: 'none' }}>
+          <button onClick={login} style={buttonStyle}>
             Login
           </button>
         </>
@@ -175,35 +161,24 @@ export default function Admin() {
         <>
           <h2>{editAccountId ? 'Edit Account' : 'Add Account'}</h2>
 
-          {/* ALL FIELDS RESTORED BELOW */}
-
           <input type="text" placeholder="Username" value={form.username}
             onChange={e => setForm({ ...form, username: e.target.value })} style={inputStyle} />
-
           <input type="text" placeholder="Age" value={form.age}
             onChange={e => setForm({ ...form, age: e.target.value })} style={inputStyle} />
-
-          <input type="text" placeholder="Email (Verified/Unverified)" value={form.email}
+          <input type="text" placeholder="Email" value={form.email}
             onChange={e => setForm({ ...form, email: e.target.value })} style={inputStyle} />
-
           <input type="text" placeholder="Price" value={form.price}
             onChange={e => setForm({ ...form, price: e.target.value })} style={inputStyle} />
-
           <input type="text" placeholder="MOP" value={form.mop}
             onChange={e => setForm({ ...form, mop: e.target.value })} style={inputStyle} />
-
           <input type="text" placeholder="Negotiable" value={form.negotiable}
             onChange={e => setForm({ ...form, negotiable: e.target.value })} style={inputStyle} />
-
           <input type="text" placeholder="Robux Balance" value={form.robuxBalance}
             onChange={e => setForm({ ...form, robuxBalance: e.target.value })} style={inputStyle} />
-
           <input type="text" placeholder="Limited Items" value={form.limitedItems}
             onChange={e => setForm({ ...form, limitedItems: e.target.value })} style={inputStyle} />
-
           <input type="text" placeholder="Inventory" value={form.inventory}
             onChange={e => setForm({ ...form, inventory: e.target.value })} style={inputStyle} />
-
           <input type="text" placeholder="Account Type" value={form.accountType}
             onChange={e => setForm({ ...form, accountType: e.target.value })} style={inputStyle} />
 
@@ -237,3 +212,4 @@ export default function Admin() {
 }
 
 const inputStyle = { width: '100%', padding: '10px', marginBottom: '10px' };
+const buttonStyle = { padding: '10px 20px', background: '#333', color: '#fff', border: 'none' };
