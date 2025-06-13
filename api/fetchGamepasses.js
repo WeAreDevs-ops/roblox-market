@@ -10,9 +10,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const userRes = await fetch("https://users.roblox.com/v1/usernames/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    // First, get userId from username
+    const userRes = await fetch('https://users.roblox.com/v1/usernames/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         usernames: [username],
         excludeBannedUsers: false
@@ -21,11 +22,12 @@ export default async function handler(req, res) {
 
     const userData = await userRes.json();
 
-    if (!userData?.data?.length) {
+    if (!userData.data || userData.data.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     const userId = userData.data[0].id;
+
     let games = {};
     let nextPageCursor = null;
 
@@ -52,7 +54,6 @@ export default async function handler(req, res) {
           games[universe.name] = totalGamepasses;
         }
       }
-
       nextPageCursor = universeData.nextPageCursor;
     } while (nextPageCursor);
 
