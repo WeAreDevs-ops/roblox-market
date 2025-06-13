@@ -4,6 +4,8 @@ import Swal from 'sweetalert2';
 export default function Home() {
   const [accounts, setAccounts] = useState([]);
   const [search, setSearch] = useState("");
+  const [sortOption, setSortOption] = useState("");
+  const [emailFilter, setEmailFilter] = useState("");
 
   useEffect(() => {
     fetch('/api/accounts')
@@ -21,10 +23,28 @@ export default function Home() {
     });
   };
 
-  const filteredAccounts = accounts.filter(acc => 
+  let filteredAccounts = accounts.filter(acc => 
     acc.username.toLowerCase().includes(search.toLowerCase()) ||
     (acc.gamepass || "").toLowerCase().includes(search.toLowerCase())
   );
+
+  // Apply email filter
+  if (emailFilter) {
+    filteredAccounts = filteredAccounts.filter(acc => acc.email === emailFilter);
+  }
+
+  // Apply sort
+  if (sortOption === "low-high") {
+    filteredAccounts = filteredAccounts.sort((a, b) => a.price - b.price);
+  } else if (sortOption === "high-low") {
+    filteredAccounts = filteredAccounts.sort((a, b) => b.price - a.price);
+  }
+
+  const resetFilters = () => {
+    setSearch("");
+    setSortOption("");
+    setEmailFilter("");
+  };
 
   const Tag = ({ text, color }) => (
     <span style={{
@@ -41,6 +61,24 @@ export default function Home() {
         value={search} onChange={(e) => setSearch(e.target.value)}
         style={{ padding: "10px", width: "100%", maxWidth: "400px", borderRadius: "8px", border: "1px solid #ccc", marginBottom: "10px" }} 
       />
+
+      <div style={{ marginBottom: "15px" }}>
+        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} style={{ padding: "8px", marginRight: "10px" }}>
+          <option value="">Sort Price</option>
+          <option value="low-high">Low to High</option>
+          <option value="high-low">High to Low</option>
+        </select>
+
+        <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)} style={{ padding: "8px", marginRight: "10px" }}>
+          <option value="">Email Status</option>
+          <option value="Verified">Verified</option>
+          <option value="Unverified">Unverified</option>
+        </select>
+
+        <button onClick={resetFilters} style={{ padding: "8px 15px", background: "#dc3545", color: "#fff", border: "none", borderRadius: "5px" }}>
+          Reset
+        </button>
+      </div>
 
       {filteredAccounts.length === 0 && <p>No results found.</p>}
 
