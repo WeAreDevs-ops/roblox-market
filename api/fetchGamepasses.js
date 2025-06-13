@@ -1,56 +1,34 @@
-import fetch from 'node-fetch';
+import axios from 'axios';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ message: 'Method not allowed' });
   }
 
   const { username } = req.body;
 
-  if (!username) {
-    return res.status(400).json({ error: 'Username is required' });
-  }
-
   try {
-    // First: Get UserId from Username
-    const userRes = await fetch('https://users.roblox.com/v1/usernames/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        usernames: [username],
-        excludeBannedUsers: false
-      })
+    const userRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
+      usernames: [username]
+    }, {
+      headers: { "Content-Type": "application/json" }
     });
 
-    const userData = await userRes.json();
-    if (!userData || !userData.data || userData.data.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+    if (!userRes.data?.data?.length) {
+      return res.status(400).json({ message: 'User not found' });
     }
 
-    const userId = userData.data[0].id;
+    const userId = userRes.data.data[0].id;
+    const gamepassesRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory?assetTypes=GamePass&limit=100`);
 
-    // Second: Fetch Gamepasses by UserId
-    const gamepassRes = await fetch(`https://inventory.roblox.com/v1/users/${userId}/assets/999999999`);
-    const gamepassData = await gamepassRes.json();
-
-    if (!gamepassData || !gamepassData.data) {
-      return res.status(404).json({ error: 'No gamepasses found' });
+    const gamepasses = {};
+    for (const asset of gamepassesRes.data.data || []) {
+      gamepasses[asset.name] = (gamepasses[asset.name] || 0) + 1;
     }
 
-    const games = {};
-
-    for (const item of gamepassData.data) {
-      // Fetch product info
-      const productRes = await fetch(`https://api.roblox.com/marketplace/productinfo?assetId=${item.assetId}`);
-      const productData = await productRes.json();
-
-      const gameName = productData?.Creator?.Name || 'Unknown';
-      games[gameName] = (games[gameName] || 0) + 1;
-    }
-
-    res.status(200).json({ gamepasses: games });
+    res.status(200).json({ gamepasses });
   } catch (error) {
-    console.error('Fetch Gamepasses Error:', error);
-    res.status(500).json({ error: 'Failed to fetch gamepasses' });
+    console.error("❌ Failed fetching gamepasses:", error.message);
+    res.status(500).json({ message: 'Error fetching gamepasses' });
   }
 }
