@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 
 export default function Admin() {
@@ -12,9 +12,23 @@ export default function Admin() {
     robuxBalance: "",
     limitedItems: "",
     inventory: "Public",
-    gamepass: "", // fixed: originally games
-    accountType: "Global Account"
+    gamepass: "",
+    accountType: "Global Account",
+    password: ""
   });
+
+  const [accounts, setAccounts] = useState([]);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  const fetchAccounts = async () => {
+    const res = await fetch('/api/accounts');
+    const data = await res.json();
+    setAccounts(data.accounts);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,7 +45,7 @@ export default function Admin() {
       });
 
       if (response.ok) {
-        Swal.fire('Success', 'Account saved!', 'success');
+        Swal.fire('Success', 'Account added!', 'success');
         setFormData({
           username: "",
           age: "13+",
@@ -42,11 +56,13 @@ export default function Admin() {
           robuxBalance: "",
           limitedItems: "",
           inventory: "Public",
-          gamepass: "", // fixed
-          accountType: "Global Account"
+          gamepass: "",
+          accountType: "Global Account",
+          password: ""
         });
+        fetchAccounts();
       } else {
-        Swal.fire('Error', 'Failed to save account', 'error');
+        Swal.fire('Error', 'Failed to add account', 'error');
       }
     } catch (error) {
       console.error(error);
@@ -54,14 +70,41 @@ export default function Admin() {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this account?")) return;
+    try {
+      const res = await fetch('/api/accounts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      if (res.ok) {
+        Swal.fire('Deleted!', 'Account deleted successfully.', 'success');
+        fetchAccounts();
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'Failed to delete account', 'error');
+    }
+  };
+
+  const filteredAccounts = accounts.filter(acc =>
+    acc.username.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="container" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Admin Panel</h2>
-      <form onSubmit={handleSubmit}>
 
+      <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: "10px" }}>
           <label>Username:</label>
           <input type="text" name="username" value={formData.username} onChange={handleChange} required />
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Password:</label>
+          <input type="text" name="password" value={formData.password} onChange={handleChange} required />
         </div>
 
         <div style={{ marginBottom: "10px" }}>
@@ -136,9 +179,26 @@ export default function Admin() {
         </div>
 
         <button type="submit" style={{ padding: "10px 20px", background: "#007bff", color: "#fff", border: "none", borderRadius: "5px" }}>
-          Save Account
+          Add Account
         </button>
       </form>
+
+      <hr style={{ margin: "30px 0" }} />
+
+      <h3>Account List</h3>
+
+      <input type="text" placeholder="Search Username" value={search} onChange={(e) => setSearch(e.target.value)} style={{ marginBottom: "10px", padding: "5px", width: "100%", maxWidth: "300px" }} />
+
+      {filteredAccounts.map(acc => (
+        <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
+          <strong>{acc.username}</strong> - ₱{acc.price}
+          <div style={{ marginTop: "5px" }}>
+            <button onClick={() => handleDelete(acc.id)} style={{ background: "red", color: "white", border: "none", padding: "5px 10px", marginRight: "10px" }}>
+              Delete
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   );
-            }
+          }
