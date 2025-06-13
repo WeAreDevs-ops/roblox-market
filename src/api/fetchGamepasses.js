@@ -2,42 +2,30 @@ import axios from 'axios';
 
 export async function fetchGamepassesByUsername(username) {
   try {
-    // Step 1: Convert username to userId
-    const userIdRes = await axios.post(
-      "https://users.roblox.com/v1/usernames/users",
-      {
-        usernames: [username],
-        excludeBannedUsers: false
-      },
-      {
-        headers: { "Content-Type": "application/json" }
-      }
-    );
+    // Step 1: Get User ID from username
+    const userIdRes = await axios.post('https://users.roblox.com/v1/usernames/users', {
+      usernames: [username],
+      excludeBannedUsers: false
+    });
 
-    if (!userIdRes.data?.data?.length) {
-      console.error("User not found");
-      return ["User not found"];
+    const userIdData = userIdRes.data;
+    if (!userIdData?.data?.length) {
+      console.error('User not found');
+      return [];
     }
 
-    const userId = userIdRes.data.data[0].id;
+    const userId = userIdData.data[0].id;
 
-    // Step 2: Use Roblox Games API to fetch owned games
-    const gamesRes = await axios.get(
-      `https://games.roblox.com/v2/users/${userId}/games?limit=10`
-    );
+    // Step 2: Get Gamepasses using User ID
+    const gamepassRes = await axios.get(`https://games.roblox.com/v2/users/${userId}/games?limit=10&sortOrder=Asc`);
+    const games = gamepassRes.data?.data || [];
 
-    const games = gamesRes.data?.data || [];
-
-    if (games.length === 0) {
-      return ["No Gamepasses Found"];
-    }
-
-    // Step 3: Return the list of game names
+    // Step 3: Extract Game Names
     const gameNames = games.map(game => game.name);
-    return gameNames;
 
-  } catch (err) {
-    console.error("Error fetching gamepasses:", err?.response?.data || err.message);
-    return ["Error Fetching"];
+    return gameNames;
+  } catch (error) {
+    console.error('Error fetching gamepasses:', error?.response?.data || error.message);
+    return [];
   }
 }
