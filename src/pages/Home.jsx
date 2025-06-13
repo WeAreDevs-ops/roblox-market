@@ -63,11 +63,11 @@ export default function Home() {
     <span style={{
       backgroundColor: color,
       color: '#fff',
-      padding: '3px 10px',
-      borderRadius: '20px',
-      fontSize: '0.85rem',
-      marginLeft: '8px',
-      fontWeight: 'bold'
+      padding: '4px 10px',
+      borderRadius: '15px',
+      fontSize: '0.8rem',
+      margin: '2px',
+      display: 'inline-block'
     }}>
       {text}
     </span>
@@ -129,53 +129,56 @@ export default function Home() {
       {displayedAccounts.map(acc => (
         <div key={acc.id} style={{
           border: '1px solid #ccc',
-          padding: '15px',
-          marginBottom: '15px',
-          borderRadius: '8px',
+          padding: '20px',
+          marginBottom: '20px',
+          borderRadius: '10px',
           boxShadow: '2px 2px 8px rgba(0,0,0,0.1)'
         }}>
           <h3>{acc.username}</h3>
 
           {acc.avatar && (
-            <div style={{ marginBottom: "10px" }}>
+            <div style={{ marginBottom: "10px", textAlign: 'center' }}>
               <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
             </div>
           )}
 
-          <p><strong>🎂 Age:</strong> <Tag text={acc.age} color="#243c6b" /></p>
-          <p><strong>📧 Email:</strong> <Tag text={acc.email} color="#243c6b" /></p>
-          <p><strong>💰 Price:</strong> <Tag text={`₱${acc.price}`} color="#243c6b" /></p>
-          <p><strong>💳 MOP:</strong> <Tag text={acc.mop} color="#243c6b" /></p>
-          <p><strong>🤝 Negotiable:</strong> <Tag text={acc.negotiable} color="#243c6b" /></p>
-          <p><strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
-          <p><strong>💎 Robux Balance:</strong> <Tag text={acc.robuxBalance} color="#243c6b" /></p>
-          <p><strong>🎖️ Limited Items:</strong> <Tag text={acc.limitedItems} color="#243c6b" /></p>
-          <p><strong>📦 Inventory:</strong> <Tag text={acc.inventory} color="#243c6b" /></p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <p><strong>🎂 Age:</strong> <Tag text={acc.age} color="#243c6b" /></p>
+            <p><strong>📧 Email:</strong> <Tag text={acc.email} color="#243c6b" /></p>
+            <p><strong>💰 Price:</strong> <Tag text={`₱${acc.price}`} color="#243c6b" /></p>
+            <p><strong>💳 MOP:</strong> <Tag text={acc.mop} color="#243c6b" /></p>
+            <p><strong>🤝 Negotiable:</strong> <Tag text={acc.negotiable} color="#243c6b" /></p>
+            <p><strong>💎 Robux Balance:</strong> <Tag text={acc.robuxBalance} color="#243c6b" /></p>
+            <p><strong>🎖️ Limited Items:</strong> <Tag text={acc.limitedItems} color="#243c6b" /></p>
+            <p><strong>📦 Inventory:</strong> <Tag text={acc.inventory} color="#243c6b" /></p>
+            <p><strong>🌍 Account Type:</strong> <Tag text={acc.accountType} color="#243c6b" /></p>
+            <p><strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a></p>
+          </div>
 
-          <p><strong>🎮 Games/Gamepass:</strong> 
-            {acc.games && Object.keys(acc.games).length > 0 ? (
-              Object.entries(acc.games).map(([game, count]) => (
-                <Tag key={game} text={`${game} (${count})`} color="#243c6b" />
-              ))
-            ) : (
-              <Tag text="No Gamepass Found" color="#999" />
-            )}
-          </p>
+          <div style={{ marginTop: '10px' }}>
+            <p><strong>🎮 Games/Gamepass:</strong></p>
+            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+              {acc.games && Object.keys(acc.games).length > 0 ? (
+                Object.entries(acc.games).map(([game, count]) => (
+                  <Tag key={game} text={`${game} (${count})`} color="#243c6b" />
+                ))
+              ) : (
+                <Tag text="No Gamepass Found" color="#999" />
+              )}
+            </div>
+          </div>
 
-          <p><strong>🌍 Account Type:</strong> 
-            <Tag text={acc.accountType} color="#243c6b" />
-          </p>
-
-          <button onClick={buyNow} style={{
-            padding: '10px 20px',
-            background: '#007bff',
-            color: '#fff',
-            border: 'none',
-            marginTop: '10px',
-            borderRadius: '5px'
-          }}>
-            Buy Now
-          </button>
+          <div style={{ textAlign: 'center', marginTop: '15px' }}>
+            <button onClick={buyNow} style={{
+              padding: '10px 20px',
+              background: '#007bff',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '5px'
+            }}>
+              Buy Now
+            </button>
+          </div>
         </div>
       ))}
 
@@ -188,4 +191,4 @@ export default function Home() {
       )}
     </div>
   );
-                                 }
+                      }
