@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     const snapshot = await getDocs(accountsRef);
     const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.status(200).json({ accounts });
-  }
+  } 
   else if (req.method === 'POST') {
     const { username, age, email, price, mop, negotiable, robuxBalance, limitedItems, inventory, accountType } = req.body;
 
@@ -18,7 +18,6 @@ export default async function handler(req, res) {
     let games = {};
 
     try {
-      // Roblox User Info
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
         usernames: [username]
       }, {
@@ -34,12 +33,16 @@ export default async function handler(req, res) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
 
-        // Call fetchGamepasses internally
-        const gpRes = await axios.post(`${process.env.NEXT_PUBLIC_SITE_URL}/api/fetchGamepasses`, { username });
-        games = gpRes.data?.games || {};
+        // Internal API call to fetchGamepasses (auto-detect host)
+        const host = req.headers.host ? `https://${req.headers.host}` : 'http://localhost:3000';
+        const gamepassRes = await axios.post(`${host}/api/fetchGamepasses`, { username });
+
+        if (gamepassRes.data?.games) {
+          games = gamepassRes.data.games;
+        }
       }
     } catch (error) {
-      console.error("Failed fetching Roblox data:", error.message);
+      console.error("❌ Roblox API error:", error.message);
     }
 
     const docRef = await addDoc(accountsRef, {
@@ -47,28 +50,25 @@ export default async function handler(req, res) {
     });
 
     res.status(201).json({ message: 'Account added', id: docRef.id });
-  }
+  } 
   else if (req.method === 'DELETE') {
     const { id } = req.body;
     await deleteDoc(doc(accountsRef, id));
     res.status(200).json({ message: 'Deleted' });
-  }
+  } 
   else if (req.method === 'PUT') {
     const { id, ...updatedData } = req.body;
-
-    if (!id) {
-      return res.status(400).json({ message: 'Missing document ID' });
-    }
+    if (!id) return res.status(400).json({ message: 'Missing document ID' });
 
     try {
       const docRef = doc(accountsRef, id);
       await updateDoc(docRef, updatedData);
       res.status(200).json({ message: 'Updated successfully' });
     } catch (error) {
-      console.error("Failed to update document:", error.message);
+      console.error("❌ Failed to update:", error.message);
       res.status(500).json({ message: 'Failed to update document' });
     }
-  }
+  } 
   else {
     res.status(405).end();
   }
