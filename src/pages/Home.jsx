@@ -111,7 +111,7 @@ export default function Home() {
           </div>
 
           <div style={{ marginTop: "10px" }}>
-            <strong>🎮 Game with Gamepass:</strong>
+            <strong>🎮 Games with Gamepass:</strong>
             <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
               {acc.gamepass && acc.gamepass.trim() !== "" ? (
                 acc.gamepass.split(",").map((game, index) => (
