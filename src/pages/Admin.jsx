@@ -229,8 +229,8 @@ export default function Admin() {
         <div style={{ marginBottom: "10px" }}>
           <label>Account Type:</label>
           <select name="accountType" value={formData.accountType} onChange={handleChange}>
-            <option value="Global Account">GLOBAL</option>
-            <option value="PH Account">VIETNAM</option>
+            <option value="GLOBAL">GLOBAL</option>
+            <option value="VIETNAM">VIETNAM</option>
             <option value="Others">Others</option>
           </select>
         </div>
