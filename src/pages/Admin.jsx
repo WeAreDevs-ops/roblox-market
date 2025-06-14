@@ -222,7 +222,7 @@ export default function Admin() {
         </div>
 
         <div style={{ marginBottom: "10px" }}>
-          <label>Gamepass:</label>
+          <label>Game with Gamepass:</label>
           <input type="text" name="gamepass" value={formData.gamepass} onChange={handleChange} />
         </div>
 
