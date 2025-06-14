@@ -168,7 +168,7 @@ export default function Admin() {
           <label>Age:</label>
           <select name="age" value={formData.age} onChange={handleChange}>
             <option value="13+">13+</option>
-            <option value="Under 13">Under 13</option>
+            <option value="<13"><13</option>
           </select>
         </div>
 
