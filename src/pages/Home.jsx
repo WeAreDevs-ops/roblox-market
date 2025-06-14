@@ -86,28 +86,39 @@ export default function Home() {
 
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
-          {/* FLEXBOX RESPONSIVE STRUCTURE */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "10px" }}>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}><span>🎂 Age:</span> <Tag text={acc.age} color="#243c6b" /></div>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}><span>📧 Email:</span> <Tag text={acc.email} color="#243c6b" /></div>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}><span>💰 Price:</span> <Tag text={`₱${acc.price}`} color="#243c6b" /></div>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}><span>💳 MOP:</span> <Tag text={acc.mop} color="#243c6b" /></div>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}><span>🤝 Negotiable:</span> <Tag text={acc.negotiable} color="#243c6b" /></div>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}><span>💎 Robux:</span> <Tag text={acc.robuxBalance} color="#243c6b" /></div>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}><span>🎖 Limited:</span> <Tag text={acc.limitedItems} color="#243c6b" /></div>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}><span>📦 Inventory:</span> <Tag text={acc.inventory} color="#243c6b" /></div>
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}><span>🌍 Type:</span> <Tag text={acc.accountType} color="#243c6b" /></div>
+          {/* Main Details Grid */}
+          <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "120px auto", 
+            rowGap: "10px", 
+            columnGap: "10px", 
+            marginBottom: "15px",
+            alignItems: "center" 
+          }}>
+            <div>🎂 Age:</div> <div><Tag text={acc.age} color="#243c6b" /></div>
+            <div>📧 Email:</div> <div><Tag text={acc.email} color="#243c6b" /></div>
+            <div>💰 Price:</div> <div><Tag text={`₱${acc.price}`} color="#243c6b" /></div>
+            <div>💳 MOP:</div> <div><Tag text={acc.mop} color="#243c6b" /></div>
+            <div>🤝 Negotiable:</div> <div><Tag text={acc.negotiable} color="#243c6b" /></div>
+            <div>💎 Robux:</div> <div><Tag text={acc.robuxBalance} color="#243c6b" /></div>
+            <div>🎖 Limited:</div> <div><Tag text={acc.limitedItems} color="#243c6b" /></div>
+            <div>📦 Inventory:</div> <div><Tag text={acc.inventory} color="#243c6b" /></div>
+            <div>🌍 Type:</div> <div><Tag text={acc.accountType} color="#243c6b" /></div>
           </div>
 
-          <div style={{ marginTop: "10px" }}>
+          {/* Profile */}
+          <div style={{ marginBottom: "10px", fontSize: "0.85rem" }}>
             <strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
           </div>
 
-          <div style={{ marginTop: "10px" }}>
-            <strong>🎮 Gamepass:</strong>{" "}
+          {/* Gamepass */}
+          <div style={{ marginBottom: "10px", fontSize: "0.85rem" }}>
+            <strong>🎮 Gamepass:</strong><br />
             {acc.gamepass && acc.gamepass.trim() !== "" ? (
               acc.gamepass.split(",").map((game, index) => (
-                <Tag key={index} text={game.trim()} color="#243c6b" />
+                <div key={index} style={{ marginTop: "5px" }}>
+                  <Tag text={game.trim()} color="#243c6b" />
+                </div>
               ))
             ) : (
               <Tag text="No Gamepass Found" color="#999" />
@@ -121,4 +132,4 @@ export default function Home() {
       ))}
     </div>
   );
-                         }
+          }
