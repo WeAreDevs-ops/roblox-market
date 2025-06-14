@@ -51,6 +51,13 @@ export default function Home() {
     }}>{text}</span>
   );
 
+  const DetailRow = ({ label, value }) => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', marginBottom: '8px' }}>
+      <strong>{label}</strong>
+      <Tag text={value} color="#243c6b" />
+    </div>
+  );
+
   return (
     <div className="container" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
@@ -86,43 +93,34 @@ export default function Home() {
 
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
-          {/* Main Details Grid */}
-          <div style={{ 
-            display: "grid", 
-            gridTemplateColumns: "120px auto", 
-            rowGap: "10px", 
-            columnGap: "10px", 
-            marginBottom: "15px",
-            alignItems: "center" 
-          }}>
-            <div>🎂 Age:</div> <div><Tag text={acc.age} color="#243c6b" /></div>
-            <div>📧 Email:</div> <div><Tag text={acc.email} color="#243c6b" /></div>
-            <div>💰 Price:</div> <div><Tag text={`₱${acc.price}`} color="#243c6b" /></div>
-            <div>💳 MOP:</div> <div><Tag text={acc.mop} color="#243c6b" /></div>
-            <div>🤝 Negotiable:</div> <div><Tag text={acc.negotiable} color="#243c6b" /></div>
-            <div>💎 Robux:</div> <div><Tag text={acc.robuxBalance} color="#243c6b" /></div>
-            <div>🎖 Limited:</div> <div><Tag text={acc.limitedItems} color="#243c6b" /></div>
-            <div>📦 Inventory:</div> <div><Tag text={acc.inventory} color="#243c6b" /></div>
-            <div>🌍 Type:</div> <div><Tag text={acc.accountType} color="#243c6b" /></div>
+          <div style={{ marginTop: '15px' }}>
+            <DetailRow label="🎂 Age:" value={acc.age} />
+            <DetailRow label="📧 Email:" value={acc.email} />
+            <DetailRow label="💰 Price:" value={`₱${acc.price}`} />
+            <DetailRow label="💳 MOP:" value={acc.mop} />
+            <DetailRow label="🤝 Negotiable:" value={acc.negotiable} />
+            <DetailRow label="💎 Robux:" value={acc.robuxBalance} />
+            <DetailRow label="🎖 Limited:" value={acc.limitedItems} />
+            <DetailRow label="📦 Inventory:" value={acc.inventory} />
+            <DetailRow label="🌍 Type:" value={acc.accountType} />
           </div>
 
-          {/* Profile */}
-          <div style={{ marginBottom: "10px", fontSize: "0.85rem" }}>
-            <strong>🔗 Profile:</strong> <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
+          <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+            <strong>🔗 Profile:</strong>&nbsp;
+            <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
           </div>
 
-          {/* Gamepass */}
-          <div style={{ marginBottom: "10px", fontSize: "0.85rem" }}>
-            <strong>🎮 Gamepass:</strong><br />
-            {acc.gamepass && acc.gamepass.trim() !== "" ? (
-              acc.gamepass.split(",").map((game, index) => (
-                <div key={index} style={{ marginTop: "5px" }}>
-                  <Tag text={game.trim()} color="#243c6b" />
-                </div>
-              ))
-            ) : (
-              <Tag text="No Gamepass Found" color="#999" />
-            )}
+          <div style={{ marginTop: "10px" }}>
+            <strong>🎮 Gamepass:</strong>
+            <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              {acc.gamepass && acc.gamepass.trim() !== "" ? (
+                acc.gamepass.split(",").map((game, index) => (
+                  <Tag key={index} text={game.trim()} color="#243c6b" />
+                ))
+              ) : (
+                <Tag text="No Gamepass Found" color="#999" />
+              )}
+            </div>
           </div>
 
           <button onClick={buyNow} style={{ padding: '10px 20px', background: '#007bff', color: '#fff', border: 'none', marginTop: '15px', borderRadius: '5px' }}>
@@ -132,4 +130,4 @@ export default function Home() {
       ))}
     </div>
   );
-          }
+}
