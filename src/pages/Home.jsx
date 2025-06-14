@@ -87,15 +87,15 @@ export default function Home() {
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
-            <Tag text={`🎂 Age: ${acc.age}`} color="#243c6b" />
-            <Tag text={`📧 Email: ${acc.email}`} color="#243c6b" />
-            <Tag text={`💰 Price: ₱${acc.price}`} color="#243c6b" />
-            <Tag text={`💳 MOP: ${acc.mop}`} color="#243c6b" />
-            <Tag text={`🤝 Negotiable: ${acc.negotiable}`} color="#243c6b" />
-            <Tag text={`💎 Robux: ${acc.robuxBalance}`} color="#243c6b" />
-            <Tag text={`🎖 Limited: ${acc.limitedItems}`} color="#243c6b" />
-            <Tag text={`📦 Inventory: ${acc.inventory}`} color="#243c6b" />
-            <Tag text={`🌍 Type: ${acc.accountType}`} color="#243c6b" />
+            🎂 Age: <Tag text={acc.age} color="#243c6b" />
+            📧 Email: <Tag text={acc.email} color="#243c6b" />
+            💰 Price: <Tag text={`₱${acc.price}`} color="#243c6b" />
+            💳 MOP: <Tag text={acc.mop} color="#243c6b" />
+            🤝 Negotiable: <Tag text={acc.negotiable} color="#243c6b" />
+            💎 Robux: <Tag text={acc.robuxBalance} color="#243c6b" />
+            🎖 Limited: <Tag text={acc.limitedItems} color="#243c6b" />
+            📦 Inventory: <Tag text={acc.inventory} color="#243c6b" />
+            🌍 Type: <Tag text={acc.accountType} color="#243c6b" />
           </div>
 
           <div style={{ marginTop: "10px" }}>
@@ -120,4 +120,4 @@ export default function Home() {
       ))}
     </div>
   );
-}
+                           }
