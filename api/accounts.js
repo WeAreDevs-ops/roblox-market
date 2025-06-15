@@ -11,88 +11,68 @@ export default async function handler(req, res) {
     return res.status(200).json({ accounts });
   }
 
-  else if (req.method === 'POST' || req.method === 'PUT') {
+  // Shared function to fetch data from Rolimons
+  async function fetchRolimonsData(username) {
     try {
-      const {
-        id, username, totalSummary, email, price, mop, negotiable,
-        robuxBalance, limitedItems, inventory, accountType, gamepass
-      } = req.body;
+      const response = await axios.get(`https://www.rolimons.com/playerapi/player?username=${username}`);
+      const data = response.data;
 
-      let profile = "";
-      let avatar = "";
-      let premiumStatus = "Unknown";
-      let rap = 0;
-      let limitedValue = 0;
+      const userId = data.user_id;
+      const profile = `https://www.roblox.com/users/${userId}/profile`;
+      const avatar = `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=420&height=420&format=png`;
 
-      // Roblox Username to UserID + Avatar
-      try {
-        const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
-          usernames: [username]
-        }, {
-          headers: { "Content-Type": "application/json" }
-        });
+      const limitedItems = data.limited_count || 0;
+      const rap = data.rap || 0;
+      const premium = data.premium ? "Premium" : "Not Premium";
 
-        if (robloxRes.data?.data?.length > 0) {
-          const userId = robloxRes.data.data[0].id;
-          profile = `https://www.roblox.com/users/${userId}/profile`;
-
-          // Avatar
-          const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
-          if (avatarRes.data?.data?.length > 0) {
-            avatar = avatarRes.data.data[0].imageUrl;
-          }
-
-          // Premium Status
-          const premiumRes = await axios.get(`https://premiumfeatures.roblox.com/v1/users/${userId}/validate-membership`);
-          premiumStatus = premiumRes.data?.success ? "Premium" : "Not Premium";
-
-          // Rolimons Limited/RAP
-          try {
-            const roliRes = await axios.get(`https://www.rolimons.com/playerapi/player/${userId}`);
-            rap = roliRes.data?.player?.rap ?? 0;
-            limitedValue = roliRes.data?.player?.value ?? 0;
-          } catch (err) {
-            console.error("Rolimons failed:", err.message);
-          }
-        }
-      } catch (err) {
-        console.error("Roblox API failed:", err.message);
-      }
-
-      // Final safe payload (no undefined)
-      const safePayload = {
-        username: username ?? "",
-        totalSummary: totalSummary ?? "",
-        email: email ?? "",
-        price: price ?? 0,
-        mop: mop ?? "",
-        negotiable: negotiable ?? "",
-        robuxBalance: robuxBalance ?? 0,
-        limitedItems: limitedItems ?? 0,
-        inventory: inventory ?? "",
-        accountType: accountType ?? "",
-        gamepass: gamepass ?? "",
-        profile: profile ?? "",
-        avatar: avatar ?? "",
-        premiumStatus: premiumStatus ?? "Unknown",
-        rap: rap ?? 0,
-        limitedValue: limitedValue ?? 0
-      };
-
-      if (req.method === 'POST') {
-        const docRef = await addDoc(accountsRef, safePayload);
-        return res.status(201).json({ message: 'Account added', id: docRef.id });
-      } else if (req.method === 'PUT') {
-        if (!id) return res.status(400).json({ message: 'Missing document ID' });
-
-        const docRef = doc(accountsRef, id);
-        await updateDoc(docRef, safePayload);
-        return res.status(200).json({ message: 'Updated successfully' });
-      }
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Internal server error' });
+      return { userId, profile, avatar, limitedItems, rap, premium };
+    } catch (error) {
+      console.error("Rolimons API failed:", error.message);
+      return { userId: null, profile: "", avatar: "", limitedItems: 0, rap: 0, premium: "Unknown" };
     }
+  }
+
+  else if (req.method === 'POST') {
+    const {
+      username, totalSummary, email, price, mop, negotiable,
+      robuxBalance, inventory, gamepass, accountType
+    } = req.body;
+
+    const rolimonsData = await fetchRolimonsData(username);
+
+    const docRef = await addDoc(accountsRef, {
+      username, totalSummary, email, price, mop, negotiable,
+      robuxBalance, limitedItems: rolimonsData.limitedItems,
+      rap: rolimonsData.rap,
+      premium: rolimonsData.premium,
+      inventory, gamepass, accountType,
+      profile: rolimonsData.profile,
+      avatar: rolimonsData.avatar
+    });
+
+    return res.status(201).json({ message: 'Account added', id: docRef.id });
+  }
+
+  else if (req.method === 'PUT') {
+    const { id, username, ...rest } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: 'Missing document ID' });
+    }
+
+    const rolimonsData = await fetchRolimonsData(username);
+
+    const docRef = doc(accountsRef, id);
+    await updateDoc(docRef, {
+      username, ...rest,
+      limitedItems: rolimonsData.limitedItems,
+      rap: rolimonsData.rap,
+      premium: rolimonsData.premium,
+      profile: rolimonsData.profile,
+      avatar: rolimonsData.avatar
+    });
+
+    return res.status(200).json({ message: 'Updated successfully' });
   }
 
   else if (req.method === 'DELETE') {
