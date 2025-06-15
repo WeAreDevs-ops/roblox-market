@@ -7,8 +7,13 @@ export default function Home() {
   const [sortOption, setSortOption] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
 
-  const totalAccounts = accounts.length;
-  const [liveSales, setLiveSales] = useState(500);
+  // ✅ New States for counters
+  const [dashboardStats, setDashboardStats] = useState({
+    totalAccounts: 0,
+    salesCount: 0,
+    totalRevenue: 0,
+    newStock: 0
+  });
 
   useEffect(() => {
     fetch('/api/accounts')
@@ -16,13 +21,27 @@ export default function Home() {
       .then(data => setAccounts(data.accounts));
   }, []);
 
+  // ✅ Fetch stats
   useEffect(() => {
+    fetchStats();
+
+    // Auto increase sales every 1 minute
     const interval = setInterval(() => {
-      setLiveSales(prev => prev + 1);
-    }, 60000); // increase every 1 minute (60000ms)
+      setDashboardStats(prev => ({
+        ...prev,
+        salesCount: prev.salesCount + 1
+      }));
+    }, 60000); // every 1 minute
 
     return () => clearInterval(interval);
   }, []);
+
+  const fetchStats = () => {
+    fetch('/api/dashboard-stats')
+      .then(res => res.json())
+      .then(data => setDashboardStats(data))
+      .catch(err => console.error(err));
+  };
 
   const buyNow = () => {
     Swal.fire({
@@ -73,9 +92,25 @@ export default function Home() {
     <div className="container" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
 
-      <div style={{ marginBottom: "20px" }}>
-        <h3>Total Accounts: {totalAccounts}</h3>
-        <h3>Live Sales: {liveSales}</h3>
+      {/* ✅ DASHBOARD SUMMARY */}
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '15px',
+        marginBottom: '20px'
+      }}>
+        <div style={{ background: '#007bff', color: '#fff', padding: '15px 20px', borderRadius: '8px' }}>
+          Total Accounts: {dashboardStats.totalAccounts}
+        </div>
+        <div style={{ background: '#28a745', color: '#fff', padding: '15px 20px', borderRadius: '8px' }}>
+          Total Revenue: ₱{dashboardStats.totalRevenue}
+        </div>
+        <div style={{ background: '#ffc107', color: '#000', padding: '15px 20px', borderRadius: '8px' }}>
+          Daily New Stock: {dashboardStats.newStock}
+        </div>
+        <div style={{ background: '#dc3545', color: '#fff', padding: '15px 20px', borderRadius: '8px' }}>
+          Live Sales: {dashboardStats.salesCount}
+        </div>
       </div>
 
       <input type="text" placeholder="🔎 Search by username or gamepass..."
@@ -158,4 +193,4 @@ export default function Home() {
       ))}
     </div>
   );
-                       }
+    }
