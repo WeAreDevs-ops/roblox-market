@@ -95,10 +95,10 @@ export default function Home() {
     <div className="container" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
 
-      {/* ✅ Only box size updated here */}
+      {/* ✅ Alignment balanced using grid */}
       <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
         gap: '10px',
         marginBottom: '20px'
       }}>
@@ -116,7 +116,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* The rest is fully untouched */}
       <input type="text" placeholder="🔎 Search by username or gamepass..."
         value={search} onChange={(e) => setSearch(e.target.value)}
         style={{ padding: "10px", width: "100%", maxWidth: "400px", borderRadius: "8px", border: "1px solid #ccc", marginBottom: "10px" }} 
@@ -197,4 +196,4 @@ export default function Home() {
       ))}
     </div>
   );
-          }
+      }
