@@ -7,7 +7,6 @@ export default function Admin() {
   const [formData, setFormData] = useState({
     username: "",
     totalSummary: "",
-    age: "13+",
     email: "Verified",
     price: "",
     mop: "Gcash",
@@ -80,7 +79,6 @@ export default function Admin() {
         setFormData({
           username: "",
           totalSummary: "",
-          age: "13+",
           email: "Verified",
           price: "",
           mop: "Gcash",
@@ -130,7 +128,6 @@ export default function Admin() {
     setFormData({
       username: account.username || "",
       totalSummary: account.totalSummary || "",
-      age: account.age || "13+",
       email: account.email || "Verified",
       price: account.price || "",
       mop: account.mop || "Gcash",
@@ -180,14 +177,6 @@ export default function Admin() {
         <div style={{ marginBottom: "10px" }}>
           <label>Total Summary:</label>
           <input type="text" name="totalSummary" value={formData.totalSummary} onChange={handleChange} />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Age:</label>
-          <select name="age" value={formData.age} onChange={handleChange}>
-            <option value="13+">13+</option>
-            <option value="<13">&lt;13</option>
-          </select>
         </div>
 
         <div style={{ marginBottom: "10px" }}>
@@ -287,4 +276,4 @@ export default function Admin() {
       ))}
     </div>
   );
-      }
+            }
