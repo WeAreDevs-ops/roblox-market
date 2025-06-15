@@ -1,87 +1,64 @@
-import { db } from '../firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import axios from 'axios';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { db } from '../firebase.js';
 
-export default async function handler(req, res) {
-  const accountsRef = collection(db, "accounts");
-
-  if (req.method === 'GET') {
-    const snapshot = await getDocs(accountsRef);
+export async function GET(request) {
+  try {
+    const accountsCollection = collection(db, 'accounts');
+    const snapshot = await getDocs(accountsCollection);
     const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return res.status(200).json({ accounts });
+
+    return new Response(JSON.stringify(accounts), { status: 200 });
+  } catch (error) {
+    console.error('Error fetching accounts:', error);
+    return new Response('Error fetching accounts', { status: 500 });
   }
+}
 
-  // Shared function to fetch data from Rolimons
-  async function fetchRolimonsData(username) {
-    try {
-      const response = await axios.get(`https://www.rolimons.com/playerapi/player?username=${username}`);
-      const data = response.data;
+export async function POST(request) {
+  try {
+    const { cookie, price, mop, nego } = await request.json();
 
-      const userId = data.user_id;
-      const profile = `https://www.roblox.com/users/${userId}/profile`;
-      const avatar = `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=420&height=420&format=png`;
-
-      const limitedItems = data.limited_count || 0;
-      const rap = data.rap || 0;
-      const premium = data.premium ? "Premium" : "Not Premium";
-
-      return { userId, profile, avatar, limitedItems, rap, premium };
-    } catch (error) {
-      console.error("Rolimons API failed:", error.message);
-      return { userId: null, profile: "", avatar: "", limitedItems: 0, rap: 0, premium: "Unknown" };
-    }
-  }
-
-  else if (req.method === 'POST') {
-    const {
-      username, totalSummary, email, price, mop, negotiable,
-      robuxBalance, inventory, gamepass, accountType
-    } = req.body;
-
-    const rolimonsData = await fetchRolimonsData(username);
-
-    const docRef = await addDoc(accountsRef, {
-      username, totalSummary, email, price, mop, negotiable,
-      robuxBalance, limitedItems: rolimonsData.limitedItems,
-      rap: rolimonsData.rap,
-      premium: rolimonsData.premium,
-      inventory, gamepass, accountType,
-      profile: rolimonsData.profile,
-      avatar: rolimonsData.avatar
+    // Get User ID
+    const idRes = await axios.get('https://users.roblox.com/v1/users/authenticated', {
+      headers: { Cookie: `.ROBLOSECURITY=${cookie}` }
     });
 
-    return res.status(201).json({ message: 'Account added', id: docRef.id });
-  }
+    const userId = idRes.data.id;
+    const username = idRes.data.name;
 
-  else if (req.method === 'PUT') {
-    const { id, username, ...rest } = req.body;
-
-    if (!id) {
-      return res.status(400).json({ message: 'Missing document ID' });
-    }
-
-    const rolimonsData = await fetchRolimonsData(username);
-
-    const docRef = doc(accountsRef, id);
-    await updateDoc(docRef, {
-      username, ...rest,
-      limitedItems: rolimonsData.limitedItems,
-      rap: rolimonsData.rap,
-      premium: rolimonsData.premium,
-      profile: rolimonsData.profile,
-      avatar: rolimonsData.avatar
+    // Get RAP
+    const inventoryRes = await axios.get(`https://economy.roblox.com/v1/users/${userId}/inventory/${2}`, {
+      headers: { Cookie: `.ROBLOSECURITY=${cookie}` }
     });
 
-    return res.status(200).json({ message: 'Updated successfully' });
-  }
+    let rap = 0;
+    if (inventoryRes.data && inventoryRes.data.data) {
+      rap = inventoryRes.data.data.reduce((acc, item) => acc + (item.recentAveragePrice || 0), 0);
+    }
 
-  else if (req.method === 'DELETE') {
-    const { id } = req.body;
-    await deleteDoc(doc(accountsRef, id));
-    return res.status(200).json({ message: 'Deleted' });
-  }
+    // Get Premium
+    const premiumRes = await axios.get(`https://premiumfeatures.roblox.com/v1/users/${userId}/subscriptions`, {
+      headers: { Cookie: `.ROBLOSECURITY=${cookie}` }
+    });
 
-  else {
-    return res.status(405).end();
+    const premium = premiumRes.data && premiumRes.data.length > 0 ? "Yes" : "No";
+
+    const data = {
+      cookie,
+      username,
+      rap,
+      premium,
+      price,
+      mop,
+      nego
+    };
+
+    await addDoc(collection(db, 'accounts'), data);
+    return new Response('Account added successfully', { status: 201 });
+
+  } catch (error) {
+    console.error('Error saving account:', error);
+    return new Response('Error saving account', { status: 500 });
   }
-  }
+}
