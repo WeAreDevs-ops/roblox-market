@@ -112,7 +112,17 @@ export default function Home() {
 
           <div style={{ marginTop: "10px" }}>
             <strong>🎮 Games with Gamepass:</strong>
-            <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            <div style={{ 
+              marginTop: '8px', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '5px', 
+              maxHeight: '150px', 
+              overflowY: 'auto', 
+              paddingRight: '5px',
+              border: '1px solid #ccc',
+              borderRadius: '8px'
+            }}>
               {acc.gamepass && acc.gamepass.trim() !== "" ? (
                 acc.gamepass.split(",").map((game, index) => (
                   <Tag key={index} text={game.trim()} color="#243c6b" />
@@ -130,4 +140,4 @@ export default function Home() {
       ))}
     </div>
   );
-}
+                                             }
