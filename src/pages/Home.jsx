@@ -102,11 +102,11 @@ export default function Home() {
             <DetailRow label="💰 Price:" value={`₱${acc.price}`} />
             <DetailRow label="💳 MOP:" value={acc.mop} />
             <DetailRow label="🤝 Negotiable:" value={acc.negotiable} />
-            <DetailRow label="💎 Robux:" value={acc.robuxBalance} />
-            <DetailRow label="🎖 Limited:" value={acc.limitedItems} />
+            <DetailRow label="💲 Robux:" value={acc.robuxBalance} />
+            <DetailRow label="⚖️ Limited:" value={acc.limitedItems} />
             <DetailRow label="📦 Inventory:" value={acc.inventory} />
             <DetailRow label="🌍 Type:" value={acc.accountType} />
-            <DetailRow label="✅ Premium Status:" value={acc.premium === "True" ? "✅" : "❌"} />
+            <DetailRow label="⭐️ Premium Status:" value={acc.premium === "True" ? "✅" : "❌"} />
           </div>
 
           <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
