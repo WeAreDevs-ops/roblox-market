@@ -37,7 +37,7 @@ export default async function handler(req, res) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
 
-        // ✅ Calculate account age automatically
+        // ✅ Calculate account age automatically (as number only)
         const createdRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
         const createdDate = new Date(createdRes.data.created);
         const now = new Date();
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
         username, email, price, mop, negotiable,
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
         profile, avatar,
-        age: ageInDays // ✅ Store the calculated age
+        age: ageInDays  // store only number here
       });
 
       return res.status(201).json({ message: 'Account added', id: docRef.id });
