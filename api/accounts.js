@@ -13,14 +13,16 @@ export default async function handler(req, res) {
 
   else if (req.method === 'POST') {
     const {
-      username, age, email, price, mop, negotiable,
-      robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary // <-- added here
+      username, email, price, mop, negotiable,
+      robuxBalance, limitedItems, inventory, accountType, gamepass
     } = req.body;
 
     let profile = "";
     let avatar = "";
+    let age = "";  // Will auto calculate below
 
     try {
+      // First get userId from username
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
         usernames: [username]
       }, {
@@ -31,10 +33,20 @@ export default async function handler(req, res) {
         const userId = robloxRes.data.data[0].id;
         profile = `https://www.roblox.com/users/${userId}/profile`;
 
+        // Get avatar
         const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
         if (avatarRes.data?.data?.length > 0) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
+
+        // Get account creation date
+        const userDetailsRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
+        const createdDate = new Date(userDetailsRes.data.created);
+        const today = new Date();
+        const diffTime = Math.abs(today - createdDate);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        age = `${diffDays} Days`;  // Auto generated age format
       }
     } catch (error) {
       console.error("Failed to fetch Roblox user info:", error.message);
@@ -42,7 +54,7 @@ export default async function handler(req, res) {
 
     const docRef = await addDoc(accountsRef, {
       username, age, email, price, mop, negotiable,
-      robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, // <-- added here too
+      robuxBalance, limitedItems, inventory, accountType, gamepass,
       profile, avatar
     });
 
@@ -50,7 +62,7 @@ export default async function handler(req, res) {
   }
 
   else if (req.method === 'PUT') {
-    const { id, username, totalSummary, ...rest } = req.body; // <-- receive totalSummary in PUT
+    const { id, username, ...rest } = req.body;
 
     if (!id) {
       return res.status(400).json({ message: 'Missing document ID' });
@@ -58,6 +70,7 @@ export default async function handler(req, res) {
 
     let profile = "";
     let avatar = "";
+    let age = "";
 
     try {
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
@@ -74,6 +87,14 @@ export default async function handler(req, res) {
         if (avatarRes.data?.data?.length > 0) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
+
+        const userDetailsRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
+        const createdDate = new Date(userDetailsRes.data.created);
+        const today = new Date();
+        const diffTime = Math.abs(today - createdDate);
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        age = `${diffDays} Days`;
       }
     } catch (error) {
       console.error("Failed to fetch Roblox user info on update:", error.message);
@@ -81,7 +102,7 @@ export default async function handler(req, res) {
 
     const docRef = doc(accountsRef, id);
     await updateDoc(docRef, {
-      username, totalSummary, ...rest, profile, avatar
+      username, ...rest, profile, avatar, age
     });
 
     return res.status(200).json({ message: 'Updated successfully' });
