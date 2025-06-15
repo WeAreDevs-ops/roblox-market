@@ -1,280 +1,111 @@
-import React, { useState, useEffect } from 'react';
-import Swal from 'sweetalert2';
+import { db } from '../firebase';
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, getDocs as getDocsQuery } from "firebase/firestore";
+import axios from 'axios';
 
-export default function Admin() {
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [adminPassword, setAdminPassword] = useState("");
-  const [formData, setFormData] = useState({
-    username: "",
-    totalSummary: "",
-    email: "Verified",
-    price: "",
-    mop: "Gcash",
-    negotiable: "Yes",
-    robuxBalance: "",
-    limitedItems: "",
-    inventory: "Public",
-    gamepass: "",
-    accountType: "Global Account",
-    premium: "False"
-  });
+export default async function handler(req, res) {
+  const accountsRef = collection(db, "accounts");
 
-  const [accounts, setAccounts] = useState([]);
-  const [search, setSearch] = useState("");
-  const [editMode, setEditMode] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (isAuthorized) fetchAccounts();
-  }, [isAuthorized]);
-
-  const fetchAccounts = async () => {
-    const res = await fetch('/api/accounts');
-    const data = await res.json();
-    setAccounts(data.accounts);
-  };
-
-  const handleLogin = async () => {
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: adminPassword })
-      });
-
-      if (response.ok) {
-        setIsAuthorized(true);
-      } else {
-        Swal.fire("Access Denied", "Invalid admin password!", "error");
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "Failed to login!", "error");
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    try {
-      const url = '/api/accounts';
-      const method = editMode ? 'PUT' : 'POST';
-      const payload = editMode ? { id: editId, ...formData } : formData;
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        Swal.fire('Success', editMode ? 'Account updated!' : 'Account added!', 'success');
-        setFormData({
-          username: "",
-          totalSummary: "",
-          email: "Verified",
-          price: "",
-          mop: "Gcash",
-          negotiable: "Yes",
-          robuxBalance: "",
-          limitedItems: "",
-          inventory: "Public",
-          gamepass: "",
-          accountType: "Global Account",
-          premium: "False"
-        });
-        setEditMode(false);
-        setEditId(null);
-        fetchAccounts();
-      } else if (response.status === 409) {
-        Swal.fire('Error', 'Username already exists', 'error');
-      } else {
-        Swal.fire('Error', 'Failed to save account', 'error');
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire('Error', 'An unexpected error occurred', 'error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this account?")) return;
-    try {
-      const res = await fetch('/api/accounts', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-      if (res.ok) {
-        Swal.fire('Deleted!', 'Account deleted successfully.', 'success');
-        fetchAccounts();
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire('Error', 'Failed to delete account', 'error');
-    }
-  };
-
-  const handleEdit = (account) => {
-    setFormData({
-      username: account.username || "",
-      totalSummary: account.totalSummary || "",
-      email: account.email || "Verified",
-      price: account.price || "",
-      mop: account.mop || "Gcash",
-      negotiable: account.negotiable || "Yes",
-      robuxBalance: account.robuxBalance || "",
-      limitedItems: account.limitedItems || "",
-      inventory: account.inventory || "Public",
-      gamepass: account.gamepass || "",
-      accountType: account.accountType || "Global Account",
-      premium: account.premium || "False"
-    });
-    setEditMode(true);
-    setEditId(account.id);
-  };
-
-  const filteredAccounts = accounts.filter(acc =>
-    acc.username.toLowerCase().includes(search.toLowerCase())
-  );
-
-  if (!isAuthorized) {
-    return (
-      <div className="container" style={{ padding: "20px" }}>
-        <h2>Admin Panel Login</h2>
-        <input
-          type="password"
-          placeholder="Enter admin password"
-          value={adminPassword}
-          onChange={(e) => setAdminPassword(e.target.value)}
-          style={{ marginBottom: "10px", padding: "10px", width: "300px" }}
-        />
-        <br />
-        <button onClick={handleLogin} style={{ padding: "10px 20px" }}>Login</button>
-      </div>
-    );
+  if (req.method === 'GET') {
+    const snapshot = await getDocs(accountsRef);
+    const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return res.status(200).json({ accounts });
   }
 
-  return (
-    <div className="container" style={{ padding: "20px" }}>
-      <h2>Admin Panel</h2>
+  else if (req.method === 'POST') {
+    const {
+      username, email, price, mop, negotiable,
+      robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium
+    } = req.body;
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "10px" }}>
-          <label>Username:</label>
-          <input type="text" name="username" value={formData.username} onChange={handleChange} required />
-        </div>
+    let profile = "";
+    let avatar = "";
 
-        <div style={{ marginBottom: "10px" }}>
-          <label>Total Summary:</label>
-          <input type="text" name="totalSummary" value={formData.totalSummary} onChange={handleChange} />
-        </div>
+    try {
+      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
+        usernames: [username]
+      }, {
+        headers: { "Content-Type": "application/json" }
+      });
 
-        <div style={{ marginBottom: "10px" }}>
-          <label>Email:</label>
-          <select name="email" value={formData.email} onChange={handleChange}>
-            <option value="Verified">Verified</option>
-            <option value="Unverified">Unverified</option>
-          </select>
-        </div>
+      if (robloxRes.data?.data?.length > 0) {
+        const userId = robloxRes.data.data[0].id;
+        profile = `https://www.roblox.com/users/${userId}/profile`;
 
-        <div style={{ marginBottom: "10px" }}>
-          <label>Price:</label>
-          <input type="number" name="price" value={formData.price} onChange={handleChange} required />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>MOP:</label>
-          <select name="mop" value={formData.mop} onChange={handleChange}>
-            <option value="Gcash">Gcash</option>
-            <option value="Paymaya">Paymaya</option>
-            <option value="Paypal">Paypal</option>
-            <option value="Others">Others</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Negotiable:</label>
-          <select name="negotiable" value={formData.negotiable} onChange={handleChange}>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Robux Balance:</label>
-          <input type="number" name="robuxBalance" value={formData.robuxBalance} onChange={handleChange} />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Limited Items:</label>
-          <input type="number" name="limitedItems" value={formData.limitedItems} onChange={handleChange} />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Inventory:</label>
-          <select name="inventory" value={formData.inventory} onChange={handleChange}>
-            <option value="Public">Public</option>
-            <option value="Private">Private</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Game with Gamepass:</label>
-          <input type="text" name="gamepass" value={formData.gamepass} onChange={handleChange} />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Account Type:</label>
-          <select name="accountType" value={formData.accountType} onChange={handleChange}>
-            <option value="GLOBAL">GLOBAL</option>
-            <option value="VIETNAM">VIETNAM</option>
-            <option value="Others">Others</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Premium Status:</label>
-          <select name="premium" value={formData.premium} onChange={handleChange}>
-            <option value="True">True</option>
-            <option value="False">False</option>
-          </select>
-        </div>
-
-        <button type="submit" disabled={isSubmitting} style={{ padding: "10px 20px", background: "#007bff", color: "#fff", border: "none", borderRadius: "5px" }}>
-          {isSubmitting ? "Processing..." : (editMode ? "Update Account" : "Add Account")}
-        </button>
-      </form>
-
-      <hr style={{ margin: "30px 0" }} />
-
-      <h3>Account List</h3>
-
-      <input type="text" placeholder="Search Username" value={search} onChange={(e) => setSearch(e.target.value)} style={{ marginBottom: "10px", padding: "5px", width: "100%", maxWidth: "300px" }} />
-
-      {filteredAccounts.map(acc => (
-        <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
-          <strong>{acc.username}</strong> - ₱{acc.price}
-          <div>Account Age: {acc.age} days</div> {/* ✅ Display the total days */}
-          <div style={{ marginTop: "5px" }}>
-            <button onClick={() => handleEdit(acc)} style={{ background: "orange", color: "white", border: "none", padding: "5px 10px", marginRight: "10px" }}>
-              Edit
-            </button>
-            <button onClick={() => handleDelete(acc.id)} style={{ background: "red", color: "white", border: "none", padding: "5px 10px" }}>
-              Delete
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+        const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
+        if (avatarRes.data?.data?.length > 0) {
+          avatar = avatarRes.data.data[0].imageUrl;
+        }
       }
+    } catch (error) {
+      console.error("Failed to fetch Roblox user info:", error.message);
+    }
+
+    try {
+      // ✅ Prevent duplicate username (case-insensitive)
+      const q = query(accountsRef, where("username", "==", username));
+      const existingSnap = await getDocsQuery(q);
+      if (!existingSnap.empty) {
+        return res.status(409).json({ message: 'Username already exists' });
+      }
+
+      const docRef = await addDoc(accountsRef, {
+        username, email, price, mop, negotiable,
+        robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
+        profile, avatar
+      });
+
+      return res.status(201).json({ message: 'Account added', id: docRef.id });
+    } catch (error) {
+      console.error("Error adding account:", error);
+      return res.status(500).json({ message: 'Failed to add account' });
+    }
+  }
+
+  else if (req.method === 'PUT') {
+    const { id, username, totalSummary, premium, ...rest } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: 'Missing document ID' });
+    }
+
+    let profile = "";
+    let avatar = "";
+
+    try {
+      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
+        usernames: [username]
+      }, {
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (robloxRes.data?.data?.length > 0) {
+        const userId = robloxRes.data.data[0].id;
+        profile = `https://www.roblox.com/users/${userId}/profile`;
+
+        const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
+        if (avatarRes.data?.data?.length > 0) {
+          avatar = avatarRes.data.data[0].imageUrl;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch Roblox user info on update:", error.message);
+    }
+
+    const docRef = doc(accountsRef, id);
+    await updateDoc(docRef, {
+      username, totalSummary, premium, ...rest, profile, avatar
+    });
+
+    return res.status(200).json({ message: 'Updated successfully' });
+  }
+
+  else if (req.method === 'DELETE') {
+    const { id } = req.body;
+    await deleteDoc(doc(accountsRef, id));
+    return res.status(200).json({ message: 'Deleted' });
+  }
+
+  else {
+    return res.status(405).end();
+  }
+}
