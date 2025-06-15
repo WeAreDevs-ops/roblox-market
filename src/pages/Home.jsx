@@ -124,7 +124,7 @@ export default function Home() {
           </div>
 
           <button onClick={buyNow} style={{ padding: '10px 20px', background: '#007bff', color: '#fff', border: 'none', marginTop: '15px', borderRadius: '5px' }}>
-            Buy Now
+            Contact Me
           </button>
         </div>
       ))}
