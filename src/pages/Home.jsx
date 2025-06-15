@@ -95,26 +95,28 @@ export default function Home() {
     <div className="container" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
 
+      {/* ✅ Only box size updated here */}
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '15px',
+        gap: '10px',
         marginBottom: '20px'
       }}>
-        <div style={{ background: '#007bff', color: '#fff', padding: '15px 20px', borderRadius: '8px' }}>
+        <div style={{ background: '#007bff', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px' }}>
           Total Accounts: {dashboardStats.totalAccounts}
         </div>
-        <div style={{ background: '#28a745', color: '#fff', padding: '15px 20px', borderRadius: '8px' }}>
+        <div style={{ background: '#28a745', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px' }}>
           Total Revenue: ₱{dashboardStats.totalRevenue}
         </div>
-        <div style={{ background: '#ffc107', color: '#000', padding: '15px 20px', borderRadius: '8px' }}>
+        <div style={{ background: '#ffc107', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px' }}>
           Daily New Stock: {dashboardStats.newStock}
         </div>
-        <div style={{ background: '#dc3545', color: '#fff', padding: '15px 20px', borderRadius: '8px' }}>
+        <div style={{ background: '#dc3545', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px' }}>
           Live Sales: {dashboardStats.salesCount}
         </div>
       </div>
 
+      {/* The rest is fully untouched */}
       <input type="text" placeholder="🔎 Search by username or gamepass..."
         value={search} onChange={(e) => setSearch(e.target.value)}
         style={{ padding: "10px", width: "100%", maxWidth: "400px", borderRadius: "8px", border: "1px solid #ccc", marginBottom: "10px" }} 
@@ -195,4 +197,4 @@ export default function Home() {
       ))}
     </div>
   );
-                                  }
+          }
