@@ -1,33 +1,35 @@
-import { db } from '../../firebase';
+import { db } from '../firebase';
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 
 export default async function handler(req, res) {
   try {
-    // 1️⃣ Total accounts count
-    const accountsRef = collection(db, "accounts");
-    const accountsSnapshot = await getDocs(accountsRef);
-    const totalAccounts = accountsSnapshot.size;
+    // Get all accounts
+    const accountsSnapshot = await getDocs(collection(db, "accounts"));
+    const accounts = accountsSnapshot.docs.map(doc => doc.data());
 
-    // 2️⃣ Total revenue calculation
-    let totalRevenue = 0;
-    accountsSnapshot.forEach(doc => {
-      const data = doc.data();
-      const price = parseFloat(data.price) || 0;
-      totalRevenue += price;
-    });
+    const totalAccounts = accounts.length;
+    const totalRevenue = accounts.reduce((sum, acc) => sum + (parseFloat(acc.price) || 0), 0);
 
-    // 3️⃣ Live sales counter (from salesCounter doc)
-    const salesCounterRef = doc(db, "meta", "salesCounter");
-    const salesCounterSnap = await getDoc(salesCounterRef);
-    const liveSales = salesCounterSnap.exists() ? salesCounterSnap.data().count : 0;
+    // Get today's new stock (optional, for daily stock count)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const newStock = accounts.filter(acc => {
+      const createdAt = acc.createdAt?.toDate?.();
+      return createdAt && createdAt >= today;
+    }).length;
+
+    // Read live sales counter from meta collection
+    const counterSnap = await getDoc(doc(db, "meta", "salesCounter"));
+    const salesCount = counterSnap.exists() ? counterSnap.data().count : 0;
 
     res.status(200).json({
       totalAccounts,
       totalRevenue,
-      liveSales
+      newStock,
+      salesCount
     });
   } catch (error) {
-    console.error("Dashboard stats error:", error);
-    res.status(500).json({ message: "Failed to load dashboard stats" });
+    console.error("Error fetching dashboard stats:", error);
+    res.status(500).json({ message: 'Failed to fetch stats' });
   }
 }
