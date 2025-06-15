@@ -1,6 +1,7 @@
 import { db } from '../firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import axios from 'axios';
+import cheerio from 'cheerio';  // install cheerio to parse HTML
 
 export default async function handler(req, res) {
   const accountsRef = collection(db, "accounts");
@@ -19,7 +20,7 @@ export default async function handler(req, res) {
 
     let profile = "";
     let avatar = "";
-    let premium = false;  // default
+    let premium = false;  // <-- added
 
     try {
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
@@ -37,11 +38,11 @@ export default async function handler(req, res) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
 
-        // Fetch premium status
-        const premiumRes = await axios.get(`https://premiumfeatures.roblox.com/v1/users/${userId}/subscriptions`);
-        if (premiumRes.data && premiumRes.data.length > 0) {
-          premium = true;
-        }
+        // ✅ Premium detection via web scraping
+        const htmlRes = await axios.get(`https://www.roblox.com/users/${userId}/profile`);
+        const $ = cheerio.load(htmlRes.data);
+        const premiumBadge = $('.badge-name-text:contains("Premium")');
+        premium = premiumBadge.length > 0;
       }
     } catch (error) {
       console.error("Failed to fetch Roblox user info:", error.message);
@@ -50,7 +51,7 @@ export default async function handler(req, res) {
     const docRef = await addDoc(accountsRef, {
       username, age, email, price, mop, negotiable,
       robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary,
-      profile, avatar, premium
+      profile, avatar, premium  // <-- save premium to database
     });
 
     return res.status(201).json({ message: 'Account added', id: docRef.id });
@@ -83,10 +84,10 @@ export default async function handler(req, res) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
 
-        const premiumRes = await axios.get(`https://premiumfeatures.roblox.com/v1/users/${userId}/subscriptions`);
-        if (premiumRes.data && premiumRes.data.length > 0) {
-          premium = true;
-        }
+        const htmlRes = await axios.get(`https://www.roblox.com/users/${userId}/profile`);
+        const $ = cheerio.load(htmlRes.data);
+        const premiumBadge = $('.badge-name-text:contains("Premium")');
+        premium = premiumBadge.length > 0;
       }
     } catch (error) {
       console.error("Failed to fetch Roblox user info on update:", error.message);
