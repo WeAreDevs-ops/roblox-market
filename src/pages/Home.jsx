@@ -7,7 +7,6 @@ export default function Home() {
   const [sortOption, setSortOption] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
 
-  // ✅ New States for counters
   const [dashboardStats, setDashboardStats] = useState({
     totalAccounts: 0,
     salesCount: 0,
@@ -21,27 +20,31 @@ export default function Home() {
       .then(data => setAccounts(data.accounts));
   }, []);
 
-  // ✅ Fetch stats
   useEffect(() => {
-    fetchStats();
+    let currentSalesCount = 0;
 
-    // Auto increase sales every 1 minute
-    const interval = setInterval(() => {
-      setDashboardStats(prev => ({
-        ...prev,
-        salesCount: prev.salesCount + 1
-      }));
-    }, 60000); // every 1 minute
+    const fetchAndStartCounter = () => {
+      fetch('/api/dashboard-stats')
+        .then(res => res.json())
+        .then(data => {
+          setDashboardStats(data);
+          currentSalesCount = data.salesCount;
 
-    return () => clearInterval(interval);
+          const interval = setInterval(() => {
+            currentSalesCount += 1;
+            setDashboardStats(prev => ({
+              ...prev,
+              salesCount: currentSalesCount
+            }));
+          }, 60000);
+
+          return () => clearInterval(interval);
+        })
+        .catch(err => console.error(err));
+    };
+
+    fetchAndStartCounter();
   }, []);
-
-  const fetchStats = () => {
-    fetch('/api/dashboard-stats')
-      .then(res => res.json())
-      .then(data => setDashboardStats(data))
-      .catch(err => console.error(err));
-  };
 
   const buyNow = () => {
     Swal.fire({
@@ -92,7 +95,6 @@ export default function Home() {
     <div className="container" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
 
-      {/* ✅ DASHBOARD SUMMARY */}
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -193,4 +195,4 @@ export default function Home() {
       ))}
     </div>
   );
-    }
+                                  }
