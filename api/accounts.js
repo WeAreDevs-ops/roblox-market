@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, getDocs as getDocsQuery } from "firebase/firestore";
 import axios from 'axios';
 
 export default async function handler(req, res) {
@@ -40,13 +40,25 @@ export default async function handler(req, res) {
       console.error("Failed to fetch Roblox user info:", error.message);
     }
 
-    const docRef = await addDoc(accountsRef, {
-      username, age, email, price, mop, negotiable,
-      robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
-      profile, avatar
-    });
+    try {
+      // ✅ Prevent duplicate username (case-insensitive)
+      const q = query(accountsRef, where("username", "==", username));
+      const existingSnap = await getDocsQuery(q);
+      if (!existingSnap.empty) {
+        return res.status(409).json({ message: 'Username already exists' });
+      }
 
-    return res.status(201).json({ message: 'Account added', id: docRef.id });
+      const docRef = await addDoc(accountsRef, {
+        username, age, email, price, mop, negotiable,
+        robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
+        profile, avatar
+      });
+
+      return res.status(201).json({ message: 'Account added', id: docRef.id });
+    } catch (error) {
+      console.error("Error adding account:", error);
+      return res.status(500).json({ message: 'Failed to add account' });
+    }
   }
 
   else if (req.method === 'PUT') {
