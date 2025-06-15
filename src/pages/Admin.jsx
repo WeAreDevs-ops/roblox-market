@@ -264,6 +264,7 @@ export default function Admin() {
       {filteredAccounts.map(acc => (
         <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
           <strong>{acc.username}</strong> - ₱{acc.price}
+          <div>Account Age: {acc.age} days</div> {/* ✅ Display the total days */}
           <div style={{ marginTop: "5px" }}>
             <button onClick={() => handleEdit(acc)} style={{ background: "orange", color: "white", border: "none", padding: "5px 10px", marginRight: "10px" }}>
               Edit
@@ -276,4 +277,4 @@ export default function Admin() {
       ))}
     </div>
   );
-            }
+                                            }
