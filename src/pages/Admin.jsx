@@ -7,11 +7,13 @@ export default function Admin() {
   const [formData, setFormData] = useState({
     username: "",
     totalSummary: "",
+    age: "13+",
     email: "Verified",
     price: "",
     mop: "Gcash",
     negotiable: "Yes",
     robuxBalance: "",
+    limitedItems: "",
     inventory: "Public",
     gamepass: "",
     accountType: "Global Account"
@@ -74,11 +76,13 @@ export default function Admin() {
         setFormData({
           username: "",
           totalSummary: "",
+          age: "13+",
           email: "Verified",
           price: "",
           mop: "Gcash",
           negotiable: "Yes",
           robuxBalance: "",
+          limitedItems: "",
           inventory: "Public",
           gamepass: "",
           accountType: "Global Account"
@@ -117,11 +121,13 @@ export default function Admin() {
     setFormData({
       username: account.username || "",
       totalSummary: account.totalSummary || "",
+      age: account.age || "13+",
       email: account.email || "Verified",
       price: account.price || "",
       mop: account.mop || "Gcash",
       negotiable: account.negotiable || "Yes",
       robuxBalance: account.robuxBalance || "",
+      limitedItems: account.limitedItems || "",
       inventory: account.inventory || "Public",
       gamepass: account.gamepass || "",
       accountType: account.accountType || "Global Account"
@@ -167,6 +173,14 @@ export default function Admin() {
         </div>
 
         <div style={{ marginBottom: "10px" }}>
+          <label>Age:</label>
+          <select name="age" value={formData.age} onChange={handleChange}>
+            <option value="13+">13+</option>
+            <option value="<13">&lt;13</option>
+          </select>
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
           <label>Email:</label>
           <select name="email" value={formData.email} onChange={handleChange}>
             <option value="Verified">Verified</option>
@@ -200,6 +214,11 @@ export default function Admin() {
         <div style={{ marginBottom: "10px" }}>
           <label>Robux Balance:</label>
           <input type="number" name="robuxBalance" value={formData.robuxBalance} onChange={handleChange} />
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Limited Items:</label>
+          <input type="number" name="limitedItems" value={formData.limitedItems} onChange={handleChange} />
         </div>
 
         <div style={{ marginBottom: "10px" }}>
@@ -237,7 +256,7 @@ export default function Admin() {
 
       {filteredAccounts.map(acc => (
         <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
-          <strong>{acc.username}</strong> - ₱{acc.price}
+          <strong>{acc.username}</strong> - â‚±{acc.price}
           <div style={{ marginTop: "5px" }}>
             <button onClick={() => handleEdit(acc)} style={{ background: "orange", color: "white", border: "none", padding: "5px 10px", marginRight: "10px" }}>
               Edit
@@ -250,4 +269,4 @@ export default function Admin() {
       ))}
     </div>
   );
-    }
+          }
