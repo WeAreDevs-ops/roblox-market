@@ -24,6 +24,7 @@ export default function Admin() {
   const [search, setSearch] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (isAuthorized) fetchAccounts();
@@ -61,6 +62,8 @@ export default function Admin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const url = '/api/accounts';
       const method = editMode ? 'PUT' : 'POST';
@@ -92,12 +95,16 @@ export default function Admin() {
         setEditMode(false);
         setEditId(null);
         fetchAccounts();
+      } else if (response.status === 409) {
+        Swal.fire('Error', 'Username already exists', 'error');
       } else {
         Swal.fire('Error', 'Failed to save account', 'error');
       }
     } catch (error) {
       console.error(error);
       Swal.fire('Error', 'An unexpected error occurred', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -254,8 +261,8 @@ export default function Admin() {
           </select>
         </div>
 
-        <button type="submit" style={{ padding: "10px 20px", background: "#007bff", color: "#fff", border: "none", borderRadius: "5px" }}>
-          {editMode ? "Update Account" : "Add Account"}
+        <button type="submit" disabled={isSubmitting} style={{ padding: "10px 20px", background: "#007bff", color: "#fff", border: "none", borderRadius: "5px" }}>
+          {isSubmitting ? "Processing..." : (editMode ? "Update Account" : "Add Account")}
         </button>
       </form>
 
