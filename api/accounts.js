@@ -11,20 +11,20 @@ export default async function handler(req, res) {
     return res.status(200).json({ accounts });
   }
 
-  else if (req.method === 'POST') {
+  else if (req.method === 'POST' || req.method === 'PUT') {
     const {
-      username, totalSummary, email, price, mop, negotiable,
-      robuxBalance, inventory, gamepass, accountType
+      id, username, totalSummary, email, price, mop, negotiable,
+      robuxBalance, limitedItems, inventory, accountType, gamepass
     } = req.body;
 
     let profile = "";
     let avatar = "";
+    let premiumStatus = "Unknown";
     let rap = 0;
-    let value = 0;
-    let limitedItems = 0;
-    let accountAge = 0;
+    let limitedValue = 0;
 
     try {
+      // Get Roblox userId
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
         usernames: [username]
       }, {
@@ -40,93 +40,37 @@ export default async function handler(req, res) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
 
-        // Call Rolimons API
-        const rolimonsRes = await axios.get(`https://www.rolimons.com/playerapi/player/${userId}`);
-        if (rolimonsRes.data?.success) {
-          rap = rolimonsRes.data.player.rap || 0;
-          value = rolimonsRes.data.player.value || 0;
-          limitedItems = rolimonsRes.data.player.limited_count || 0;
-        }
+        // Fetch Rolimons unofficial API
+        const roliRes = await axios.get(`https://rolimons-api.glitch.me/player/${username}`);
+        const roliData = roliRes.data;
 
-        // Get account age
-        const userInfoRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
-        if (userInfoRes.data?.created) {
-          const createdDate = new Date(userInfoRes.data.created);
-          const today = new Date();
-          const diffTime = Math.abs(today - createdDate);
-          accountAge = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        if (roliData.success) {
+          premiumStatus = roliData.premium ? "Premium" : "Non-Premium";
+          rap = roliData.rap;
+          limitedValue = roliData.value;
         }
       }
     } catch (error) {
       console.error("Failed to fetch Roblox or Rolimons user info:", error.message);
     }
 
-    const docRef = await addDoc(accountsRef, {
+    const payload = {
       username, totalSummary, email, price, mop, negotiable,
-      robuxBalance, inventory, gamepass, accountType,
-      profile, avatar, rap, value, limitedItems, accountAge
-    });
+      robuxBalance, limitedItems, inventory, accountType, gamepass,
+      profile, avatar, premiumStatus, rap, limitedValue
+    };
 
-    return res.status(201).json({ message: 'Account added', id: docRef.id });
-  }
-
-  else if (req.method === 'PUT') {
-    const { id, username, ...rest } = req.body;
-
-    if (!id) {
-      return res.status(400).json({ message: 'Missing document ID' });
-    }
-
-    let profile = "";
-    let avatar = "";
-    let rap = 0;
-    let value = 0;
-    let limitedItems = 0;
-    let accountAge = 0;
-
-    try {
-      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
-        usernames: [username]
-      }, {
-        headers: { "Content-Type": "application/json" }
-      });
-
-      if (robloxRes.data?.data?.length > 0) {
-        const userId = robloxRes.data.data[0].id;
-        profile = `https://www.roblox.com/users/${userId}/profile`;
-
-        const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
-        if (avatarRes.data?.data?.length > 0) {
-          avatar = avatarRes.data.data[0].imageUrl;
-        }
-
-        // Call Rolimons API
-        const rolimonsRes = await axios.get(`https://www.rolimons.com/playerapi/player/${userId}`);
-        if (rolimonsRes.data?.success) {
-          rap = rolimonsRes.data.player.rap || 0;
-          value = rolimonsRes.data.player.value || 0;
-          limitedItems = rolimonsRes.data.player.limited_count || 0;
-        }
-
-        // Get account age
-        const userInfoRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
-        if (userInfoRes.data?.created) {
-          const createdDate = new Date(userInfoRes.data.created);
-          const today = new Date();
-          const diffTime = Math.abs(today - createdDate);
-          accountAge = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        }
+    if (req.method === 'POST') {
+      const docRef = await addDoc(accountsRef, payload);
+      return res.status(201).json({ message: 'Account added', id: docRef.id });
+    } else {
+      if (!id) {
+        return res.status(400).json({ message: 'Missing document ID' });
       }
-    } catch (error) {
-      console.error("Failed to fetch Roblox or Rolimons user info on update:", error.message);
+      const docRef = doc(accountsRef, id);
+      await updateDoc(docRef, payload);
+      return res.status(200).json({ message: 'Updated successfully' });
     }
-
-    const docRef = doc(accountsRef, id);
-    await updateDoc(docRef, {
-      username, ...rest, profile, avatar, rap, value, limitedItems, accountAge
-    });
-
-    return res.status(200).json({ message: 'Updated successfully' });
   }
 
   else if (req.method === 'DELETE') {
