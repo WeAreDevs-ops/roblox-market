@@ -6,6 +6,7 @@ export default function Admin() {
   const [adminPassword, setAdminPassword] = useState("");
   const [formData, setFormData] = useState({
     username: "",
+    totalSummary: "",
     age: "13+",
     email: "Verified",
     price: "",
@@ -74,6 +75,7 @@ export default function Admin() {
         Swal.fire('Success', editMode ? 'Account updated!' : 'Account added!', 'success');
         setFormData({
           username: "",
+          totalSummary: "",
           age: "13+",
           email: "Verified",
           price: "",
@@ -118,6 +120,7 @@ export default function Admin() {
   const handleEdit = (account) => {
     setFormData({
       username: account.username || "",
+      totalSummary: account.totalSummary || "",
       age: account.age || "13+",
       email: account.email || "Verified",
       price: account.price || "",
@@ -162,6 +165,11 @@ export default function Admin() {
         <div style={{ marginBottom: "10px" }}>
           <label>Username:</label>
           <input type="text" name="username" value={formData.username} onChange={handleChange} required />
+        </div>
+
+        <div style={{ marginBottom: "10px" }}>
+          <label>Total Summary:</label>
+          <input type="text" name="totalSummary" value={formData.totalSummary} onChange={handleChange} />
         </div>
 
         <div style={{ marginBottom: "10px" }}>
@@ -261,4 +269,4 @@ export default function Admin() {
       ))}
     </div>
   );
-          }
+              }
