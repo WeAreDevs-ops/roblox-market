@@ -16,7 +16,8 @@ export default function Admin() {
     limitedItems: "",
     inventory: "Public",
     gamepass: "",
-    accountType: "Global Account"
+    accountType: "Global Account",
+    premium: "False"
   });
 
   const [accounts, setAccounts] = useState([]);
@@ -85,7 +86,8 @@ export default function Admin() {
           limitedItems: "",
           inventory: "Public",
           gamepass: "",
-          accountType: "Global Account"
+          accountType: "Global Account",
+          premium: "False"
         });
         setEditMode(false);
         setEditId(null);
@@ -130,7 +132,8 @@ export default function Admin() {
       limitedItems: account.limitedItems || "",
       inventory: account.inventory || "Public",
       gamepass: account.gamepass || "",
-      accountType: account.accountType || "Global Account"
+      accountType: account.accountType || "Global Account",
+      premium: account.premium || "False"
     });
     setEditMode(true);
     setEditId(account.id);
@@ -243,6 +246,14 @@ export default function Admin() {
           </select>
         </div>
 
+        <div style={{ marginBottom: "10px" }}>
+          <label>Premium Status:</label>
+          <select name="premium" value={formData.premium} onChange={handleChange}>
+            <option value="True">True</option>
+            <option value="False">False</option>
+          </select>
+        </div>
+
         <button type="submit" style={{ padding: "10px 20px", background: "#007bff", color: "#fff", border: "none", borderRadius: "5px" }}>
           {editMode ? "Update Account" : "Add Account"}
         </button>
@@ -256,7 +267,7 @@ export default function Admin() {
 
       {filteredAccounts.map(acc => (
         <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
-          <strong>{acc.username}</strong> - â‚±{acc.price}
+          <strong>{acc.username}</strong> - ₱{acc.price}
           <div style={{ marginTop: "5px" }}>
             <button onClick={() => handleEdit(acc)} style={{ background: "orange", color: "white", border: "none", padding: "5px 10px", marginRight: "10px" }}>
               Edit
@@ -269,4 +280,4 @@ export default function Admin() {
       ))}
     </div>
   );
-          }
+      }
