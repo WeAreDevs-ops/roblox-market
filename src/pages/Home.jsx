@@ -62,7 +62,7 @@ export default function Home() {
     <div className="container" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
 
-      <input type="text" placeholder="🔎 Search by username or gamepass..."
+      <input type="text" placeholder="ðŸ”Ž Search by username or gamepass..."
         value={search} onChange={(e) => setSearch(e.target.value)}
         style={{ padding: "10px", width: "100%", maxWidth: "400px", borderRadius: "8px", border: "1px solid #ccc", marginBottom: "10px" }} 
       />
@@ -94,30 +94,27 @@ export default function Home() {
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
           <div style={{ marginTop: '15px' }}>
-            <DetailRow label="📝 Total Summary:" value={acc.totalSummary || "N/A"} />
-            <DetailRow label="🎂 Age:" value={acc.age} />
-            <DetailRow label="📧 Email:" value={acc.email} />
-            <DetailRow label="💰 Price:" value={`₱${acc.price}`} />
-            <DetailRow label="💳 MOP:" value={acc.mop} />
-            <DetailRow label="🤝 Negotiable:" value={acc.negotiable} />
-            <DetailRow label="💎 Robux:" value={acc.robuxBalance} />
-            <DetailRow label="🎖 Limited:" value={acc.limitedItems} />
+            {/* Added Total Summary */}
+            <DetailRow label="ðŸ“ Total Summary:" value={acc.totalSummary || "N/A"} />
 
-            {/* 🚀 New Automated Fields */}
-            <DetailRow label="📊 RAP Value:" value={acc.limitedValue || "N/A"} />
-            <DetailRow label="⭐ Premium:" value={acc.premium || "Unknown"} />
-
-            <DetailRow label="📦 Inventory:" value={acc.inventory} />
-            <DetailRow label="🌍 Type:" value={acc.accountType} />
+            <DetailRow label="ðŸŽ‚ Age:" value={acc.age} />
+            <DetailRow label="ðŸ“§ Email:" value={acc.email} />
+            <DetailRow label="ðŸ’° Price:" value={`â‚±${acc.price}`} />
+            <DetailRow label="ðŸ’³ MOP:" value={acc.mop} />
+            <DetailRow label="ðŸ¤ Negotiable:" value={acc.negotiable} />
+            <DetailRow label="ðŸ’Ž Robux:" value={acc.robuxBalance} />
+            <DetailRow label="ðŸŽ– Limited:" value={acc.limitedItems} />
+            <DetailRow label="ðŸ“¦ Inventory:" value={acc.inventory} />
+            <DetailRow label="ðŸŒ Type:" value={acc.accountType} />
           </div>
 
           <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-            <strong>🔗 Profile:</strong>&nbsp;
+            <strong>ðŸ”— Profile:</strong>&nbsp;
             <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
           </div>
 
           <div style={{ marginTop: "10px" }}>
-            <strong>🎮 Games with Gamepass:</strong>
+            <strong>ðŸŽ® Games with Gamepass:</strong>
             <div style={{ 
               marginTop: '8px', 
               display: 'flex', 
@@ -146,4 +143,4 @@ export default function Home() {
       ))}
     </div>
   );
-              }
+                           }
