@@ -19,6 +19,7 @@ export default async function handler(req, res) {
 
     let profile = "";
     let avatar = "";
+    let ageInDays = null;
 
     try {
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
@@ -35,13 +36,18 @@ export default async function handler(req, res) {
         if (avatarRes.data?.data?.length > 0) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
+
+        // ✅ Calculate account age automatically
+        const createdRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
+        const createdDate = new Date(createdRes.data.created);
+        const now = new Date();
+        ageInDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
       }
     } catch (error) {
       console.error("Failed to fetch Roblox user info:", error.message);
     }
 
     try {
-      // ✅ Prevent duplicate username (case-insensitive)
       const q = query(accountsRef, where("username", "==", username));
       const existingSnap = await getDocsQuery(q);
       if (!existingSnap.empty) {
@@ -51,7 +57,8 @@ export default async function handler(req, res) {
       const docRef = await addDoc(accountsRef, {
         username, email, price, mop, negotiable,
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
-        profile, avatar
+        profile, avatar,
+        age: ageInDays // ✅ Store the calculated age
       });
 
       return res.status(201).json({ message: 'Account added', id: docRef.id });
