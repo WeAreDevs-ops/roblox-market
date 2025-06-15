@@ -1,64 +1,99 @@
+import { db } from '../firebase';
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import axios from 'axios';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
-import { db } from '../firebase.js';
 
-export async function GET(request) {
-  try {
-    const accountsCollection = collection(db, 'accounts');
-    const snapshot = await getDocs(accountsCollection);
+export default async function handler(req, res) {
+  const accountsRef = collection(db, "accounts");
+
+  if (req.method === 'GET') {
+    const snapshot = await getDocs(accountsRef);
     const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    return new Response(JSON.stringify(accounts), { status: 200 });
-  } catch (error) {
-    console.error('Error fetching accounts:', error);
-    return new Response('Error fetching accounts', { status: 500 });
+    return res.status(200).json({ accounts });
   }
-}
 
-export async function POST(request) {
-  try {
-    const { cookie, price, mop, nego } = await request.json();
+  else if (req.method === 'POST') {
+    const {
+      username, age, email, price, mop, negotiable,
+      robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary // <-- added here
+    } = req.body;
 
-    // Get User ID
-    const idRes = await axios.get('https://users.roblox.com/v1/users/authenticated', {
-      headers: { Cookie: `.ROBLOSECURITY=${cookie}` }
-    });
+    let profile = "";
+    let avatar = "";
 
-    const userId = idRes.data.id;
-    const username = idRes.data.name;
+    try {
+      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
+        usernames: [username]
+      }, {
+        headers: { "Content-Type": "application/json" }
+      });
 
-    // Get RAP
-    const inventoryRes = await axios.get(`https://economy.roblox.com/v1/users/${userId}/inventory/${2}`, {
-      headers: { Cookie: `.ROBLOSECURITY=${cookie}` }
-    });
+      if (robloxRes.data?.data?.length > 0) {
+        const userId = robloxRes.data.data[0].id;
+        profile = `https://www.roblox.com/users/${userId}/profile`;
 
-    let rap = 0;
-    if (inventoryRes.data && inventoryRes.data.data) {
-      rap = inventoryRes.data.data.reduce((acc, item) => acc + (item.recentAveragePrice || 0), 0);
+        const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
+        if (avatarRes.data?.data?.length > 0) {
+          avatar = avatarRes.data.data[0].imageUrl;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch Roblox user info:", error.message);
     }
 
-    // Get Premium
-    const premiumRes = await axios.get(`https://premiumfeatures.roblox.com/v1/users/${userId}/subscriptions`, {
-      headers: { Cookie: `.ROBLOSECURITY=${cookie}` }
+    const docRef = await addDoc(accountsRef, {
+      username, age, email, price, mop, negotiable,
+      robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, // <-- added here too
+      profile, avatar
     });
 
-    const premium = premiumRes.data && premiumRes.data.length > 0 ? "Yes" : "No";
+    return res.status(201).json({ message: 'Account added', id: docRef.id });
+  }
 
-    const data = {
-      cookie,
-      username,
-      rap,
-      premium,
-      price,
-      mop,
-      nego
-    };
+  else if (req.method === 'PUT') {
+    const { id, username, totalSummary, ...rest } = req.body; // <-- receive totalSummary in PUT
 
-    await addDoc(collection(db, 'accounts'), data);
-    return new Response('Account added successfully', { status: 201 });
+    if (!id) {
+      return res.status(400).json({ message: 'Missing document ID' });
+    }
 
-  } catch (error) {
-    console.error('Error saving account:', error);
-    return new Response('Error saving account', { status: 500 });
+    let profile = "";
+    let avatar = "";
+
+    try {
+      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
+        usernames: [username]
+      }, {
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (robloxRes.data?.data?.length > 0) {
+        const userId = robloxRes.data.data[0].id;
+        profile = `https://www.roblox.com/users/${userId}/profile`;
+
+        const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
+        if (avatarRes.data?.data?.length > 0) {
+          avatar = avatarRes.data.data[0].imageUrl;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch Roblox user info on update:", error.message);
+    }
+
+    const docRef = doc(accountsRef, id);
+    await updateDoc(docRef, {
+      username, totalSummary, ...rest, profile, avatar
+    });
+
+    return res.status(200).json({ message: 'Updated successfully' });
+  }
+
+  else if (req.method === 'DELETE') {
+    const { id } = req.body;
+    await deleteDoc(doc(accountsRef, id));
+    return res.status(200).json({ message: 'Deleted' });
+  }
+
+  else {
+    return res.status(405).end();
   }
 }
