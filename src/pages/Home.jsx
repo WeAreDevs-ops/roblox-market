@@ -95,7 +95,7 @@ export default function Home() {
 
           <div style={{ marginTop: '15px' }}>
             <DetailRow label="📝 Total Summary:" value={acc.totalSummary || "N/A"} />
-            <DetailRow label="🎂 Age:" value={acc.age ? `${acc.age} days` : 'N/A'} />
+            <DetailRow label="🎂 Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
             <DetailRow label="📧 Email:" value={acc.email} />
             <DetailRow label="💰 Price:" value={`₱${acc.price}`} />
             <DetailRow label="💳 MOP:" value={acc.mop} />
