@@ -94,9 +94,7 @@ export default function Home() {
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
           <div style={{ marginTop: '15px' }}>
-            {/* Added Total Summary */}
             <DetailRow label="📝 Total Summary:" value={acc.totalSummary || "N/A"} />
-
             <DetailRow label="🎂 Age:" value={acc.age} />
             <DetailRow label="📧 Email:" value={acc.email} />
             <DetailRow label="💰 Price:" value={`₱${acc.price}`} />
@@ -104,6 +102,11 @@ export default function Home() {
             <DetailRow label="🤝 Negotiable:" value={acc.negotiable} />
             <DetailRow label="💎 Robux:" value={acc.robuxBalance} />
             <DetailRow label="🎖 Limited:" value={acc.limitedItems} />
+
+            {/* 🚀 New Automated Fields */}
+            <DetailRow label="📊 RAP Value:" value={acc.limitedValue || "N/A"} />
+            <DetailRow label="⭐ Premium:" value={acc.premium || "Unknown"} />
+
             <DetailRow label="📦 Inventory:" value={acc.inventory} />
             <DetailRow label="🌍 Type:" value={acc.accountType} />
           </div>
@@ -143,4 +146,4 @@ export default function Home() {
       ))}
     </div>
   );
-            }
+              }
