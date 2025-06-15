@@ -94,7 +94,9 @@ export default function Home() {
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
           <div style={{ marginTop: '15px' }}>
-            <DetailRow label="📑 Total Summary:" value={acc.totalSummary || "N/A"} />
+            {/* Added Total Summary */}
+            <DetailRow label="📝 Total Summary:" value={acc.totalSummary || "N/A"} />
+
             <DetailRow label="🎂 Age:" value={acc.age} />
             <DetailRow label="📧 Email:" value={acc.email} />
             <DetailRow label="💰 Price:" value={`₱${acc.price}`} />
@@ -104,7 +106,7 @@ export default function Home() {
             <DetailRow label="🎖 Limited:" value={acc.limitedItems} />
             <DetailRow label="📦 Inventory:" value={acc.inventory} />
             <DetailRow label="🌍 Type:" value={acc.accountType} />
-            <DetailRow label="⭐ Premium:" value={acc.premium ? "True" : "False"} />
+            <DetailRow label="✅ Premium Status:" value={acc.premium === "True" ? "✅" : "❌"} />
           </div>
 
           <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -142,4 +144,4 @@ export default function Home() {
       ))}
     </div>
   );
-            }
+                       }
