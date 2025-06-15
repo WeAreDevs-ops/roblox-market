@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   else if (req.method === 'POST') {
     const {
       username, age, email, price, mop, negotiable,
-      robuxBalance, limitedItems, inventory, accountType, gamepass
+      robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary // <-- added here
     } = req.body;
 
     let profile = "";
@@ -42,7 +42,7 @@ export default async function handler(req, res) {
 
     const docRef = await addDoc(accountsRef, {
       username, age, email, price, mop, negotiable,
-      robuxBalance, limitedItems, inventory, accountType, gamepass,
+      robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, // <-- added here too
       profile, avatar
     });
 
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
   }
 
   else if (req.method === 'PUT') {
-    const { id, username, ...rest } = req.body;
+    const { id, username, totalSummary, ...rest } = req.body; // <-- receive totalSummary in PUT
 
     if (!id) {
       return res.status(400).json({ message: 'Missing document ID' });
@@ -81,7 +81,7 @@ export default async function handler(req, res) {
 
     const docRef = doc(accountsRef, id);
     await updateDoc(docRef, {
-      username, ...rest, profile, avatar
+      username, totalSummary, ...rest, profile, avatar
     });
 
     return res.status(200).json({ message: 'Updated successfully' });
