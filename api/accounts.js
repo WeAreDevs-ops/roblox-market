@@ -1,113 +1,125 @@
-import { db } from '../firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { db } from './firebase';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
 import axios from 'axios';
-import cheerio from 'cheerio';  // install cheerio to parse HTML
+import cheerio from 'cheerio';
 
 export default async function handler(req, res) {
-  const accountsRef = collection(db, "accounts");
-
-  if (req.method === 'GET') {
-    const snapshot = await getDocs(accountsRef);
-    const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return res.status(200).json({ accounts });
-  }
-
-  else if (req.method === 'POST') {
-    const {
-      username, age, email, price, mop, negotiable,
-      robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary
-    } = req.body;
-
-    let profile = "";
-    let avatar = "";
-    let premium = false;  // <-- added
+  if (req.method === 'POST') {
+    const { cookie, price, mop, negotiable } = req.body;
 
     try {
-      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
-        usernames: [username]
-      }, {
-        headers: { "Content-Type": "application/json" }
+      const userInfo = await getUserInfo(cookie);
+      if (!userInfo) {
+        return res.status(400).json({ error: 'Failed to fetch user info' });
+      }
+
+      const isPremium = await fetchPremiumStatus(cookie);
+
+      const docRef = await addDoc(collection(db, 'accounts'), {
+        username: userInfo.name,
+        userId: userInfo.id,
+        robux: userInfo.robux,
+        age: userInfo.age,
+        emailVerified: userInfo.emailVerified,
+        premium: isPremium,
+        price,
+        mop,
+        negotiable,
+        timestamp: new Date().toISOString()
       });
 
-      if (robloxRes.data?.data?.length > 0) {
-        const userId = robloxRes.data.data[0].id;
-        profile = `https://www.roblox.com/users/${userId}/profile`;
-
-        const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
-        if (avatarRes.data?.data?.length > 0) {
-          avatar = avatarRes.data.data[0].imageUrl;
-        }
-
-        // ✅ Premium detection via web scraping
-        const htmlRes = await axios.get(`https://www.roblox.com/users/${userId}/profile`);
-        const $ = cheerio.load(htmlRes.data);
-        const premiumBadge = $('.badge-name-text:contains("Premium")');
-        premium = premiumBadge.length > 0;
-      }
+      res.status(201).json({ id: docRef.id });
     } catch (error) {
-      console.error("Failed to fetch Roblox user info:", error.message);
+      console.error('Error saving account:', error);
+      res.status(500).json({ error: 'Failed to save account' });
     }
-
-    const docRef = await addDoc(accountsRef, {
-      username, age, email, price, mop, negotiable,
-      robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary,
-      profile, avatar, premium  // <-- save premium to database
-    });
-
-    return res.status(201).json({ message: 'Account added', id: docRef.id });
-  }
-
-  else if (req.method === 'PUT') {
-    const { id, username, totalSummary, ...rest } = req.body;
-
-    if (!id) {
-      return res.status(400).json({ message: 'Missing document ID' });
-    }
-
-    let profile = "";
-    let avatar = "";
-    let premium = false;
-
+  } else if (req.method === 'GET') {
     try {
-      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
-        usernames: [username]
-      }, {
-        headers: { "Content-Type": "application/json" }
+      const querySnapshot = await getDocs(collection(db, 'accounts'));
+      const accounts = [];
+      querySnapshot.forEach((doc) => {
+        accounts.push({ id: doc.id, ...doc.data() });
       });
-
-      if (robloxRes.data?.data?.length > 0) {
-        const userId = robloxRes.data.data[0].id;
-        profile = `https://www.roblox.com/users/${userId}/profile`;
-
-        const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
-        if (avatarRes.data?.data?.length > 0) {
-          avatar = avatarRes.data.data[0].imageUrl;
-        }
-
-        const htmlRes = await axios.get(`https://www.roblox.com/users/${userId}/profile`);
-        const $ = cheerio.load(htmlRes.data);
-        const premiumBadge = $('.badge-name-text:contains("Premium")');
-        premium = premiumBadge.length > 0;
-      }
+      res.status(200).json(accounts);
     } catch (error) {
-      console.error("Failed to fetch Roblox user info on update:", error.message);
+      console.error('Error fetching accounts:', error);
+      res.status(500).json({ error: 'Failed to fetch accounts' });
     }
+  } else {
+    res.status(405).json({ error: 'Method not allowed' });
+  }
+}
 
-    const docRef = doc(accountsRef, id);
-    await updateDoc(docRef, {
-      username, totalSummary, ...rest, profile, avatar, premium
+async function getUserInfo(cookie) {
+  try {
+    const response = await axios.get('https://users.roblox.com/v1/users/authenticated', {
+      headers: {
+        Cookie: `.ROBLOSECURITY=${cookie}`,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9'
+      }
     });
 
-    return res.status(200).json({ message: 'Updated successfully' });
-  }
+    const user = response.data;
 
-  else if (req.method === 'DELETE') {
-    const { id } = req.body;
-    await deleteDoc(doc(accountsRef, id));
-    return res.status(200).json({ message: 'Deleted' });
-  }
+    const robuxResponse = await axios.get('https://economy.roblox.com/v1/users/' + user.id + '/currency', {
+      headers: {
+        Cookie: `.ROBLOSECURITY=${cookie}`,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9'
+      }
+    });
 
-  else {
-    return res.status(405).end();
+    const robux = robuxResponse.data.robux;
+
+    const emailResponse = await axios.get('https://accountinformation.roblox.com/v1/email', {
+      headers: {
+        Cookie: `.ROBLOSECURITY=${cookie}`,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9'
+      }
+    });
+
+    const emailVerified = emailResponse.data.verified;
+
+    const age = calculateAge(user.birthdate);
+
+    return { name: user.name, id: user.id, robux, emailVerified, age };
+  } catch (error) {
+    console.error('Failed to fetch Roblox user info:', error.message);
+    return null;
   }
+}
+
+async function fetchPremiumStatus(cookie) {
+  try {
+    const response = await axios.get('https://www.roblox.com/my/money.aspx', {
+      headers: {
+        Cookie: `.ROBLOSECURITY=${cookie}`,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9'
+      }
+    });
+
+    const html = response.data;
+    const $ = cheerio.load(html);
+
+    const premiumText = $('span:contains("Premium")').text();
+    const isPremium = premiumText.includes('Premium');
+    return isPremium;
+  } catch (error) {
+    console.error('Failed to fetch premium status:', error.message);
+    return false;
+  }
+}
+
+function calculateAge(birthdate) {
+  const birth = new Date(birthdate);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
 }
