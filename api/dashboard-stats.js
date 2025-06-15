@@ -1,34 +1,33 @@
-import { db } from '../firebase';
-import { collection, getDocs, doc, getDoc, query, where, Timestamp } from "firebase/firestore";
+import { db } from '../../firebase';
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 
 export default async function handler(req, res) {
-  const accountsRef = collection(db, "accounts");
-  const counterRef = doc(db, "meta", "salesCounter");
-
   try {
-    const snapshot = await getDocs(accountsRef);
-    const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // 1️⃣ Total accounts count
+    const accountsRef = collection(db, "accounts");
+    const accountsSnapshot = await getDocs(accountsRef);
+    const totalAccounts = accountsSnapshot.size;
 
-    // Total Revenue
-    const totalRevenue = accounts.reduce((sum, acc) => sum + (parseFloat(acc.price) || 0), 0);
-
-    // Daily new stock
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const newStock = accounts.filter(acc => acc.createdAt?.toDate() >= today).length;
-
-    // Sales Counter
-    const counterSnap = await getDoc(counterRef);
-    const salesCount = counterSnap.exists() ? counterSnap.data().count : 0;
-
-    return res.status(200).json({
-      totalAccounts: accounts.length,
-      totalRevenue,
-      newStock,
-      salesCount
+    // 2️⃣ Total revenue calculation
+    let totalRevenue = 0;
+    accountsSnapshot.forEach(doc => {
+      const data = doc.data();
+      const price = parseFloat(data.price) || 0;
+      totalRevenue += price;
     });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Failed to fetch stats' });
+
+    // 3️⃣ Live sales counter (from salesCounter doc)
+    const salesCounterRef = doc(db, "meta", "salesCounter");
+    const salesCounterSnap = await getDoc(salesCounterRef);
+    const liveSales = salesCounterSnap.exists() ? salesCounterSnap.data().count : 0;
+
+    res.status(200).json({
+      totalAccounts,
+      totalRevenue,
+      liveSales
+    });
+  } catch (error) {
+    console.error("Dashboard stats error:", error);
+    res.status(500).json({ message: "Failed to load dashboard stats" });
   }
 }
