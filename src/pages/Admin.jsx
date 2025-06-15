@@ -12,7 +12,6 @@ export default function Admin() {
     mop: "Gcash",
     negotiable: "Yes",
     robuxBalance: "",
-    limitedItems: "",
     inventory: "Public",
     gamepass: "",
     accountType: "Global Account"
@@ -80,7 +79,6 @@ export default function Admin() {
           mop: "Gcash",
           negotiable: "Yes",
           robuxBalance: "",
-          limitedItems: "",
           inventory: "Public",
           gamepass: "",
           accountType: "Global Account"
@@ -124,7 +122,6 @@ export default function Admin() {
       mop: account.mop || "Gcash",
       negotiable: account.negotiable || "Yes",
       robuxBalance: account.robuxBalance || "",
-      limitedItems: account.limitedItems || "",
       inventory: account.inventory || "Public",
       gamepass: account.gamepass || "",
       accountType: account.accountType || "Global Account"
@@ -206,11 +203,6 @@ export default function Admin() {
         </div>
 
         <div style={{ marginBottom: "10px" }}>
-          <label>Limited Items:</label>
-          <input type="number" name="limitedItems" value={formData.limitedItems} onChange={handleChange} />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
           <label>Inventory:</label>
           <select name="inventory" value={formData.inventory} onChange={handleChange}>
             <option value="Public">Public</option>
@@ -258,4 +250,4 @@ export default function Admin() {
       ))}
     </div>
   );
-      }
+    }
