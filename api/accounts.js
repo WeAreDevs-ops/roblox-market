@@ -1,9 +1,10 @@
 import { db } from '../firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, getDocs as getDocsQuery } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, getDocs as getDocsQuery, increment, serverTimestamp } from "firebase/firestore";
 import axios from 'axios';
 
 export default async function handler(req, res) {
   const accountsRef = collection(db, "accounts");
+  const counterRef = doc(db, "meta", "salesCounter"); // <-- new counter doc
 
   if (req.method === 'GET') {
     const snapshot = await getDocs(accountsRef);
@@ -37,7 +38,6 @@ export default async function handler(req, res) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
 
-        // ✅ Calculate account age automatically (as number only)
         const createdRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
         const createdDate = new Date(createdRes.data.created);
         const now = new Date();
@@ -54,14 +54,18 @@ export default async function handler(req, res) {
         return res.status(409).json({ message: 'Username already exists' });
       }
 
-      const docRef = await addDoc(accountsRef, {
+      await addDoc(accountsRef, {
         username, email, price, mop, negotiable,
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
         profile, avatar,
-        age: ageInDays  // store only number here
+        age: ageInDays,
+        createdAt: serverTimestamp()  // ✅ store creation date
       });
 
-      return res.status(201).json({ message: 'Account added', id: docRef.id });
+      // ✅ Increase salesCounter on every new account added
+      await updateDoc(counterRef, { count: increment(1) });
+
+      return res.status(201).json({ message: 'Account added' });
     } catch (error) {
       console.error("Error adding account:", error);
       return res.status(500).json({ message: 'Failed to add account' });
