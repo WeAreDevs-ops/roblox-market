@@ -7,10 +7,21 @@ export default function Home() {
   const [sortOption, setSortOption] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
 
+  const totalAccounts = accounts.length;
+  const [liveSales, setLiveSales] = useState(500);
+
   useEffect(() => {
     fetch('/api/accounts')
       .then(res => res.json())
       .then(data => setAccounts(data.accounts));
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLiveSales(prev => prev + 1);
+    }, 60000); // increase every 1 minute (60000ms)
+
+    return () => clearInterval(interval);
   }, []);
 
   const buyNow = () => {
@@ -61,6 +72,11 @@ export default function Home() {
   return (
     <div className="container" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
+
+      <div style={{ marginBottom: "20px" }}>
+        <h3>Total Accounts: {totalAccounts}</h3>
+        <h3>Live Sales: {liveSales}</h3>
+      </div>
 
       <input type="text" placeholder="🔎 Search by username or gamepass..."
         value={search} onChange={(e) => setSearch(e.target.value)}
@@ -142,4 +158,4 @@ export default function Home() {
       ))}
     </div>
   );
-                                           }
+                       }
