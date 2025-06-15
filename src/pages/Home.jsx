@@ -94,10 +94,8 @@ export default function Home() {
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
           <div style={{ marginTop: '15px' }}>
-            {/* Added Total Summary */}
             <DetailRow label="📝 Total Summary:" value={acc.totalSummary || "N/A"} />
-
-            <DetailRow label="🎂 Age:" value={acc.age} />
+            <DetailRow label="🎂 Age:" value={acc.age ? `${acc.age} days` : 'N/A'} />
             <DetailRow label="📧 Email:" value={acc.email} />
             <DetailRow label="💰 Price:" value={`₱${acc.price}`} />
             <DetailRow label="💳 MOP:" value={acc.mop} />
@@ -144,4 +142,4 @@ export default function Home() {
       ))}
     </div>
   );
-                       }
+                                           }
