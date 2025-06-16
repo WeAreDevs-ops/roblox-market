@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export default async function handler(req, res) {
   const accountsRef = collection(db, "accounts");
-  const counterRef = doc(db, "meta", "salesCounter"); 
+  const counterRef = doc(db, "meta", "salesCounter");
 
   if (req.method === 'GET') {
     const snapshot = await getDocs(accountsRef);
@@ -21,43 +21,55 @@ export default async function handler(req, res) {
     let profile = "";
     let avatar = "";
     let ageInDays = null;
-    let hatsCount = 0;
-    let hairsCount = 0;
-    let classicCount = 0;
+    let hatCount = null;
+    let hairCount = null;
+    let classicClothesCount = null;
 
     try {
-      // Stable way to fetch userId from username
-      const userRes = await axios.get(`https://api.roblox.com/users/get-by-username?username=${encodeURIComponent(username)}`);
-      
-      if (!userRes.data || !userRes.data.Id) {
-        return res.status(404).json({ message: 'Roblox username not found' });
+      // ✅ Use modern endpoint
+      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
+        usernames: [username]
+      }, {
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (robloxRes.data?.data?.length > 0) {
+        const userId = robloxRes.data.data[0].id;
+        profile = `https://www.roblox.com/users/${userId}/profile`;
+
+        const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
+        if (avatarRes.data?.data?.length > 0) {
+          avatar = avatarRes.data.data[0].imageUrl;
+        }
+
+        const createdRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
+        const createdDate = new Date(createdRes.data.created);
+        const now = new Date();
+        ageInDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+
+        // ✅ Inventory Counts
+        const assetTypes = {
+          Hat: 8,
+          Hair: 41,
+          ClassicClothes: [11, 12, 13]
+        };
+
+        // Hat count
+        const hatRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/collectibles?assetType=Hat`);
+        hatCount = hatRes.data?.data?.length ?? 0;
+
+        // Hair count
+        const hairRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/collectibles?assetType=HairAccessory`);
+        hairCount = hairRes.data?.data?.length ?? 0;
+
+        // Classic Clothes (sum of shirts, pants, t-shirts)
+        let totalClothes = 0;
+        for (const typeId of assetTypes.ClassicClothes) {
+          const clothesRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/${typeId}/?limit=1`);
+          totalClothes += clothesRes.data?.data?.length ?? 0;
+        }
+        classicClothesCount = totalClothes;
       }
-
-      const userId = userRes.data.Id;
-      profile = `https://www.roblox.com/users/${userId}/profile`;
-
-      const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
-      if (avatarRes.data?.data?.length > 0) {
-        avatar = avatarRes.data.data[0].imageUrl;
-      }
-
-      const createdRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
-      const createdDate = new Date(createdRes.data.created);
-      const now = new Date();
-      ageInDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
-
-      // Inventory counts
-      const hatsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/8?limit=1`);
-      const hairsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/41?limit=1`);
-      const shirtsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/11?limit=1`);
-      const pantsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/12?limit=1`);
-
-      hatsCount = hatsApi.data?.total || 0;
-      hairsCount = hairsApi.data?.total || 0;
-      const shirtsCount = shirtsApi.data?.total || 0;
-      const pantsCount = pantsApi.data?.total || 0;
-      classicCount = shirtsCount + pantsCount;
-
     } catch (error) {
       console.error("Failed to fetch Roblox user info:", error.message);
     }
@@ -74,9 +86,9 @@ export default async function handler(req, res) {
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
         profile, avatar,
         age: ageInDays,
-        hats: hatsCount,
-        hairs: hairsCount,
-        classicClothes: classicCount,
+        hats: hatCount ?? 0,
+        hairs: hairCount ?? 0,
+        classicClothes: classicClothesCount ?? 0,
         createdAt: serverTimestamp()
       });
 
@@ -100,20 +112,21 @@ export default async function handler(req, res) {
     let avatar = "";
 
     try {
-      const userRes = await axios.get(`https://api.roblox.com/users/get-by-username?username=${encodeURIComponent(username)}`);
-      
-      if (!userRes.data || !userRes.data.Id) {
-        return res.status(404).json({ message: 'Roblox username not found' });
+      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
+        usernames: [username]
+      }, {
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (robloxRes.data?.data?.length > 0) {
+        const userId = robloxRes.data.data[0].id;
+        profile = `https://www.roblox.com/users/${userId}/profile`;
+
+        const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
+        if (avatarRes.data?.data?.length > 0) {
+          avatar = avatarRes.data.data[0].imageUrl;
+        }
       }
-
-      const userId = userRes.data.Id;
-      profile = `https://www.roblox.com/users/${userId}/profile`;
-
-      const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
-      if (avatarRes.data?.data?.length > 0) {
-        avatar = avatarRes.data.data[0].imageUrl;
-      }
-
     } catch (error) {
       console.error("Failed to fetch Roblox user info on update:", error.message);
     }
@@ -135,4 +148,4 @@ export default async function handler(req, res) {
   else {
     return res.status(405).end();
   }
-          }
+    }
