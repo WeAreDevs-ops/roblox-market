@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export default async function handler(req, res) {
   const accountsRef = collection(db, "accounts");
-  const counterRef = doc(db, "meta", "salesCounter"); // <-- new counter doc
+  const counterRef = doc(db, "meta", "salesCounter");
 
   if (req.method === 'GET') {
     const snapshot = await getDocs(accountsRef);
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
   else if (req.method === 'POST') {
     const {
-      username, email, price, mop, negotiable,
+      username, email, price, mop,
       robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium
     } = req.body;
 
@@ -55,14 +55,13 @@ export default async function handler(req, res) {
       }
 
       await addDoc(accountsRef, {
-        username, email, price, mop, negotiable,
+        username, email, price, mop,
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
         profile, avatar,
         age: ageInDays,
-        createdAt: serverTimestamp()  // âœ… store creation date
+        createdAt: serverTimestamp()
       });
 
-      // âœ… Increase salesCounter on every new account added
       await updateDoc(counterRef, { count: increment(1) });
 
       return res.status(201).json({ message: 'Account added' });
