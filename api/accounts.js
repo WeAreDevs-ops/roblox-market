@@ -4,7 +4,7 @@ import axios from 'axios';
 
 export default async function handler(req, res) {
   const accountsRef = collection(db, "accounts");
-  const counterRef = doc(db, "meta", "salesCounter"); // <-- new counter doc
+  const counterRef = doc(db, "meta", "salesCounter");
 
   if (req.method === 'GET') {
     const snapshot = await getDocs(accountsRef);
@@ -21,6 +21,9 @@ export default async function handler(req, res) {
     let profile = "";
     let avatar = "";
     let ageInDays = null;
+    let hatsCount = 0;
+    let hairCount = 0;
+    let classicClothesCount = 0;
 
     try {
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
@@ -42,6 +45,17 @@ export default async function handler(req, res) {
         const createdDate = new Date(createdRes.data.created);
         const now = new Date();
         ageInDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+
+        const hatsRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory/8?limit=1`);
+        hatsCount = hatsRes.data.total;
+
+        const hairRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory/41?limit=1`);
+        hairCount = hairRes.data.total;
+
+        const shirtsRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory/11?limit=1`);
+        const pantsRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory/12?limit=1`);
+        const tshirtsRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory/13?limit=1`);
+        classicClothesCount = shirtsRes.data.total + pantsRes.data.total + tshirtsRes.data.total;
       }
     } catch (error) {
       console.error("Failed to fetch Roblox user info:", error.message);
@@ -57,12 +71,11 @@ export default async function handler(req, res) {
       await addDoc(accountsRef, {
         username, email, price, mop, negotiable,
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
-        profile, avatar,
-        age: ageInDays,
-        createdAt: serverTimestamp()  // ✅ store creation date
+        profile, avatar, age: ageInDays,
+        hatsCount, hairCount, classicClothesCount,
+        createdAt: serverTimestamp()
       });
 
-      // ✅ Increase salesCounter on every new account added
       await updateDoc(counterRef, { count: increment(1) });
 
       return res.status(201).json({ message: 'Account added' });
@@ -119,4 +132,4 @@ export default async function handler(req, res) {
   else {
     return res.status(405).end();
   }
-}
+            }
