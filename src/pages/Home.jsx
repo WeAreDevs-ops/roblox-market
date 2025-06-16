@@ -12,6 +12,7 @@ export default function Home() {
     totalRevenue: 0,
     newStock: 0
   });
+
   const [darkMode, setDarkMode] = useState(false);
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
@@ -88,11 +89,10 @@ export default function Home() {
   const [expandedId, setExpandedId] = useState(null);
 
   return (
-    <div className={darkMode ? "container dark-mode" : "container"} style={{ padding: "20px" }}>
-      <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
-
+    <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "20px", minHeight: '100vh' }}>
       {/* Dark mode toggle */}
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h2>Available Accounts</h2>
         <label className="switch">
           <input type="checkbox" checked={darkMode} onChange={toggleDarkMode} />
           <span className="slider round"></span>
@@ -146,7 +146,7 @@ export default function Home() {
       {filteredAccounts.length === 0 && <p>No results found.</p>}
 
       {filteredAccounts.map(acc => (
-        <div key={acc.id} style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', borderRadius: '8px' }}>
+        <div key={acc.id} style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', borderRadius: '8px', backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
           <h3>{acc.username}</h3>
 
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
@@ -211,13 +211,13 @@ export default function Home() {
         </div>
       ))}
 
-      {/* Dark mode switch styling */}
+      {/* Inline CSS for toggle switch */}
       <style>{`
         .switch {
           position: relative;
           display: inline-block;
-          width: 60px;
-          height: 34px;
+          width: 40px;
+          height: 22px;
         }
         .switch input { display: none; }
         .slider {
@@ -232,10 +232,10 @@ export default function Home() {
         .slider:before {
           position: absolute;
           content: "";
-          height: 26px;
-          width: 26px;
-          left: 4px;
-          bottom: 4px;
+          height: 16px;
+          width: 16px;
+          left: 3px;
+          bottom: 3px;
           background-color: white;
           transition: .4s;
           border-radius: 50%;
@@ -244,11 +244,11 @@ export default function Home() {
           background-color: #2196F3;
         }
         input:checked + .slider:before {
-          transform: translateX(26px);
+          transform: translateX(18px);
         }
         .dark-mode {
-          background-color: #121212;
-          color: white;
+          background-color: #121212 !important;
+          color: white !important;
         }
       `}</style>
     </div>
