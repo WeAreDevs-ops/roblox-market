@@ -149,11 +149,11 @@ export default function Home() {
 
           {expandedId === acc.id && (
             <div style={{ marginTop: '15px' }}>
-              <DetailRow label="🎂 Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
-              <DetailRow label="📧 Email:" value={acc.email} />
-              <DetailRow label="💎 Robux:" value={acc.robuxBalance} />
-              <DetailRow label="⚠️ Limited:" value={acc.limitedItems} />
-              <DetailRow label="📦 Inventory:" value={acc.inventory} />
+              <DetailRow label="➤ Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
+              <DetailRow label="➤ Email:" value={acc.email} />
+              <DetailRow label="➤ Robux:" value={acc.robuxBalance} />
+              <DetailRow label="➤ Limited:" value={acc.limitedItems} />
+              <DetailRow label="➤ Inventory:" value={acc.inventory} />
               <DetailRow label="🌍 Type:" value={acc.accountType} />
               <DetailRow label="💳 MOP:" value={acc.mop} />
 
