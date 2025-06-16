@@ -21,45 +21,49 @@ export default async function handler(req, res) {
     let profile = "";
     let avatar = "";
     let ageInDays = null;
-    let hatsCount = 0;
+    let hatCount = 0;
     let hairCount = 0;
     let classicClothesCount = 0;
 
     try {
-      // Get userId from username
-      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
-        usernames: [username]
-      }, {
-        headers: { "Content-Type": "application/json" }
+      // ✅ FIXED Roblox username lookup (important part)
+      const robloxRes = await axios({
+        method: 'POST',
+        url: "https://users.roblox.com/v1/usernames/users",
+        headers: { "Content-Type": "application/json" },
+        data: JSON.stringify({ usernames: [username] }),
       });
 
       if (robloxRes.data?.data?.length > 0) {
         const userId = robloxRes.data.data[0].id;
         profile = `https://www.roblox.com/users/${userId}/profile`;
 
-        // Get avatar
         const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
         if (avatarRes.data?.data?.length > 0) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
 
-        // Get account creation date
         const createdRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
         const createdDate = new Date(createdRes.data.created);
         const now = new Date();
         ageInDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
 
-        // Fetch hats
-        const hatsRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/hat?sortOrder=Asc&limit=1`);
-        hatsCount = hatsRes.data?.total || 0;
+        // ✅ Start counting assets if public inventory
+        const assetTypes = [
+          { name: 'Hat', id: 8 },
+          { name: 'HairAccessory', id: 41 },
+          { name: 'ClassicClothing', id: 52 },
+        ];
 
-        // Fetch hair (assetTypeId 41 for HairAccessory)
-        const hairRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets?assetTypes=41&sortOrder=Asc&limit=1`);
-        hairCount = hairRes.data?.total || 0;
+        for (const type of assetTypes) {
+          const url = `https://inventory.roblox.com/v1/users/${userId}/assets/collectibles?assetTypes=${type.id}&limit=1`;
+          const resp = await axios.get(url);
+          const total = resp.data?.total || 0;
 
-        // Fetch classic clothes (assetTypeIds 11=Shirt,12=Pants,13=TShirt)
-        const clothesRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets?assetTypes=11,12,13&sortOrder=Asc&limit=1`);
-        classicClothesCount = clothesRes.data?.total || 0;
+          if (type.name === 'Hat') hatCount = total;
+          if (type.name === 'HairAccessory') hairCount = total;
+          if (type.name === 'ClassicClothing') classicClothesCount = total;
+        }
       }
     } catch (error) {
       console.error("Failed to fetch Roblox user info:", error.message);
@@ -77,7 +81,9 @@ export default async function handler(req, res) {
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
         profile, avatar,
         age: ageInDays,
-        hatsCount, hairCount, classicClothesCount,
+        hats: hatCount,
+        hairs: hairCount,
+        classicClothes: classicClothesCount,
         createdAt: serverTimestamp()
       });
 
@@ -101,10 +107,11 @@ export default async function handler(req, res) {
     let avatar = "";
 
     try {
-      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
-        usernames: [username]
-      }, {
-        headers: { "Content-Type": "application/json" }
+      const robloxRes = await axios({
+        method: 'POST',
+        url: "https://users.roblox.com/v1/usernames/users",
+        headers: { "Content-Type": "application/json" },
+        data: JSON.stringify({ usernames: [username] }),
       });
 
       if (robloxRes.data?.data?.length > 0) {
@@ -137,4 +144,4 @@ export default async function handler(req, res) {
   else {
     return res.status(405).end();
   }
-      }
+          }
