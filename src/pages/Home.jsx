@@ -6,6 +6,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
+  const [expandedAccountId, setExpandedAccountId] = useState(null);
 
   const [dashboardStats, setDashboardStats] = useState({
     totalAccounts: 0,
@@ -91,6 +92,10 @@ export default function Home() {
     </div>
   );
 
+  const toggleExpand = (id) => {
+    setExpandedAccountId(prev => (prev === id ? null : id));
+  };
+
   return (
     <div className="container" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
@@ -147,57 +152,60 @@ export default function Home() {
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
           <div style={{ marginTop: '15px' }}>
-            <DetailRow label="📝 Total Summary:" value={acc.totalSummary || "N/A"} />
-            <DetailRow label="🎂 Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
-            <DetailRow label="📧 Email:" value={acc.email} />
             <DetailRow label="💰 Price:" value={`₱${acc.price}`} />
-            <DetailRow label="💳 MOP:" value={acc.mop} />
-            <DetailRow label="🤝 Negotiable:" value={acc.negotiable} />
-            <DetailRow label="💲 Robux:" value={acc.robuxBalance} />
-            <DetailRow label="⚖️ Limited:" value={acc.limitedItems} />
-            <DetailRow label="📦 Inventory:" value={acc.inventory} />
-            <DetailRow label="🌍 Type:" value={acc.accountType} />
-            <DetailRow label="⭐️ Premium Status:" value={acc.premium === "True" ? "✅" : "❌"} />
-
-            {/* ✅ New added fields */}
-            <DetailRow label="🎩 Hats:" value={acc.hatsCount ?? 'N/A'} />
-            <DetailRow label="💇 Hair:" value={acc.hairCount ?? 'N/A'} />
-            <DetailRow label="👕 Classic Clothes:" value={acc.classicClothesCount ?? 'N/A'} />
+            <DetailRow label="💎 Robux:" value={acc.robuxBalance} />
+            <DetailRow label="⭐ Premium Status:" value={acc.premium === "True" ? "✅" : "❌"} />
           </div>
 
-          <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-            <strong>🔗 Profile:</strong>&nbsp;
-            <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
-          </div>
-
-          <div style={{ marginTop: "10px" }}>
-            <strong>🎮 Games with Gamepass:</strong>
-            <div style={{ 
-              marginTop: '8px', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '5px', 
-              maxHeight: '150px', 
-              overflowY: 'auto', 
-              paddingRight: '5px',
-              border: '1px solid #ccc',
-              borderRadius: '8px'
-            }}>
-              {acc.gamepass && acc.gamepass.trim() !== "" ? (
-                acc.gamepass.split(",").map((game, index) => (
-                  <Tag key={index} text={game.trim()} color="#243c6b" />
-                ))
-              ) : (
-                <Tag text="No Gamepass Found" color="#999" />
-              )}
-            </div>
-          </div>
-
-          <button onClick={buyNow} style={{ padding: '10px 20px', background: '#007bff', color: '#fff', border: 'none', marginTop: '15px', borderRadius: '5px' }}>
-            Contact Me
+          <button onClick={() => toggleExpand(acc.id)} style={{ marginTop: "10px", padding: "8px 15px", borderRadius: "5px", border: "none", background: "#ffc107" }}>
+            {expandedAccountId === acc.id ? "Hide Details" : "View Details"}
           </button>
+
+          {expandedAccountId === acc.id && (
+            <div style={{ marginTop: "15px" }}>
+              <DetailRow label="📝 Total Summary:" value={acc.totalSummary || "N/A"} />
+              <DetailRow label="🎂 Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
+              <DetailRow label="📧 Email:" value={acc.email} />
+              <DetailRow label="💳 MOP:" value={acc.mop} />
+              <DetailRow label="🤝 Negotiable:" value={acc.negotiable} />
+              <DetailRow label="⚠️ Limited:" value={acc.limitedItems} />
+              <DetailRow label="📦 Inventory:" value={acc.inventory} />
+              <DetailRow label="🌍 Type:" value={acc.accountType} />
+              <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <strong>🔗 Profile:</strong>&nbsp;
+                <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
+              </div>
+
+              <div style={{ marginTop: "10px" }}>
+                <strong>🎮 Games with Gamepass:</strong>
+                <div style={{ 
+                  marginTop: '8px', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: '5px', 
+                  maxHeight: '150px', 
+                  overflowY: 'auto', 
+                  paddingRight: '5px',
+                  border: '1px solid #ccc',
+                  borderRadius: '8px'
+                }}>
+                  {acc.gamepass && acc.gamepass.trim() !== "" ? (
+                    acc.gamepass.split(",").map((game, index) => (
+                      <Tag key={index} text={game.trim()} color="#243c6b" />
+                    ))
+                  ) : (
+                    <Tag text="No Gamepass Found" color="#999" />
+                  )}
+                </div>
+              </div>
+
+              <button onClick={buyNow} style={{ padding: '10px 20px', background: '#007bff', color: '#fff', border: 'none', marginTop: '15px', borderRadius: '5px' }}>
+                Contact Me
+              </button>
+            </div>
+          )}
         </div>
       ))}
     </div>
   );
-          }
+        }
