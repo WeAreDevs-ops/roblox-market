@@ -6,8 +6,6 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
-  const [expandedAccountId, setExpandedAccountId] = useState(null);
-
   const [dashboardStats, setDashboardStats] = useState({
     totalAccounts: 0,
     salesCount: 0,
@@ -23,27 +21,20 @@ export default function Home() {
 
   useEffect(() => {
     let currentSalesCount = 0;
-
     const fetchAndStartCounter = () => {
       fetch('/api/dashboard-stats')
         .then(res => res.json())
         .then(data => {
           setDashboardStats(data);
           currentSalesCount = data.salesCount;
-
           const interval = setInterval(() => {
             currentSalesCount += 1;
-            setDashboardStats(prev => ({
-              ...prev,
-              salesCount: currentSalesCount
-            }));
+            setDashboardStats(prev => ({ ...prev, salesCount: currentSalesCount }));
           }, 60000);
-
           return () => clearInterval(interval);
         })
         .catch(err => console.error(err));
     };
-
     fetchAndStartCounter();
   }, []);
 
@@ -92,30 +83,28 @@ export default function Home() {
     </div>
   );
 
-  const toggleExpand = (id) => {
-    setExpandedAccountId(prev => (prev === id ? null : id));
-  };
+  const [expandedId, setExpandedId] = useState(null);
 
   return (
     <div className="container" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
 
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+        display: 'flex',
+        flexWrap: 'wrap',
         gap: '10px',
         marginBottom: '20px'
       }}>
-        <div style={{ background: '#007bff', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px' }}>
+        <div style={{ background: '#007bff', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Total Accounts: {dashboardStats.totalAccounts}
         </div>
-        <div style={{ background: '#28a745', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px' }}>
+        <div style={{ background: '#28a745', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Total Revenue: ₱{dashboardStats.totalRevenue}
         </div>
-        <div style={{ background: '#ffc107', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px' }}>
+        <div style={{ background: '#ffc107', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Daily New Stock: {dashboardStats.newStock}
         </div>
-        <div style={{ background: '#dc3545', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px' }}>
+        <div style={{ background: '#dc3545', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Live Sales: {dashboardStats.salesCount}
         </div>
       </div>
@@ -153,24 +142,20 @@ export default function Home() {
 
           <div style={{ marginTop: '15px' }}>
             <DetailRow label="💰 Price:" value={`₱${acc.price}`} />
-            <DetailRow label="💎 Robux:" value={acc.robuxBalance} />
+            <DetailRow label="📝 Total Summary:" value={acc.totalSummary || "N/A"} />
             <DetailRow label="⭐ Premium Status:" value={acc.premium === "True" ? "✅" : "❌"} />
           </div>
 
-          <button onClick={() => toggleExpand(acc.id)} style={{ marginTop: "10px", padding: "8px 15px", borderRadius: "5px", border: "none", background: "#ffc107" }}>
-            {expandedAccountId === acc.id ? "Hide Details" : "View Details"}
-          </button>
-
-          {expandedAccountId === acc.id && (
-            <div style={{ marginTop: "15px" }}>
-              <DetailRow label="📝 Total Summary:" value={acc.totalSummary || "N/A"} />
+          {expandedId === acc.id && (
+            <div style={{ marginTop: '15px' }}>
               <DetailRow label="🎂 Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
               <DetailRow label="📧 Email:" value={acc.email} />
-              <DetailRow label="💳 MOP:" value={acc.mop} />
-              <DetailRow label="🤝 Negotiable:" value={acc.negotiable} />
+              <DetailRow label="💎 Robux:" value={acc.robuxBalance} />
               <DetailRow label="⚠️ Limited:" value={acc.limitedItems} />
               <DetailRow label="📦 Inventory:" value={acc.inventory} />
               <DetailRow label="🌍 Type:" value={acc.accountType} />
+              <DetailRow label="💳 MOP:" value={acc.mop} />
+
               <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                 <strong>🔗 Profile:</strong>&nbsp;
                 <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
@@ -198,14 +183,22 @@ export default function Home() {
                   )}
                 </div>
               </div>
-
-              <button onClick={buyNow} style={{ padding: '10px 20px', background: '#007bff', color: '#fff', border: 'none', marginTop: '15px', borderRadius: '5px' }}>
-                Contact Me
-              </button>
             </div>
           )}
+
+          <div style={{ marginTop: "10px" }}>
+            <button 
+              onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} 
+              style={{ padding: '8px 15px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px' }}
+            >
+              {expandedId === acc.id ? 'Hide Details' : 'View Details'}
+            </button>
+            <button onClick={buyNow} style={{ padding: '8px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '5px', marginLeft: '10px' }}>
+              Contact Me
+            </button>
+          </div>
         </div>
       ))}
     </div>
   );
-        }
+      }
