@@ -90,10 +90,10 @@ export default function Home() {
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
 
       <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, auto)',
         gap: '10px',
+        justifyContent: 'center',
         marginBottom: '20px'
       }}>
         <div style={{ background: '#007bff', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
@@ -202,4 +202,4 @@ export default function Home() {
       ))}
     </div>
   );
-              }
+          }
