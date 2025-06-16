@@ -90,6 +90,7 @@ export default function Home() {
 
   return (
     <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "20px", minHeight: '100vh' }}>
+      {/* Dark mode toggle */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h2>Available Accounts</h2>
         <label className="switch">
@@ -100,7 +101,7 @@ export default function Home() {
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(2, auto)',
+        gridTemplateColumns: 'repeat(2, 1fr)',
         gap: '10px',
         justifyContent: 'center',
         marginBottom: '20px'
@@ -144,21 +145,25 @@ export default function Home() {
 
       {filteredAccounts.length === 0 && <p>No results found.</p>}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: '15px',
+      }}>
         {filteredAccounts.map(acc => (
-          <div key={acc.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
-            <h3>{acc.username}</h3>
+          <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', borderRadius: '8px', backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
+            <h3 style={{ fontSize: '1rem', wordBreak: 'break-word' }}>{acc.username}</h3>
 
-            {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
+            {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "100%", maxWidth: "140px", borderRadius: "10px" }} />}
 
-            <div style={{ marginTop: '15px' }}>
+            <div style={{ marginTop: '10px' }}>
               <DetailRow label="➤ 𝗣𝗿𝗶𝗰𝗲:" value={`₱${acc.price}`} />
               <DetailRow label="➤ 𝗧𝗼𝘁𝗮𝗹 𝗦𝘂𝗺𝗺𝗮𝗿𝘆:" value={acc.totalSummary || "N/A"} />
               <DetailRow label="➤ 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗦𝘁𝗮𝘁𝘂𝘀:" value={acc.premium === "True" ? "✔" : "✖"} />
             </div>
 
             {expandedId === acc.id && (
-              <div style={{ marginTop: '15px' }}>
+              <div style={{ marginTop: '10px' }}>
                 <DetailRow label="➤ 𝗔𝗴𝗲:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
                 <DetailRow label="➤ 𝗘𝗺𝗮𝗶𝗹:" value={acc.email} />
                 <DetailRow label="➤ 𝗥𝗼𝗯𝘂𝘅:" value={acc.robuxBalance} />
@@ -167,7 +172,7 @@ export default function Home() {
                 <DetailRow label="🌍 𝗧𝘆𝗽𝗲:" value={acc.accountType} />
                 <DetailRow label="💳 𝗠𝗢𝗣:" value={acc.mop} />
 
-                <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ marginTop: "10px", display: 'flex', flexWrap: 'wrap' }}>
                   <strong>🔗 𝗣𝗿𝗼𝗳𝗶𝗹𝗲:</strong>&nbsp;
                   <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
                 </div>
@@ -200,11 +205,11 @@ export default function Home() {
             <div style={{ marginTop: "10px" }}>
               <button 
                 onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} 
-                style={{ padding: '8px 15px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px' }}
+                style={{ padding: '6px 12px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px' }}
               >
                 {expandedId === acc.id ? 'Hide Details' : 'View Details'}
               </button>
-              <button onClick={buyNow} style={{ padding: '8px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '5px', marginLeft: '10px' }}>
+              <button onClick={buyNow} style={{ padding: '6px 12px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '5px', marginLeft: '5px' }}>
                 Contact Me
               </button>
             </div>
@@ -212,6 +217,7 @@ export default function Home() {
         ))}
       </div>
 
+      {/* Inline CSS for toggle switch */}
       <style>{`
         .switch {
           position: relative;
@@ -253,4 +259,4 @@ export default function Home() {
       `}</style>
     </div>
   );
-          }
+        }
