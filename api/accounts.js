@@ -21,12 +21,11 @@ export default async function handler(req, res) {
     let profile = "";
     let avatar = "";
     let ageInDays = null;
-    let hatCount = null;
-    let hairCount = null;
+    let hatsCount = null;
+    let hairsCount = null;
     let classicClothesCount = null;
 
     try {
-      // ✅ Use modern endpoint
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
         usernames: [username]
       }, {
@@ -48,27 +47,18 @@ export default async function handler(req, res) {
         ageInDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
 
         // ✅ Inventory Counts
-        const assetTypes = {
-          Hat: 8,
-          Hair: 41,
-          ClassicClothes: [11, 12, 13]
+        const fetchCount = async (assetType) => {
+          try {
+            const res = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets?assetType=${assetType}&limit=1`);
+            return res.data?.data?.length ?? 0;
+          } catch (err) {
+            return 0; // inventory private or no items
+          }
         };
 
-        // Hat count
-        const hatRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/collectibles?assetType=Hat`);
-        hatCount = hatRes.data?.data?.length ?? 0;
-
-        // Hair count
-        const hairRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/collectibles?assetType=HairAccessory`);
-        hairCount = hairRes.data?.data?.length ?? 0;
-
-        // Classic Clothes (sum of shirts, pants, t-shirts)
-        let totalClothes = 0;
-        for (const typeId of assetTypes.ClassicClothes) {
-          const clothesRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/${typeId}/?limit=1`);
-          totalClothes += clothesRes.data?.data?.length ?? 0;
-        }
-        classicClothesCount = totalClothes;
+        hatsCount = await fetchCount('Hat');
+        hairsCount = await fetchCount('HairAccessory');
+        classicClothesCount = await fetchCount('Shirt');
       }
     } catch (error) {
       console.error("Failed to fetch Roblox user info:", error.message);
@@ -86,9 +76,7 @@ export default async function handler(req, res) {
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
         profile, avatar,
         age: ageInDays,
-        hats: hatCount ?? 0,
-        hairs: hairCount ?? 0,
-        classicClothes: classicClothesCount ?? 0,
+        hatsCount, hairsCount, classicClothesCount,
         createdAt: serverTimestamp()
       });
 
@@ -148,4 +136,4 @@ export default async function handler(req, res) {
   else {
     return res.status(405).end();
   }
-    }
+      }
