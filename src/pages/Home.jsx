@@ -147,26 +147,23 @@ export default function Home() {
 
       {filteredAccounts.map(acc => (
         <div key={acc.id} style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', borderRadius: '8px', backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
-          
-          {/* Display First View */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-            {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "80px", height: "80px", borderRadius: "10px" }} />}
-            <div>
-              <h3>{acc.username}</h3>
-              <DetailRow label="➤ 𝗣𝗿𝗶𝗰𝗲:" value={`₱${acc.price}`} />
-              <DetailRow label="➤ 𝗧𝗼𝘁𝗮𝗹 𝗦𝘂𝗺𝗺𝗮𝗿𝘆:" value={acc.totalSummary || "N/A"} />
-              <DetailRow label="➤ 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗦𝘁𝗮𝘁𝘂𝘀:" value={acc.premium === "True" ? "✔" : "✖"} />
-            </div>
+          <h3>{acc.username}</h3>
+
+          {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
+
+          <div style={{ marginTop: '15px' }}>
+            <DetailRow label="➤ 𝗣𝗿𝗶𝗰𝗲:" value={`₱${acc.price}`} />
+            <DetailRow label="➤ 𝗧𝗼𝘁𝗮𝗹 𝗦𝘂𝗺𝗺𝗮𝗿𝘆:" value={acc.totalSummary || "N/A"} />
+            <DetailRow label="➤ 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗦𝘁𝗮𝘁𝘂𝘀:" value={acc.premium === "True" ? "✔" : "✖"} />
           </div>
 
-          {/* Expanded Details */}
           {expandedId === acc.id && (
             <div style={{ marginTop: '15px' }}>
               <DetailRow label="➤ 𝗔𝗴𝗲:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
               <DetailRow label="➤ 𝗘𝗺𝗮𝗶𝗹:" value={acc.email} />
-              <DetailRow label="➤ 𝗜𝗻𝘃𝗲𝗻𝘁𝗼𝗿𝘆:" value={acc.inventory} />
               <DetailRow label="➤ 𝗥𝗼𝗯𝘂𝘅:" value={acc.robuxBalance} />
               <DetailRow label="➤ 𝗟𝗶𝗺𝗶𝘁𝗲𝗱:" value={acc.limitedItems} />
+              <DetailRow label="➤ 𝗜𝗻𝘃𝗲𝗻𝘁𝗼𝗿𝘆:" value={acc.inventory} />
               <DetailRow label="🌍 𝗧𝘆𝗽𝗲:" value={acc.accountType} />
               <DetailRow label="💳 𝗠𝗢𝗣:" value={acc.mop} />
 
