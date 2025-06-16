@@ -158,12 +158,12 @@ export default function Home() {
               <DetailRow label="💳 𝗠𝗢𝗣:" value={acc.mop} />
 
               <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                <strong>🔗 Profile:</strong>&nbsp;
+                <strong>🔗 𝗣𝗿𝗼𝗳𝗶𝗹𝗲:</strong>&nbsp;
                 <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
               </div>
 
               <div style={{ marginTop: "10px" }}>
-                <strong>🎮 Games with Gamepass:</strong>
+                <strong>🎮 𝗚𝗮𝗺𝗲𝘀 𝘄𝗶𝘁𝗵 𝗚𝗮𝗺𝗲𝗽𝗮𝘀𝘀𝗲𝘀:</strong>
                 <div style={{ 
                   marginTop: '8px', 
                   display: 'flex', 
