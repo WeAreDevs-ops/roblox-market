@@ -26,6 +26,7 @@ export default async function handler(req, res) {
     let classicClothesCount = 0;
 
     try {
+      // Get userId from username
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
         usernames: [username]
       }, {
@@ -36,26 +37,29 @@ export default async function handler(req, res) {
         const userId = robloxRes.data.data[0].id;
         profile = `https://www.roblox.com/users/${userId}/profile`;
 
+        // Get avatar
         const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
         if (avatarRes.data?.data?.length > 0) {
           avatar = avatarRes.data.data[0].imageUrl;
         }
 
+        // Get account creation date
         const createdRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
         const createdDate = new Date(createdRes.data.created);
         const now = new Date();
         ageInDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
 
-        const hatsRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory/8?limit=1`);
-        hatsCount = hatsRes.data.total;
+        // Fetch hats
+        const hatsRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/hat?sortOrder=Asc&limit=1`);
+        hatsCount = hatsRes.data?.total || 0;
 
-        const hairRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory/41?limit=1`);
-        hairCount = hairRes.data.total;
+        // Fetch hair (assetTypeId 41 for HairAccessory)
+        const hairRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets?assetTypes=41&sortOrder=Asc&limit=1`);
+        hairCount = hairRes.data?.total || 0;
 
-        const shirtsRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory/11?limit=1`);
-        const pantsRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory/12?limit=1`);
-        const tshirtsRes = await axios.get(`https://inventory.roblox.com/v2/users/${userId}/inventory/13?limit=1`);
-        classicClothesCount = shirtsRes.data.total + pantsRes.data.total + tshirtsRes.data.total;
+        // Fetch classic clothes (assetTypeIds 11=Shirt,12=Pants,13=TShirt)
+        const clothesRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets?assetTypes=11,12,13&sortOrder=Asc&limit=1`);
+        classicClothesCount = clothesRes.data?.total || 0;
       }
     } catch (error) {
       console.error("Failed to fetch Roblox user info:", error.message);
@@ -71,7 +75,8 @@ export default async function handler(req, res) {
       await addDoc(accountsRef, {
         username, email, price, mop, negotiable,
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
-        profile, avatar, age: ageInDays,
+        profile, avatar,
+        age: ageInDays,
         hatsCount, hairCount, classicClothesCount,
         createdAt: serverTimestamp()
       });
@@ -132,4 +137,4 @@ export default async function handler(req, res) {
   else {
     return res.status(405).end();
   }
-            }
+      }
