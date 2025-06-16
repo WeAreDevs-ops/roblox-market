@@ -92,6 +92,7 @@ export default function Home() {
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
+        justifyContent: 'center',
         gap: '10px',
         marginBottom: '20px'
       }}>
@@ -201,4 +202,4 @@ export default function Home() {
       ))}
     </div>
   );
-      }
+              }
