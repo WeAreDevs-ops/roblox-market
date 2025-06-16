@@ -1,11 +1,10 @@
 import { db } from '../firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, getDocs as getDocsQuery, increment, serverTimestamp } from "firebase/firestore";
 import axios from 'axios';
-import cheerio from 'cheerio';  // ✅ install via npm i cheerio
 
 export default async function handler(req, res) {
   const accountsRef = collection(db, "accounts");
-  const counterRef = doc(db, "meta", "salesCounter");
+  const counterRef = doc(db, "meta", "salesCounter"); 
 
   if (req.method === 'GET') {
     const snapshot = await getDocs(accountsRef);
@@ -27,50 +26,38 @@ export default async function handler(req, res) {
     let classicCount = 0;
 
     try {
-      const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
-        usernames: [username]
-      }, {
-        headers: { "Content-Type": "application/json" }
-      });
-
-      if (robloxRes.data?.data?.length > 0) {
-        const userId = robloxRes.data.data[0].id;
-        profile = `https://www.roblox.com/users/${userId}/profile`;
-
-        const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
-        if (avatarRes.data?.data?.length > 0) {
-          avatar = avatarRes.data.data[0].imageUrl;
-        }
-
-        const createdRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
-        const createdDate = new Date(createdRes.data.created);
-        const now = new Date();
-        ageInDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
-
-        // ✅ Try normal Roblox API first
-        const hatsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/8?limit=1`);
-        const hairsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/41?limit=1`);
-        const shirtsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/11?limit=1`);
-        const pantsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/12?limit=1`);
-
-        hatsCount = hatsApi.data?.total || 0;
-        hairsCount = hairsApi.data?.total || 0;
-        const shirtsCount = shirtsApi.data?.total || 0;
-        const pantsCount = pantsApi.data?.total || 0;
-        classicCount = shirtsCount + pantsCount;
-
-        // ✅ If any total = 0, fallback to web scraper
-        if (hatsCount === 0 || hairsCount === 0 || classicCount === 0) {
-          const inventoryPage = await axios.get(`https://www.roblox.com/users/${userId}/inventory`);
-          const $ = cheerio.load(inventoryPage.data);
-
-          // Extract counts from page meta tags (fallback method)
-          const scriptText = $('script[type="application/ld+json"]').html();
-          if (scriptText) {
-            // Web fallback logic (optional, depending on Roblox page structure)
-          }
-        }
+      // Stable way to fetch userId from username
+      const userRes = await axios.get(`https://api.roblox.com/users/get-by-username?username=${encodeURIComponent(username)}`);
+      
+      if (!userRes.data || !userRes.data.Id) {
+        return res.status(404).json({ message: 'Roblox username not found' });
       }
+
+      const userId = userRes.data.Id;
+      profile = `https://www.roblox.com/users/${userId}/profile`;
+
+      const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
+      if (avatarRes.data?.data?.length > 0) {
+        avatar = avatarRes.data.data[0].imageUrl;
+      }
+
+      const createdRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
+      const createdDate = new Date(createdRes.data.created);
+      const now = new Date();
+      ageInDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
+
+      // Inventory counts
+      const hatsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/8?limit=1`);
+      const hairsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/41?limit=1`);
+      const shirtsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/11?limit=1`);
+      const pantsApi = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/12?limit=1`);
+
+      hatsCount = hatsApi.data?.total || 0;
+      hairsCount = hairsApi.data?.total || 0;
+      const shirtsCount = shirtsApi.data?.total || 0;
+      const pantsCount = pantsApi.data?.total || 0;
+      classicCount = shirtsCount + pantsCount;
+
     } catch (error) {
       console.error("Failed to fetch Roblox user info:", error.message);
     }
@@ -87,7 +74,9 @@ export default async function handler(req, res) {
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
         profile, avatar,
         age: ageInDays,
-        hatsCount, hairsCount, classicCount,
+        hats: hatsCount,
+        hairs: hairsCount,
+        classicClothes: classicCount,
         createdAt: serverTimestamp()
       });
 
@@ -107,8 +96,33 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: 'Missing document ID' });
     }
 
+    let profile = "";
+    let avatar = "";
+
+    try {
+      const userRes = await axios.get(`https://api.roblox.com/users/get-by-username?username=${encodeURIComponent(username)}`);
+      
+      if (!userRes.data || !userRes.data.Id) {
+        return res.status(404).json({ message: 'Roblox username not found' });
+      }
+
+      const userId = userRes.data.Id;
+      profile = `https://www.roblox.com/users/${userId}/profile`;
+
+      const avatarRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
+      if (avatarRes.data?.data?.length > 0) {
+        avatar = avatarRes.data.data[0].imageUrl;
+      }
+
+    } catch (error) {
+      console.error("Failed to fetch Roblox user info on update:", error.message);
+    }
+
     const docRef = doc(accountsRef, id);
-    await updateDoc(docRef, { username, totalSummary, premium, ...rest });
+    await updateDoc(docRef, {
+      username, totalSummary, premium, ...rest, profile, avatar
+    });
+
     return res.status(200).json({ message: 'Updated successfully' });
   }
 
@@ -121,4 +135,4 @@ export default async function handler(req, res) {
   else {
     return res.status(405).end();
   }
-                                                                                }
+          }
