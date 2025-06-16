@@ -12,9 +12,8 @@ export default function Home() {
     totalRevenue: 0,
     newStock: 0
   });
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("darkMode") === "true";
-  });
+  const [darkMode, setDarkMode] = useState(false);
+  const toggleDarkMode = () => setDarkMode(!darkMode);
 
   useEffect(() => {
     fetch('/api/accounts')
@@ -88,22 +87,17 @@ export default function Home() {
 
   const [expandedId, setExpandedId] = useState(null);
 
-  const toggleDarkMode = () => {
-    setDarkMode(prev => {
-      localStorage.setItem("darkMode", !prev);
-      return !prev;
-    });
-  };
-
   return (
-    <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "20px", color: darkMode ? '#f1f1f1' : '#000', backgroundColor: darkMode ? '#121212' : '#f2f2f2' }}>
-      <div style={{ textAlign: "right", marginBottom: "10px" }}>
-        <button onClick={toggleDarkMode} style={{ padding: "8px 15px", borderRadius: "5px", border: "none", background: "#007bff", color: "#fff" }}>
-          {darkMode ? "Light Mode" : "Dark Mode"}
-        </button>
-      </div>
-
+    <div className={darkMode ? "container dark-mode" : "container"} style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
+
+      {/* Dark mode toggle */}
+      <div style={{ marginBottom: "20px" }}>
+        <label className="switch">
+          <input type="checkbox" checked={darkMode} onChange={toggleDarkMode} />
+          <span className="slider round"></span>
+        </label>
+      </div>
 
       <div style={{
         display: 'grid',
@@ -216,6 +210,47 @@ export default function Home() {
           </div>
         </div>
       ))}
+
+      {/* Dark mode switch styling */}
+      <style>{`
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 60px;
+          height: 34px;
+        }
+        .switch input { display: none; }
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0; left: 0;
+          right: 0; bottom: 0;
+          background-color: #ccc;
+          transition: .4s;
+          border-radius: 34px;
+        }
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 26px;
+          width: 26px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          transition: .4s;
+          border-radius: 50%;
+        }
+        input:checked + .slider {
+          background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+          transform: translateX(26px);
+        }
+        .dark-mode {
+          background-color: #121212;
+          color: white;
+        }
+      `}</style>
     </div>
   );
-                                  }
+      }
