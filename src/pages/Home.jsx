@@ -13,8 +13,16 @@ export default function Home() {
     newStock: 0
   });
 
-  const [darkMode, setDarkMode] = useState(false);
-  const toggleDarkMode = () => setDarkMode(!darkMode);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved === 'true';
+  });
+
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem('darkMode', newMode);
+  };
 
   useEffect(() => {
     fetch('/api/accounts')
@@ -154,7 +162,11 @@ export default function Home() {
 
       {filteredAccounts.length === 0 && <p>No results found.</p>}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+        gap: '20px' 
+      }}>
         {filteredAccounts.map(acc => (
           <div key={acc.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
             <h3>{acc.username}</h3>
@@ -263,4 +275,4 @@ export default function Home() {
       `}</style>
     </div>
   );
-          }
+  }
