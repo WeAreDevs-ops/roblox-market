@@ -95,7 +95,6 @@ export default function Home() {
     <div className="container" style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
 
-      {/* ✅ Alignment balanced using grid */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
@@ -159,6 +158,11 @@ export default function Home() {
             <DetailRow label="📦 Inventory:" value={acc.inventory} />
             <DetailRow label="🌍 Type:" value={acc.accountType} />
             <DetailRow label="⭐️ Premium Status:" value={acc.premium === "True" ? "✅" : "❌"} />
+
+            {/* ✅ New added fields */}
+            <DetailRow label="🎩 Hats:" value={acc.hatsCount ?? 'N/A'} />
+            <DetailRow label="💇 Hair:" value={acc.hairCount ?? 'N/A'} />
+            <DetailRow label="👕 Classic Clothes:" value={acc.classicClothesCount ?? 'N/A'} />
           </div>
 
           <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -196,4 +200,4 @@ export default function Home() {
       ))}
     </div>
   );
-      }
+          }
