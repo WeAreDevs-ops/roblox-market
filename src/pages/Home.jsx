@@ -90,7 +90,6 @@ export default function Home() {
 
   return (
     <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "20px", minHeight: '100vh' }}>
-      {/* Dark mode toggle */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h2>Available Accounts</h2>
         <label className="switch">
@@ -101,8 +100,9 @@ export default function Home() {
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateColumns: 'repeat(2, auto)',
         gap: '10px',
+        justifyContent: 'center',
         marginBottom: '20px'
       }}>
         <div style={{ background: '#007bff', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
@@ -144,7 +144,7 @@ export default function Home() {
 
       {filteredAccounts.length === 0 && <p>No results found.</p>}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
         {filteredAccounts.map(acc => (
           <div key={acc.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
@@ -174,17 +174,7 @@ export default function Home() {
 
                 <div style={{ marginTop: "10px" }}>
                   <strong>🎮 𝗚𝗮𝗺𝗲𝘀 𝘄𝗶𝘁𝗵 𝗚𝗮𝗺𝗲𝗽𝗮𝘀𝘀𝗲𝘀:</strong>
-                  <div style={{ 
-                    marginTop: '8px', 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    gap: '5px', 
-                    maxHeight: '150px', 
-                    overflowY: 'auto', 
-                    paddingRight: '5px',
-                    border: '1px solid #ccc',
-                    borderRadius: '8px'
-                  }}>
+                  <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '5px', maxHeight: '150px', overflowY: 'auto', paddingRight: '5px', border: '1px solid #ccc', borderRadius: '8px' }}>
                     {acc.gamepass && acc.gamepass.trim() !== "" ? (
                       acc.gamepass.split(",").map((game, index) => (
                         <Tag key={index} text={game.trim()} color="#243c6b" />
@@ -198,10 +188,7 @@ export default function Home() {
             )}
 
             <div style={{ marginTop: "10px" }}>
-              <button 
-                onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} 
-                style={{ padding: '8px 15px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px' }}
-              >
+              <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} style={{ padding: '8px 15px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px' }}>
                 {expandedId === acc.id ? 'Hide Details' : 'View Details'}
               </button>
               <button onClick={buyNow} style={{ padding: '8px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '5px', marginLeft: '10px' }}>
@@ -223,4 +210,4 @@ export default function Home() {
       `}</style>
     </div>
   );
-                                               }
+      }
