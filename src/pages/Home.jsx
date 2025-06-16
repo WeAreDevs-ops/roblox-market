@@ -13,18 +13,8 @@ export default function Home() {
     newStock: 0
   });
 
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem("darkMode");
-    return saved ? JSON.parse(saved) : false;
-  });
-
-  const toggleDarkMode = () => {
-    setDarkMode(prev => {
-      const updated = !prev;
-      localStorage.setItem("darkMode", JSON.stringify(updated));
-      return updated;
-    });
-  };
+  const [darkMode, setDarkMode] = useState(false);
+  const toggleDarkMode = () => setDarkMode(!darkMode);
 
   useEffect(() => {
     fetch('/api/accounts')
@@ -129,25 +119,35 @@ export default function Home() {
         </div>
       </div>
 
-      <input type="text" placeholder="🔎 Search by username or gamepass..."
-        value={search} onChange={(e) => setSearch(e.target.value)}
-        style={{ padding: "10px", width: "100%", maxWidth: "400px", borderRadius: "8px", border: "1px solid #ccc", marginBottom: "10px" }} 
-      />
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", marginBottom: "15px" }}>
+        <input 
+          type="text" 
+          placeholder="🔎 Search by username or gamepass..."
+          value={search} 
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ 
+            padding: "10px", 
+            width: "200px", 
+            borderRadius: "8px", 
+            border: "1px solid #ccc", 
+            marginBottom: "10px",
+            marginRight: "10px"
+          }} 
+        />
 
-      <div style={{ marginBottom: "15px" }}>
-        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} style={{ padding: "8px", marginRight: "10px" }}>
+        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} style={{ padding: "10px", marginRight: "10px" }}>
           <option value="">Sort Price</option>
           <option value="low-high">Low to High</option>
           <option value="high-low">High to Low</option>
         </select>
 
-        <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)} style={{ padding: "8px", marginRight: "10px" }}>
+        <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)} style={{ padding: "10px", marginRight: "10px" }}>
           <option value="">Email Status</option>
           <option value="Verified">Verified</option>
           <option value="Unverified">Unverified</option>
         </select>
 
-        <button onClick={resetFilters} style={{ padding: "8px 15px", background: "#dc3545", color: "#fff", border: "none", borderRadius: "5px" }}>
+        <button onClick={resetFilters} style={{ padding: "10px 15px", background: "#dc3545", color: "#fff", border: "none", borderRadius: "5px" }}>
           Reset
         </button>
       </div>
@@ -163,8 +163,8 @@ export default function Home() {
 
             <div style={{ marginTop: '15px' }}>
               <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
-              <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
-              <DetailRow label="➤ Premium Status:" value={acc.premium === "True" ? "✔" : "✖"} />
+              <DetailRow label="➤ Summary:" value={acc.totalSummary || "N/A"} />
+              <DetailRow label="➤ Premium:" value={acc.premium === "True" ? "✔" : "✖"} />
             </div>
 
             {expandedId === acc.id && (
@@ -183,7 +183,7 @@ export default function Home() {
                 </div>
 
                 <div style={{ marginTop: "10px" }}>
-                  <strong>🎮 Gamepass Found:</strong>
+                  <strong>🎮 Gamepass:</strong>
                   <div style={{ 
                     marginTop: '8px', 
                     display: 'flex', 
@@ -263,4 +263,4 @@ export default function Home() {
       `}</style>
     </div>
   );
-                                                                                             }
+          }
