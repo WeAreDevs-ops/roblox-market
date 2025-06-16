@@ -13,8 +13,18 @@ export default function Home() {
     newStock: 0
   });
 
-  const [darkMode, setDarkMode] = useState(false);
-  const toggleDarkMode = () => setDarkMode(!darkMode);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("darkMode");
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  const toggleDarkMode = () => {
+    setDarkMode(prev => {
+      const updated = !prev;
+      localStorage.setItem("darkMode", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   useEffect(() => {
     fetch('/api/accounts')
@@ -75,12 +85,12 @@ export default function Home() {
   const Tag = ({ text, color }) => (
     <span style={{
       backgroundColor: color, color: '#fff', padding: '3px 10px',
-      borderRadius: '20px', fontSize: '0.75rem', marginLeft: '8px', fontWeight: 'bold'
+      borderRadius: '20px', fontSize: '0.85rem', marginLeft: '8px', fontWeight: 'bold'
     }}>{text}</span>
   );
 
   const DetailRow = ({ label, value }) => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', marginBottom: '5px' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', marginBottom: '8px' }}>
       <strong>{label}</strong>
       <Tag text={value} color="#243c6b" />
     </div>
@@ -89,9 +99,9 @@ export default function Home() {
   const [expandedId, setExpandedId] = useState(null);
 
   return (
-    <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "10px", minHeight: '100vh' }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-        <h3>Available Accounts</h3>
+    <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "20px", minHeight: '100vh' }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h2>Available Accounts</h2>
         <label className="switch">
           <input type="checkbox" checked={darkMode} onChange={toggleDarkMode} />
           <span className="slider round"></span>
@@ -101,76 +111,64 @@ export default function Home() {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(2, auto)',
-        gap: '5px',
+        gap: '10px',
         justifyContent: 'center',
-        marginBottom: '10px'
+        marginBottom: '20px'
       }}>
-        <div style={{ background: '#007bff', color: '#fff', padding: '5px 10px', borderRadius: '5px', fontSize: '12px' }}>
+        <div style={{ background: '#007bff', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Total Accounts: {dashboardStats.totalAccounts}
         </div>
-        <div style={{ background: '#28a745', color: '#fff', padding: '5px 10px', borderRadius: '5px', fontSize: '12px' }}>
+        <div style={{ background: '#28a745', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Total Revenue: ₱{dashboardStats.totalRevenue}
         </div>
-        <div style={{ background: '#ffc107', color: '#000', padding: '5px 10px', borderRadius: '5px', fontSize: '12px' }}>
+        <div style={{ background: '#ffc107', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Daily New Stock: {dashboardStats.newStock}
         </div>
-        <div style={{ background: '#dc3545', color: '#fff', padding: '5px 10px', borderRadius: '5px', fontSize: '12px' }}>
+        <div style={{ background: '#dc3545', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Live Sales: {dashboardStats.salesCount}
         </div>
       </div>
 
       <input type="text" placeholder="🔎 Search by username or gamepass..."
         value={search} onChange={(e) => setSearch(e.target.value)}
-        style={{ padding: "8px", width: "100%", maxWidth: "400px", borderRadius: "8px", border: "1px solid #ccc", marginBottom: "10px", fontSize: '12px' }} 
+        style={{ padding: "10px", width: "100%", maxWidth: "400px", borderRadius: "8px", border: "1px solid #ccc", marginBottom: "10px" }} 
       />
 
-      <div style={{ marginBottom: "10px" }}>
-        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} style={{ padding: "5px", marginRight: "5px", fontSize: '12px' }}>
+      <div style={{ marginBottom: "15px" }}>
+        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} style={{ padding: "8px", marginRight: "10px" }}>
           <option value="">Sort Price</option>
           <option value="low-high">Low to High</option>
           <option value="high-low">High to Low</option>
         </select>
 
-        <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)} style={{ padding: "5px", marginRight: "5px", fontSize: '12px' }}>
+        <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)} style={{ padding: "8px", marginRight: "10px" }}>
           <option value="">Email Status</option>
           <option value="Verified">Verified</option>
           <option value="Unverified">Unverified</option>
         </select>
 
-        <button onClick={resetFilters} style={{ padding: "5px 10px", background: "#dc3545", color: "#fff", border: "none", borderRadius: "5px", fontSize: '12px' }}>
+        <button onClick={resetFilters} style={{ padding: "8px 15px", background: "#dc3545", color: "#fff", border: "none", borderRadius: "5px" }}>
           Reset
         </button>
       </div>
 
       {filteredAccounts.length === 0 && <p>No results found.</p>}
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: '10px'
-      }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
         {filteredAccounts.map(acc => (
-          <div key={acc.id} style={{
-            border: '1px solid #ccc',
-            padding: '10px',
-            borderRadius: '8px',
-            backgroundColor: darkMode ? '#1e1e1e' : '#fff',
-            fontSize: '12px'
-          }}>
-            <h3 style={{ fontSize: '14px' }}>{acc.username}</h3>
+          <div key={acc.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
+            <h3>{acc.username}</h3>
 
-            {acc.avatar && (
-              <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "100%", borderRadius: "10px" }} />
-            )}
+            {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
-            <div style={{ marginTop: '10px' }}>
+            <div style={{ marginTop: '15px' }}>
               <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
               <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
               <DetailRow label="➤ Premium Status:" value={acc.premium === "True" ? "✔" : "✖"} />
             </div>
 
             {expandedId === acc.id && (
-              <div style={{ marginTop: '10px' }}>
+              <div style={{ marginTop: '15px' }}>
                 <DetailRow label="➤ Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
                 <DetailRow label="➤ Email:" value={acc.email} />
                 <DetailRow label="➤ Robux:" value={acc.robuxBalance} />
@@ -179,14 +177,24 @@ export default function Home() {
                 <DetailRow label="🌍 Type:" value={acc.accountType} />
                 <DetailRow label="💳 MOP:" value={acc.mop} />
 
-                <div style={{ marginTop: "5px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                   <strong>🔗 Profile:</strong>&nbsp;
                   <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
                 </div>
 
-                <div style={{ marginTop: "5px" }}>
-                  <strong>🎮 Games with Gamepasses:</strong>
-                  <div style={{ marginTop: '5px', display: 'flex', flexDirection: 'column', gap: '3px', maxHeight: '100px', overflowY: 'auto', paddingRight: '5px', border: '1px solid #ccc', borderRadius: '8px' }}>
+                <div style={{ marginTop: "10px" }}>
+                  <strong>🎮 Gamepass Found:</strong>
+                  <div style={{ 
+                    marginTop: '8px', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '5px', 
+                    maxHeight: '150px', 
+                    overflowY: 'auto', 
+                    paddingRight: '5px',
+                    border: '1px solid #ccc',
+                    borderRadius: '8px'
+                  }}>
                     {acc.gamepass && acc.gamepass.trim() !== "" ? (
                       acc.gamepass.split(",").map((game, index) => (
                         <Tag key={index} text={game.trim()} color="#243c6b" />
@@ -199,14 +207,14 @@ export default function Home() {
               </div>
             )}
 
-            <div style={{ marginTop: "5px" }}>
+            <div style={{ marginTop: "10px" }}>
               <button 
                 onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} 
-                style={{ padding: '5px 10px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px', fontSize: '12px' }}
+                style={{ padding: '8px 15px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px' }}
               >
                 {expandedId === acc.id ? 'Hide Details' : 'View Details'}
               </button>
-              <button onClick={buyNow} style={{ padding: '5px 10px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '5px', marginLeft: '5px', fontSize: '12px' }}>
+              <button onClick={buyNow} style={{ padding: '8px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '5px', marginLeft: '10px' }}>
                 Contact Me
               </button>
             </div>
@@ -225,7 +233,8 @@ export default function Home() {
         .slider {
           position: absolute;
           cursor: pointer;
-          top: 0; left: 0; right: 0; bottom: 0;
+          top: 0; left: 0;
+          right: 0; bottom: 0;
           background-color: #ccc;
           transition: .4s;
           border-radius: 34px;
@@ -254,4 +263,4 @@ export default function Home() {
       `}</style>
     </div>
   );
-                   }
+                                                                                             }
