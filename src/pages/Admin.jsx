@@ -10,7 +10,6 @@ export default function Admin() {
     email: "Verified",
     price: "",
     mop: "Gcash",
-    negotiable: "Yes",
     robuxBalance: "",
     limitedItems: "",
     inventory: "Public",
@@ -82,7 +81,6 @@ export default function Admin() {
           email: "Verified",
           price: "",
           mop: "Gcash",
-          negotiable: "Yes",
           robuxBalance: "",
           limitedItems: "",
           inventory: "Public",
@@ -131,7 +129,6 @@ export default function Admin() {
       email: account.email || "Verified",
       price: account.price || "",
       mop: account.mop || "Gcash",
-      negotiable: account.negotiable || "Yes",
       robuxBalance: account.robuxBalance || "",
       limitedItems: account.limitedItems || "",
       inventory: account.inventory || "Public",
@@ -203,14 +200,6 @@ export default function Admin() {
         </div>
 
         <div style={{ marginBottom: "10px" }}>
-          <label>Negotiable:</label>
-          <select name="negotiable" value={formData.negotiable} onChange={handleChange}>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
           <label>Robux Balance:</label>
           <input type="number" name="robuxBalance" value={formData.robuxBalance} onChange={handleChange} />
         </div>
@@ -264,7 +253,7 @@ export default function Admin() {
       {filteredAccounts.map(acc => (
         <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
           <strong>{acc.username}</strong> - ₱{acc.price}
-          <div>Account Age: {acc.age} days</div> {/* ✅ Display the total days */}
+          <div>Account Age: {acc.age} days</div>
           <div style={{ marginTop: "5px" }}>
             <button onClick={() => handleEdit(acc)} style={{ background: "orange", color: "white", border: "none", padding: "5px 10px", marginRight: "10px" }}>
               Edit
@@ -277,4 +266,4 @@ export default function Admin() {
       ))}
     </div>
   );
-                                            }
+                                         }
