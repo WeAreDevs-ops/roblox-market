@@ -142,9 +142,9 @@ export default function Home() {
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
           <div style={{ marginTop: '15px' }}>
-            <DetailRow label="💰 Price:" value={`₱${acc.price}`} />
-            <DetailRow label="📝 Total Summary:" value={acc.totalSummary || "N/A"} />
-            <DetailRow label="⭐ Premium Status:" value={acc.premium === "True" ? "✅" : "❌"} />
+            <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
+            <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
+            <DetailRow label="➤ Premium Status:" value={acc.premium === "True" ? "✅" : "❌"} />
           </div>
 
           {expandedId === acc.id && (
