@@ -12,6 +12,9 @@ export default function Home() {
     totalRevenue: 0,
     newStock: 0
   });
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("darkMode") === "true";
+  });
 
   useEffect(() => {
     fetch('/api/accounts')
@@ -85,8 +88,21 @@ export default function Home() {
 
   const [expandedId, setExpandedId] = useState(null);
 
+  const toggleDarkMode = () => {
+    setDarkMode(prev => {
+      localStorage.setItem("darkMode", !prev);
+      return !prev;
+    });
+  };
+
   return (
-    <div className="container" style={{ padding: "20px" }}>
+    <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "20px", color: darkMode ? '#f1f1f1' : '#000', backgroundColor: darkMode ? '#121212' : '#f2f2f2' }}>
+      <div style={{ textAlign: "right", marginBottom: "10px" }}>
+        <button onClick={toggleDarkMode} style={{ padding: "8px 15px", borderRadius: "5px", border: "none", background: "#007bff", color: "#fff" }}>
+          {darkMode ? "Light Mode" : "Dark Mode"}
+        </button>
+      </div>
+
       <h2 style={{ marginBottom: "20px" }}>Available Accounts</h2>
 
       <div style={{
@@ -202,4 +218,4 @@ export default function Home() {
       ))}
     </div>
   );
-          }
+                                  }
