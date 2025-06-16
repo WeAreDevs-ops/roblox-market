@@ -142,20 +142,20 @@ export default function Home() {
           {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
 
           <div style={{ marginTop: '15px' }}>
-            <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
-            <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
-            <DetailRow label="➤ Premium Status:" value={acc.premium === "True" ? "✅" : "❌"} />
+            <DetailRow label="➤ 𝗣𝗿𝗶𝗰𝗲:" value={`₱${acc.price}`} />
+            <DetailRow label="➤ 𝗧𝗼𝘁𝗮𝗹 𝗦𝘂𝗺𝗺𝗮𝗿𝘆:" value={acc.totalSummary || "N/A"} />
+            <DetailRow label="➤ 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗦𝘁𝗮𝘁𝘂𝘀:" value={acc.premium === "True" ? "✅" : "❌"} />
           </div>
 
           {expandedId === acc.id && (
             <div style={{ marginTop: '15px' }}>
-              <DetailRow label="➤ Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
-              <DetailRow label="➤ Email:" value={acc.email} />
-              <DetailRow label="➤ Robux:" value={acc.robuxBalance} />
-              <DetailRow label="➤ Limited:" value={acc.limitedItems} />
-              <DetailRow label="➤ Inventory:" value={acc.inventory} />
-              <DetailRow label="🌍 Type:" value={acc.accountType} />
-              <DetailRow label="💳 MOP:" value={acc.mop} />
+              <DetailRow label="➤ 𝗔𝗴𝗲:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
+              <DetailRow label="➤ 𝗘𝗺𝗮𝗶𝗹:" value={acc.email} />
+              <DetailRow label="➤ 𝗥𝗼𝗯𝘂𝘅:" value={acc.robuxBalance} />
+              <DetailRow label="➤ 𝗟𝗶𝗺𝗶𝘁𝗲𝗱:" value={acc.limitedItems} />
+              <DetailRow label="➤ 𝗜𝗻𝘃𝗲𝗻𝘁𝗼𝗿𝘆:" value={acc.inventory} />
+              <DetailRow label="🌍 𝗧𝘆𝗽𝗲:" value={acc.accountType} />
+              <DetailRow label="💳 𝗠𝗢𝗣:" value={acc.mop} />
 
               <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                 <strong>🔗 Profile:</strong>&nbsp;
