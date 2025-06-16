@@ -101,9 +101,8 @@ export default function Home() {
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(2, auto)',
+        gridTemplateColumns: 'repeat(2, 1fr)',
         gap: '10px',
-        justifyContent: 'center',
         marginBottom: '20px'
       }}>
         <div style={{ background: '#007bff', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
@@ -145,115 +144,83 @@ export default function Home() {
 
       {filteredAccounts.length === 0 && <p>No results found.</p>}
 
-      {filteredAccounts.map(acc => (
-        <div key={acc.id} style={{ border: '1px solid #ccc', padding: '15px', marginBottom: '15px', borderRadius: '8px', backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
-          
-          {/* Display First View */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-            {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "80px", height: "80px", borderRadius: "10px" }} />}
-            <div>
-              <h3>{acc.username}</h3>
-              <DetailRow label="➤ 𝗣𝗿𝗶𝗰𝗲:" value={`₱${acc.price}`} />
-              <DetailRow label="➤ 𝗧𝗼𝘁𝗮𝗹 𝗦𝘂𝗺𝗺𝗮𝗿𝘆:" value={acc.totalSummary || "N/A"} />
-              <DetailRow label="➤ 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗦𝘁𝗮𝘁𝘂𝘀:" value={acc.premium === "True" ? "✔" : "✖"} />
-            </div>
-          </div>
-
-          {/* Expanded Details */}
-          {expandedId === acc.id && (
-            <div style={{ marginTop: '15px' }}>
-              <DetailRow label="➤ 𝗔𝗴𝗲:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
-              <DetailRow label="➤ 𝗘𝗺𝗮𝗶𝗹:" value={acc.email} />
-              <DetailRow label="➤ 𝗜𝗻𝘃𝗲𝗻𝘁𝗼𝗿𝘆:" value={acc.inventory} />
-              <DetailRow label="➤ 𝗥𝗼𝗯𝘂𝘅:" value={acc.robuxBalance} />
-              <DetailRow label="➤ 𝗟𝗶𝗺𝗶𝘁𝗲𝗱:" value={acc.limitedItems} />
-              <DetailRow label="🌍 𝗧𝘆𝗽𝗲:" value={acc.accountType} />
-              <DetailRow label="💳 𝗠𝗢𝗣:" value={acc.mop} />
-
-              <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                <strong>🔗 𝗣𝗿𝗼𝗳𝗶𝗹𝗲:</strong>&nbsp;
-                <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+        {filteredAccounts.map(acc => (
+          <div key={acc.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+              {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "80px", height: "80px", borderRadius: "10px" }} />}
+              <div>
+                <h3>{acc.username}</h3>
+                <DetailRow label="➤ 𝗣𝗿𝗶𝗰𝗲:" value={`₱${acc.price}`} />
+                <DetailRow label="➤ 𝗧𝗼𝘁𝗮𝗹 𝗦𝘂𝗺𝗺𝗮𝗿𝘆:" value={acc.totalSummary || "N/A"} />
+                <DetailRow label="➤ 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗦𝘁𝗮𝘁𝘂𝘀:" value={acc.premium === "True" ? "✔" : "✖"} />
               </div>
+            </div>
 
-              <div style={{ marginTop: "10px" }}>
-                <strong>🎮 𝗚𝗮𝗺𝗲𝘀 𝘄𝗶𝘁𝗵 𝗚𝗮𝗺𝗲𝗽𝗮𝘀𝘀𝗲𝘀:</strong>
-                <div style={{ 
-                  marginTop: '8px', 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: '5px', 
-                  maxHeight: '150px', 
-                  overflowY: 'auto', 
-                  paddingRight: '5px',
-                  border: '1px solid #ccc',
-                  borderRadius: '8px'
-                }}>
-                  {acc.gamepass && acc.gamepass.trim() !== "" ? (
-                    acc.gamepass.split(",").map((game, index) => (
-                      <Tag key={index} text={game.trim()} color="#243c6b" />
-                    ))
-                  ) : (
-                    <Tag text="No Gamepass Found" color="#999" />
-                  )}
+            {expandedId === acc.id && (
+              <div style={{ marginTop: '15px' }}>
+                <DetailRow label="➤ 𝗔𝗴𝗲:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
+                <DetailRow label="➤ 𝗘𝗺𝗮𝗶𝗹:" value={acc.email} />
+                <DetailRow label="➤ 𝗜𝗻𝘃𝗲𝗻𝘁𝗼𝗿𝘆:" value={acc.inventory} />
+                <DetailRow label="➤ 𝗥𝗼𝗯𝘂𝘅:" value={acc.robuxBalance} />
+                <DetailRow label="➤ 𝗟𝗶𝗺𝗶𝘁𝗲𝗱:" value={acc.limitedItems} />
+                <DetailRow label="🌍 𝗧𝘆𝗽𝗲:" value={acc.accountType} />
+                <DetailRow label="💳 𝗠𝗢𝗣:" value={acc.mop} />
+
+                <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <strong>🔗 𝗣𝗿𝗼𝗳𝗶𝗹𝗲:</strong>&nbsp;
+                  <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
+                </div>
+
+                <div style={{ marginTop: "10px" }}>
+                  <strong>🎮 𝗚𝗮𝗺𝗲𝘀 𝘄𝗶𝘁𝗵 𝗚𝗮𝗺𝗲𝗽𝗮𝘀𝘀𝗲𝘀:</strong>
+                  <div style={{ 
+                    marginTop: '8px', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '5px', 
+                    maxHeight: '150px', 
+                    overflowY: 'auto', 
+                    paddingRight: '5px',
+                    border: '1px solid #ccc',
+                    borderRadius: '8px'
+                  }}>
+                    {acc.gamepass && acc.gamepass.trim() !== "" ? (
+                      acc.gamepass.split(",").map((game, index) => (
+                        <Tag key={index} text={game.trim()} color="#243c6b" />
+                      ))
+                    ) : (
+                      <Tag text="No Gamepass Found" color="#999" />
+                    )}
+                  </div>
                 </div>
               </div>
+            )}
+
+            <div style={{ marginTop: "10px" }}>
+              <button 
+                onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} 
+                style={{ padding: '8px 15px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px' }}
+              >
+                {expandedId === acc.id ? 'Hide Details' : 'View Details'}
+              </button>
+              <button onClick={buyNow} style={{ padding: '8px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '5px', marginLeft: '10px' }}>
+                Contact Me
+              </button>
             </div>
-          )}
-
-          <div style={{ marginTop: "10px" }}>
-            <button 
-              onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} 
-              style={{ padding: '8px 15px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px' }}
-            >
-              {expandedId === acc.id ? 'Hide Details' : 'View Details'}
-            </button>
-            <button onClick={buyNow} style={{ padding: '8px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '5px', marginLeft: '10px' }}>
-              Contact Me
-            </button>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
-      {/* Inline CSS for toggle switch */}
       <style>{`
-        .switch {
-          position: relative;
-          display: inline-block;
-          width: 40px;
-          height: 22px;
-        }
+        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
         .switch input { display: none; }
-        .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0; left: 0;
-          right: 0; bottom: 0;
-          background-color: #ccc;
-          transition: .4s;
-          border-radius: 34px;
-        }
-        .slider:before {
-          position: absolute;
-          content: "";
-          height: 16px;
-          width: 16px;
-          left: 3px;
-          bottom: 3px;
-          background-color: white;
-          transition: .4s;
-          border-radius: 50%;
-        }
-        input:checked + .slider {
-          background-color: #2196F3;
-        }
-        input:checked + .slider:before {
-          transform: translateX(18px);
-        }
-        .dark-mode {
-          background-color: #121212 !important;
-          color: white !important;
-        }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #2196F3; }
+        input:checked + .slider:before { transform: translateX(18px); }
+        .dark-mode { background-color: #121212 !important; color: white !important; }
       `}</style>
     </div>
   );
-      }
+                                               }
