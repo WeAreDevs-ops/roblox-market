@@ -16,9 +16,9 @@
     "sweetalert2": "^11.7.3",
     "@vercel/speed-insights": "^1.0.0",
     "@vercel/analytics": "^1.0.0",
-    "tsparticles": "^3.3.0",
-    "react-tsparticles": "^3.2.0",
-    "tsparticles-preset-bubbles": "^3.3.0"
+    "tsparticles": "^3.8.1",
+    "react-tsparticles": "^2.12.2",
+    "@tsparticles/preset-bubbles": "^3.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
