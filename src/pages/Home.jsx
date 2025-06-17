@@ -104,7 +104,7 @@ export default function Home() {
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
 
-    const letters = Array(256).join("01").split("");
+    const letters = Array(256).join("R0BLIX").split("");
     const fontSize = 14;
     const columns = Math.floor(width / fontSize);
     const drops = Array(columns).fill(1);
