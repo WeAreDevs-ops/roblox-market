@@ -89,7 +89,7 @@ nav a {
 }
 
 button {
-  flex: 1;
+  /* Removed flex: 1; to make buttons size fit content */
   padding: 10px 20px;
   border: none;
   border-radius: 10px;
