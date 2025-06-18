@@ -124,3 +124,17 @@ select {
   border-radius: 6px;
   border: 1px solid #ccc;
 }
+
+/* ✅ ADDED: Responsive layout for dashboard boxes */
+.dashboard-stats {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+  grid-template-columns: repeat(2, 1fr); /* 2 per row on mobile */
+}
+
+@media (min-width: 768px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(4, 1fr); /* 4 per row on desktop */
+  }
+}
