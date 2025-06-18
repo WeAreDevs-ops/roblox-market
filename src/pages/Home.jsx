@@ -90,7 +90,7 @@ export default function Home() {
   const DetailRow = ({ label, value }) => (
     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', marginBottom: '8px' }}>
       <strong>{label}</strong>
-      <Tag text={value} color="#ceb2eb" />
+      <span className="badge">{value}</span>
     </div>
   );
 
@@ -113,18 +113,10 @@ export default function Home() {
         justifyContent: 'center',
         marginBottom: '20px'
       }}>
-        <div style={{ background: '#ceb2eb', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
-          Total Accounts: {dashboardStats.totalAccounts}
-        </div>
-        <div style={{ background: '#ceb2eb', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
-          Total Revenue: ₱{dashboardStats.totalRevenue}
-        </div>
-        <div style={{ background: '#ceb2eb', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
-          Daily New Stock: {dashboardStats.newStock}
-        </div>
-        <div style={{ background: '#ceb2eb', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
-          Live Sales: {dashboardStats.salesCount}
-        </div>
+        <div className="badge">Total Accounts: {dashboardStats.totalAccounts}</div>
+        <div className="badge">Total Revenue: ₱{dashboardStats.totalRevenue}</div>
+        <div className="badge">Daily New Stock: {dashboardStats.newStock}</div>
+        <div className="badge">Live Sales: {dashboardStats.salesCount}</div>
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", marginBottom: "15px" }}>
@@ -133,31 +125,21 @@ export default function Home() {
           placeholder="🔎 Search by username or gamepass..."
           value={search} 
           onChange={(e) => setSearch(e.target.value)}
-          style={{ 
-            padding: "10px", 
-            width: "200px", 
-            borderRadius: "8px", 
-            border: "1px solid #ccc", 
-            marginBottom: "10px",
-            marginRight: "10px"
-          }} 
         />
 
-        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} style={{ padding: "10px", marginRight: "10px" }}>
+        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
           <option value="">Sort Price</option>
           <option value="low-high">Low to High</option>
           <option value="high-low">High to Low</option>
         </select>
 
-        <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)} style={{ padding: "10px", marginRight: "10px" }}>
+        <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)}>
           <option value="">Email Status</option>
           <option value="Verified">Verified</option>
           <option value="Unverified">Unverified</option>
         </select>
 
-        <button onClick={resetFilters} style={{ padding: "10px 15px", background: "#dc3545", color: "#fff", border: "none", borderRadius: "5px" }}>
-          Reset
-        </button>
+        <button className="delete" onClick={resetFilters}>Reset</button>
       </div>
 
       {filteredAccounts.length === 0 && <p>No results found.</p>}
@@ -168,7 +150,7 @@ export default function Home() {
         gap: '20px' 
       }}>
         {filteredAccounts.map(acc => (
-          <div key={acc.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
+          <div key={acc.id} className="card" style={{ backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
             <h3>{acc.username}</h3>
 
             {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
@@ -219,14 +201,11 @@ export default function Home() {
               </div>
             )}
 
-            <div style={{ marginTop: "10px" }}>
-              <button 
-                onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} 
-                style={{ padding: '8px 15px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px' }}
-              >
+            <div className="buttons" style={{ marginTop: "10px" }}>
+              <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} className="buy">
                 {expandedId === acc.id ? 'Hide Details' : 'View Details'}
               </button>
-              <button onClick={buyNow} style={{ padding: '8px 15px', background: '#ceb2eb', color: '#000', border: 'none', borderRadius: '5px', marginLeft: '10px' }}>
+              <button onClick={buyNow} className="delete" style={{ marginLeft: '10px' }}>
                 Contact Me
               </button>
             </div>
@@ -275,5 +254,4 @@ export default function Home() {
       `}</style>
     </div>
   );
-        }
-            
+          }
