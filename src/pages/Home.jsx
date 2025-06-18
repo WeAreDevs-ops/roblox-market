@@ -113,16 +113,16 @@ export default function Home() {
         justifyContent: 'center',
         marginBottom: '20px'
       }}>
-        <div style={{ background: '#ceb2eb', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
+        <div style={{ background: '#ceb2eb', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Total Accounts: {dashboardStats.totalAccounts}
         </div>
-        <div style={{ background: '#ceb2eb', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
+        <div style={{ background: '#ceb2eb', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Total Revenue: ₱{dashboardStats.totalRevenue}
         </div>
         <div style={{ background: '#ceb2eb', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Daily New Stock: {dashboardStats.newStock}
         </div>
-        <div style={{ background: '#ceb2eb', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
+        <div style={{ background: '#ceb2eb', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Live Sales: {dashboardStats.salesCount}
         </div>
       </div>
@@ -226,7 +226,7 @@ export default function Home() {
               >
                 {expandedId === acc.id ? 'Hide Details' : 'View Details'}
               </button>
-              <button onClick={buyNow} style={{ padding: '8px 15px', background: '#ceb2eb', color: '#fff', border: 'none', borderRadius: '5px', marginLeft: '10px' }}>
+              <button onClick={buyNow} style={{ padding: '8px 15px', background: '#ceb2eb', color: '#000', border: 'none', borderRadius: '5px', marginLeft: '10px' }}>
                 Contact Me
               </button>
             </div>
