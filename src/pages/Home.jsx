@@ -158,7 +158,7 @@ export default function Home() {
             <div style={{ marginTop: '15px' }}>
               <DetailRow label="➤ 𝗣𝗿𝗶𝗰𝗲:" value={`₱${acc.price}`} />
               <DetailRow label="➤ 𝗧𝗼𝘁𝗮𝗹 𝗦𝘂𝗺𝗺𝗮𝗿𝘆:" value={acc.totalSummary || "N/A"} />
-              <DetailRow label="➤ 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗦𝘁𝗮𝘁𝘂𝘀:" value={acc.premium === "True" ? "✔" : "✖"} />
+              <DetailRow label="➤ 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗦𝘁𝗮𝘁𝘂𝘀:" value={acc.premium === "True" ? "True" : "False"} />
             </div>
 
             {expandedId === acc.id && (
