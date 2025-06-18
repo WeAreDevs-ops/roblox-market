@@ -173,7 +173,7 @@ export default function Home() {
 
                 <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                   <strong>🔗 𝗣𝗿𝗼𝗳𝗶𝗹𝗲:</strong>&nbsp;
-                  <a href={acc.profile} target="_blank" rel="noreferrer">View Profile</a>
+                  <a href={acc.profile} target="_blank" rel="noreferrer" style={{ color: '#6b21a8', fontWeight: 'bold' }} > View Profile </a>
                 </div>
 
                 <div style={{ marginTop: "10px" }}>
