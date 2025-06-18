@@ -49,7 +49,6 @@ export default function Home() {
     fetchAndStartCounter();
   }, []);
 
-  // ✅ Set body background on dark mode toggle
   useEffect(() => {
     document.body.style.backgroundColor = darkMode ? '#121212' : '#ffffff';
   }, [darkMode]);
@@ -111,13 +110,8 @@ export default function Home() {
         </label>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, auto)',
-        gap: '10px',
-        justifyContent: 'center',
-        marginBottom: '20px'
-      }}>
+      {/* ✅ UPDATED DASHBOARD STATS SECTION */}
+      <div className="dashboard-stats">
         <div className="badge">Total Accounts: {dashboardStats.totalAccounts}</div>
         <div className="badge">Total Revenue: ₱{dashboardStats.totalRevenue}</div>
         <div className="badge">Daily New Stock: {dashboardStats.newStock}</div>
@@ -262,4 +256,4 @@ export default function Home() {
       `}</style>
     </div>
   );
-          }
+        }
