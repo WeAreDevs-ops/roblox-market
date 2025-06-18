@@ -82,7 +82,7 @@ export default function Home() {
 
   const Tag = ({ text, color }) => (
     <span style={{
-      backgroundColor: color, color: '#fff', padding: '3px 10px',
+      backgroundColor: color, color: '#000', padding: '3px 10px',
       borderRadius: '20px', fontSize: '0.85rem', marginLeft: '8px', fontWeight: 'bold'
     }}>{text}</span>
   );
