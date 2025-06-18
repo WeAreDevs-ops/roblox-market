@@ -6,7 +6,7 @@ body {
 }
 
 header {
-  background: linear-gradient(90deg, #b57edc, #e6e6fa); /* lavender gradient */
+  background: linear-gradient(90deg, #b57edc, #e6e6fa);
   color: #000;
   padding: 20px;
   text-align: center;
@@ -26,7 +26,6 @@ nav a {
   margin: 30px auto;
 }
 
-/* Updated Card Design */
 .card {
   background: rgba(255, 255, 255, 0.85);
   padding: 25px;
@@ -89,7 +88,6 @@ nav a {
 }
 
 button {
-  /* Removed flex: 1; to make buttons size fit content */
   padding: 10px 20px;
   border: none;
   border-radius: 10px;
@@ -125,16 +123,29 @@ select {
   border: 1px solid #ccc;
 }
 
-/* ✅ ADDED: Responsive layout for dashboard boxes */
+/* ✅ FIXED: Responsive layout for 4 dashboard boxes */
 .dashboard-stats {
   display: grid;
   gap: 10px;
   margin-bottom: 20px;
-  grid-template-columns: repeat(2, 1fr); /* 2 per row on mobile */
+  grid-template-columns: repeat(2, 1fr); /* mobile default */
 }
 
 @media (min-width: 768px) {
   .dashboard-stats {
     grid-template-columns: repeat(4, 1fr); /* 4 per row on desktop */
   }
+}
+
+.dashboard-stats .stat-box {
+  background-color: #d4b5fa;
+  color: #000;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
