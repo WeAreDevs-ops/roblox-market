@@ -6,7 +6,7 @@ body {
 }
 
 header {
-  background: linear-gradient(90deg, #003300, #00ff00);
+  background: linear-gradient(90deg, #b57edc, #e6e6fa); /* lavender gradient */
   color: #fff;
   padding: 20px;
   text-align: center;
