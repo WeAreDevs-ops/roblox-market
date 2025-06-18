@@ -49,6 +49,11 @@ export default function Home() {
     fetchAndStartCounter();
   }, []);
 
+  // ✅ Set body background on dark mode toggle
+  useEffect(() => {
+    document.body.style.backgroundColor = darkMode ? '#121212' : '#ffffff';
+  }, [darkMode]);
+
   const buyNow = () => {
     Swal.fire({
       title: 'Contact Me',
@@ -250,6 +255,9 @@ export default function Home() {
         .dark-mode {
           background-color: #121212 !important;
           color: white !important;
+        }
+        body {
+          transition: background-color 0.3s ease;
         }
       `}</style>
     </div>
