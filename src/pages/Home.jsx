@@ -90,7 +90,7 @@ export default function Home() {
   const DetailRow = ({ label, value }) => (
     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', marginBottom: '8px' }}>
       <strong>{label}</strong>
-      <Tag text={value} color="#243c6b" />
+      <Tag text={value} color="#ceb2eb" />
     </div>
   );
 
@@ -113,16 +113,16 @@ export default function Home() {
         justifyContent: 'center',
         marginBottom: '20px'
       }}>
-        <div style={{ background: '#007bff', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
+        <div style={{ background: '#ceb2eb', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Total Accounts: {dashboardStats.totalAccounts}
         </div>
-        <div style={{ background: '#28a745', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
+        <div style={{ background: '#ceb2eb', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Total Revenue: ₱{dashboardStats.totalRevenue}
         </div>
-        <div style={{ background: '#ffc107', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
+        <div style={{ background: '#ceb2eb', color: '#000', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Daily New Stock: {dashboardStats.newStock}
         </div>
-        <div style={{ background: '#dc3545', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
+        <div style={{ background: '#ceb2eb', color: '#fff', padding: '10px 15px', borderRadius: '5px', fontSize: '14px', whiteSpace: 'nowrap' }}>
           Live Sales: {dashboardStats.salesCount}
         </div>
       </div>
@@ -209,7 +209,7 @@ export default function Home() {
                   }}>
                     {acc.gamepass && acc.gamepass.trim() !== "" ? (
                       acc.gamepass.split(",").map((game, index) => (
-                        <Tag key={index} text={game.trim()} color="#243c6b" />
+                        <Tag key={index} text={game.trim()} color="#ceb2eb" />
                       ))
                     ) : (
                       <Tag text="No Gamepass Found" color="#999" />
@@ -226,7 +226,7 @@ export default function Home() {
               >
                 {expandedId === acc.id ? 'Hide Details' : 'View Details'}
               </button>
-              <button onClick={buyNow} style={{ padding: '8px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '5px', marginLeft: '10px' }}>
+              <button onClick={buyNow} style={{ padding: '8px 15px', background: '#ceb2eb', color: '#fff', border: 'none', borderRadius: '5px', marginLeft: '10px' }}>
                 Contact Me
               </button>
             </div>
