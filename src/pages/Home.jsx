@@ -96,67 +96,16 @@ export default function Home() {
 
   const [expandedId, setExpandedId] = useState(null);
 
-  // Matrix animation background effect
-  useEffect(() => {
-    const canvas = document.getElementById('matrix-canvas');
-    const ctx = canvas.getContext('2d');
-
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
-
-    const letters = Array(256).join("R0BLIX").split("");
-    const fontSize = 14;
-    const columns = Math.floor(width / fontSize);
-    const drops = Array(columns).fill(1);
-
-    const draw = () => {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.fillStyle = "#0f0";
-      ctx.font = `${fontSize}px monospace`;
-
-      drops.forEach((y, i) => {
-        const text = letters[Math.floor(Math.random() * letters.length)];
-        const x = i * fontSize;
-        ctx.fillText(text, x, y * fontSize);
-
-        if (y * fontSize > height && Math.random() > 0.975) {
-          drops[i] = 0;
-        }
-
-        drops[i]++;
-      });
-    };
-
-    const interval = setInterval(draw, 33);
-
-    const handleResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
   return (
     <>
-      <canvas id="matrix-canvas" style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: -1,
-        background: 'black'
-      }} />
-
-      <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "20px", minHeight: '100vh' }}>
+      <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{
+        padding: "20px",
+        minHeight: '100vh',
+        backgroundImage: 'url("https://i.imgur.com/8JADg4A.jpeg")',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+      }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
           <h2>Available Accounts</h2>
           <label className="switch">
@@ -186,7 +135,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Inputs and Filters */}
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", marginBottom: "15px" }}>
           <input 
             type="text" 
@@ -305,4 +253,4 @@ export default function Home() {
       </div>
     </>
   );
-            }
+                                                                                             }
