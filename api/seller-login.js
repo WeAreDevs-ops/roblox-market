@@ -1,43 +1,32 @@
-import { db } from '../firebase-admin.js';
+// /api/seller-login.js
+import { db } from '../firebase-admin';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { username, password } = req.body;
 
+  if (!username || !password) return res.status(400).json({ error: 'Missing fields' });
+
   try {
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Missing username or password' });
-    }
+    const userRef = db.collection('sellers').doc(username);
+    const userDoc = await userRef.get();
 
-    const docRef = db.collection('sellers').doc(username);
-    const doc = await docRef.get();
-
-    if (!doc.exists) {
+    if (!userDoc.exists) {
       return res.status(401).json({ error: 'User not found' });
     }
 
-    const seller = doc.data();
-
-    // ✅ Check if hashed password exists
-    if (!seller.passwordHash) {
-      return res.status(500).json({ error: 'No password set for this user' });
-    }
-
-    const isMatch = await bcrypt.compare(password, seller.passwordHash);
+    const { passwordHash } = userDoc.data();
+    const isMatch = await bcrypt.compare(password, passwordHash);
 
     if (!isMatch) {
-      return res.status(401).json({ error: 'Incorrect password' });
+      return res.status(401).json({ error: 'Invalid password' });
     }
 
-    // Success
-    return res.status(200).json({ message: 'Login successful', username });
-
-  } catch (error) {
-    console.error('Login error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(200).json({ message: 'Login successful' });
+  } catch (err) {
+    console.error('Login Error:', err);
+    return res.status(500).json({ error: 'Something went wrong' });
   }
 }
