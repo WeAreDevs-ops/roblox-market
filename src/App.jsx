@@ -4,7 +4,8 @@ import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Register from './pages/Register';
 import SellerLogin from './pages/SellerLogin';
-import SellerListing from './pages/SellerListing';
+import SellerDashboard from './pages/SellerDashboard';
+import SellerPanel from './pages/SellerPanel';
 
 export default function App() {
   return (
@@ -18,12 +19,14 @@ export default function App() {
           <Link to="/seller-login">Seller Login</Link>
         </nav>
       </header>
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/seller-login" element={<SellerLogin />} />
-        <Route path="/seller-listing" element={<SellerListing />} />
+        <Route path="/seller-dashboard" element={<SellerDashboard />} />
+        <Route path="/seller-panel" element={<SellerPanel />} />
       </Routes>
     </BrowserRouter>
   );
