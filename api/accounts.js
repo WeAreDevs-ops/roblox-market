@@ -9,16 +9,16 @@ export default async function handler(req, res) {
   const accountsRef = collection(db, "accounts");
   const counterRef = doc(db, "meta", "salesCounter");
 
-  // ✅ Extract seller username if passed
+  // ✅ Read seller username from request header (for filtering and auth)
   const sellerUsername = req.headers.authorization || null;
 
   if (req.method === 'GET') {
     let snapshot;
     if (sellerUsername) {
-      const sellerQuery = query(accountsRef, where("username", "==", sellerUsername));
+      const sellerQuery = query(accountsRef, where("seller", "==", sellerUsername)); // ✅ Only get this seller's listings
       snapshot = await getDocs(sellerQuery);
     } else {
-      snapshot = await getDocs(accountsRef);
+      snapshot = await getDocs(accountsRef); // Admin gets all
     }
 
     const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -31,7 +31,6 @@ export default async function handler(req, res) {
       robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium
     } = req.body;
 
-    // 🔐 Seller can only add for themselves
     if (sellerUsername && sellerUsername !== username) {
       return res.status(403).json({ message: 'Unauthorized seller' });
     }
@@ -77,6 +76,7 @@ export default async function handler(req, res) {
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
         profile, avatar,
         age: ageInDays,
+        seller: sellerUsername || null, // ✅ Save the seller name
         createdAt: serverTimestamp()
       });
 
@@ -135,10 +135,9 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ message: 'Missing ID' });
 
     if (sellerUsername) {
-      const toDelete = doc(accountsRef, id);
       const snap = await getDocs(query(accountsRef, where('__name__', '==', id)));
       const found = snap.docs[0];
-      if (!found || found.data().username !== sellerUsername) {
+      if (!found || found.data().seller !== sellerUsername) {
         return res.status(403).json({ message: 'Unauthorized delete' });
       }
     }
@@ -150,4 +149,4 @@ export default async function handler(req, res) {
   else {
     return res.status(405).end();
   }
-        }
+      }
