@@ -1,4 +1,6 @@
+// /api/register.js
 import { db } from '../firebase-admin';
+import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -8,12 +10,15 @@ export default async function handler(req, res) {
   if (!username || !password) return res.status(400).json({ error: 'Missing fields' });
 
   try {
-    const sellerRef = db.collection('sellers');
-    const snapshot = await sellerRef.where('username', '==', username).get();
+    const userRef = db.collection('sellers').doc(username);
+    const userDoc = await userRef.get();
 
-    if (!snapshot.empty) return res.status(400).json({ error: 'Username already exists' });
+    if (userDoc.exists) {
+      return res.status(400).json({ error: 'Username already exists' });
+    }
 
-    await sellerRef.add({ username, password });
+    const passwordHash = await bcrypt.hash(password, 10);
+    await userRef.set({ username, passwordHash });
 
     return res.status(200).json({ message: 'Registration successful' });
   } catch (err) {
