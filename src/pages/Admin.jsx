@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 export default function Admin() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
-  const [seller, setSeller] = useState(null);
+  const [seller, setSeller] = useState({ username: '', password: '' });
 
   const [formData, setFormData] = useState({
     username: '',
@@ -16,7 +16,7 @@ export default function Admin() {
     limitedItems: '',
     inventory: 'Public',
     gamepass: '',
-    accountType: 'Global Account',
+    accountType: 'GLOBAL',
     premium: 'False',
   });
 
@@ -26,7 +26,14 @@ export default function Admin() {
   const [editId, setEditId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isSeller = !!seller;
+  const isSeller = seller?.username && !isAuthorized;
+
+  useEffect(() => {
+    const stored = localStorage.getItem('seller');
+    if (stored) {
+      setSeller(JSON.parse(stored));
+    }
+  }, []);
 
   useEffect(() => {
     if (isAuthorized || isSeller) fetchAccounts();
@@ -36,7 +43,7 @@ export default function Admin() {
     const res = await fetch('/api/accounts');
     const data = await res.json();
     if (isSeller) {
-      const username = JSON.parse(localStorage.getItem('seller'))?.username;
+      const username = seller.username;
       const sellerListings = data.accounts.filter(acc => acc.username === username);
       setAccounts(sellerListings);
     } else {
@@ -68,6 +75,10 @@ export default function Admin() {
     e.preventDefault();
     const { username, password } = seller;
 
+    if (!username || !password) {
+      return Swal.fire('Error', 'Username and password required', 'warning');
+    }
+
     try {
       const response = await fetch('/api/seller-login', {
         method: 'POST',
@@ -79,8 +90,8 @@ export default function Admin() {
 
       if (response.ok) {
         Swal.fire('Welcome!', 'Seller login successful', 'success');
-        localStorage.setItem('seller', JSON.stringify({ username }));
-        setSeller({ username });
+        localStorage.setItem('seller', JSON.stringify({ username, password }));
+        setSeller({ username, password });
       } else {
         Swal.fire('Login Failed', data.error || 'Invalid login', 'error');
       }
@@ -121,7 +132,7 @@ export default function Admin() {
           limitedItems: '',
           inventory: 'Public',
           gamepass: '',
-          accountType: 'Global Account',
+          accountType: 'GLOBAL',
           premium: 'False',
         });
         setEditMode(false);
@@ -171,7 +182,7 @@ export default function Admin() {
       limitedItems: account.limitedItems || '',
       inventory: account.inventory || 'Public',
       gamepass: account.gamepass || '',
-      accountType: account.accountType || 'Global Account',
+      accountType: account.accountType || 'GLOBAL',
       premium: account.premium || 'False',
     });
     setEditMode(true);
@@ -182,7 +193,7 @@ export default function Admin() {
     acc.username.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (!isAuthorized && !seller) {
+  if (!isAuthorized && !seller?.username) {
     return (
       <div className="container" style={{ padding: '20px' }}>
         <h2>Admin Login</h2>
@@ -197,8 +208,22 @@ export default function Admin() {
         <hr style={{ margin: '30px 0' }} />
         <h2>Seller Login</h2>
         <form onSubmit={handleSellerLogin}>
-          <input type="text" name="username" placeholder="Username" required onChange={e => setSeller({ ...seller, username: e.target.value })} />
-          <input type="password" name="password" placeholder="Password" required onChange={e => setSeller({ ...seller, password: e.target.value })} />
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            required
+            value={seller.username}
+            onChange={e => setSeller({ ...seller, username: e.target.value })}
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+            value={seller.password}
+            onChange={e => setSeller({ ...seller, password: e.target.value })}
+          />
           <button type="submit">Login</button>
         </form>
       </div>
@@ -210,7 +235,6 @@ export default function Admin() {
       <h2>{isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}</h2>
 
       <form onSubmit={handleSubmit}>
-        {/* ✅ Your Input Fields (Kept exactly as requested) */}
         {[
           ['Username', 'username'],
           ['Total Summary', 'totalSummary'],
@@ -225,7 +249,6 @@ export default function Admin() {
           </div>
         ))}
 
-        {/* ✅ Dropdown Fields */}
         <div style={{ marginBottom: '10px' }}>
           <label>Email:</label>
           <select name="email" value={formData.email} onChange={handleChange}>
@@ -297,4 +320,4 @@ export default function Admin() {
       ))}
     </div>
   );
-          }
+           }
