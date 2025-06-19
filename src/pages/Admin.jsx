@@ -1,73 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { app } from '../firebase'; // your firebase init
-
-const auth = getAuth(app);
 
 export default function Admin() {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isSeller, setIsSeller] = useState(false);
-  const [uid, setUid] = useState(null);
-  const [adminPassword, setAdminPassword] = useState("");
-  const [accounts, setAccounts] = useState([]);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [seller, setSeller] = useState(null);
+
   const [formData, setFormData] = useState({
-    username: "",
-    totalSummary: "",
-    email: "Verified",
-    price: "",
-    mop: "Gcash",
-    robuxBalance: "",
-    limitedItems: "",
-    inventory: "Public",
-    gamepass: "",
-    accountType: "Global Account",
-    premium: "False"
+    username: '',
+    totalSummary: '',
+    email: 'Verified',
+    price: '',
+    mop: 'Gcash',
+    robuxBalance: '',
+    limitedItems: '',
+    inventory: 'Public',
+    gamepass: '',
+    accountType: 'Global Account',
+    premium: 'False',
   });
 
-  const [search, setSearch] = useState("");
+  const [accounts, setAccounts] = useState([]);
+  const [search, setSearch] = useState('');
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const token = await user.getIdToken();
-        setUid(user.uid);
-        setIsSeller(true);
-        fetchAccounts(user.uid, token);
-      }
-    });
-  }, []);
+  const isSeller = !!seller;
 
-  const fetchAccounts = async (uid = null, token = null) => {
-    const res = await fetch('/api/accounts', {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
+  useEffect(() => {
+    if (isAuthorized || isSeller) fetchAccounts();
+  }, [isAuthorized, seller]);
+
+  const fetchAccounts = async () => {
+    const res = await fetch('/api/accounts');
     const data = await res.json();
-    const all = data.accounts || [];
-    const filtered = isSeller ? all.filter(acc => acc.sellerId === uid) : all;
-    setAccounts(filtered);
+    if (isSeller) {
+      const username = JSON.parse(localStorage.getItem('seller'))?.username;
+      const sellerListings = data.accounts.filter(acc => acc.username === username);
+      setAccounts(sellerListings);
+    } else {
+      setAccounts(data.accounts);
+    }
   };
 
-  const handleLogin = async () => {
+  const handleAdminLogin = async () => {
     try {
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: adminPassword })
+        body: JSON.stringify({ password: adminPassword }),
       });
 
       if (response.ok) {
-        setIsAdmin(true);
-        fetchAccounts(); // admin sees all
+        setIsAuthorized(true);
+        Swal.fire('Access Granted', 'Welcome admin!', 'success');
       } else {
-        Swal.fire("Access Denied", "Invalid admin password!", "error");
+        Swal.fire('Access Denied', 'Invalid admin password!', 'error');
       }
     } catch (error) {
       console.error(error);
-      Swal.fire("Error", "Failed to login!", "error");
+      Swal.fire('Error', 'Failed to login!', 'error');
+    }
+  };
+
+  const handleSellerLogin = async (e) => {
+    e.preventDefault();
+    const { username, password } = seller;
+
+    try {
+      const response = await fetch('/api/seller-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Swal.fire('Welcome!', 'Seller login successful', 'success');
+        localStorage.setItem('seller', JSON.stringify({ username }));
+        setSeller({ username });
+      } else {
+        Swal.fire('Login Failed', data.error || 'Invalid login', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'Something went wrong', 'error');
     }
   };
 
@@ -80,40 +99,34 @@ export default function Admin() {
     e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
+
+    const payload = editMode ? { id: editId, ...formData } : formData;
+
     try {
-      const token = await auth.currentUser?.getIdToken();
-
-      const url = '/api/accounts';
-      const method = editMode ? 'PUT' : 'POST';
-      const payload = editMode ? { id: editId, ...formData } : { ...formData, sellerId: uid };
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` })
-        },
-        body: JSON.stringify(payload)
+      const response = await fetch('/api/accounts', {
+        method: editMode ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         Swal.fire('Success', editMode ? 'Account updated!' : 'Account added!', 'success');
         setFormData({
-          username: "",
-          totalSummary: "",
-          email: "Verified",
-          price: "",
-          mop: "Gcash",
-          robuxBalance: "",
-          limitedItems: "",
-          inventory: "Public",
-          gamepass: "",
-          accountType: "Global Account",
-          premium: "False"
+          username: '',
+          totalSummary: '',
+          email: 'Verified',
+          price: '',
+          mop: 'Gcash',
+          robuxBalance: '',
+          limitedItems: '',
+          inventory: 'Public',
+          gamepass: '',
+          accountType: 'Global Account',
+          premium: 'False',
         });
         setEditMode(false);
         setEditId(null);
-        fetchAccounts(uid, token);
+        fetchAccounts();
       } else if (response.status === 409) {
         Swal.fire('Error', 'Username already exists', 'error');
       } else {
@@ -128,21 +141,18 @@ export default function Admin() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this account?")) return;
-    try {
-      const token = await auth.currentUser?.getIdToken();
+    if (!window.confirm('Are you sure you want to delete this account?')) return;
 
+    try {
       const res = await fetch('/api/accounts', {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` })
-        },
-        body: JSON.stringify({ id })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
       });
+
       if (res.ok) {
         Swal.fire('Deleted!', 'Account deleted successfully.', 'success');
-        fetchAccounts(uid, token);
+        fetchAccounts();
       }
     } catch (error) {
       console.error(error);
@@ -150,62 +160,141 @@ export default function Admin() {
     }
   };
 
-  const handleEdit = (acc) => {
+  const handleEdit = (account) => {
     setFormData({
-      username: acc.username || "",
-      totalSummary: acc.totalSummary || "",
-      email: acc.email || "Verified",
-      price: acc.price || "",
-      mop: acc.mop || "Gcash",
-      robuxBalance: acc.robuxBalance || "",
-      limitedItems: acc.limitedItems || "",
-      inventory: acc.inventory || "Public",
-      gamepass: acc.gamepass || "",
-      accountType: acc.accountType || "Global Account",
-      premium: acc.premium || "False"
+      username: account.username || '',
+      totalSummary: account.totalSummary || '',
+      email: account.email || 'Verified',
+      price: account.price || '',
+      mop: account.mop || 'Gcash',
+      robuxBalance: account.robuxBalance || '',
+      limitedItems: account.limitedItems || '',
+      inventory: account.inventory || 'Public',
+      gamepass: account.gamepass || '',
+      accountType: account.accountType || 'Global Account',
+      premium: account.premium || 'False',
     });
     setEditMode(true);
-    setEditId(acc.id);
+    setEditId(account.id);
   };
 
-  const filtered = accounts.filter(acc => acc.username.toLowerCase().includes(search.toLowerCase()));
+  const filteredAccounts = accounts.filter(acc =>
+    acc.username.toLowerCase().includes(search.toLowerCase())
+  );
 
-  if (!isAdmin && !isSeller) {
+  if (!isAuthorized && !seller) {
     return (
-      <div style={{ padding: "20px" }}>
-        <h2>Admin Panel Login</h2>
+      <div className="container" style={{ padding: '20px' }}>
+        <h2>Admin Login</h2>
         <input
           type="password"
           placeholder="Enter admin password"
           value={adminPassword}
           onChange={(e) => setAdminPassword(e.target.value)}
         />
-        <br />
-        <button onClick={handleLogin}>Login</button>
+        <button onClick={handleAdminLogin}>Login</button>
+
+        <hr style={{ margin: '30px 0' }} />
+        <h2>Seller Login</h2>
+        <form onSubmit={handleSellerLogin}>
+          <input type="text" name="username" placeholder="Username" required onChange={e => setSeller({ ...seller, username: e.target.value })} />
+          <input type="password" name="password" placeholder="Password" required onChange={e => setSeller({ ...seller, password: e.target.value })} />
+          <button type="submit">Login</button>
+        </form>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>{isAdmin ? "Admin Panel" : "Seller Panel"}</h2>
+    <div className="container" style={{ padding: '20px' }}>
+      <h2>{isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}</h2>
+
       <form onSubmit={handleSubmit}>
-        <input name="username" value={formData.username} onChange={handleChange} placeholder="Username" required />
-        <input name="totalSummary" value={formData.totalSummary} onChange={handleChange} placeholder="Summary" />
-        <input name="price" value={formData.price} onChange={handleChange} type="number" placeholder="₱ Price" required />
-        <button type="submit" disabled={isSubmitting}>{editMode ? "Update" : "Add"} Account</button>
+        {/* ✅ Your Input Fields (Kept exactly as requested) */}
+        {[
+          ['Username', 'username'],
+          ['Total Summary', 'totalSummary'],
+          ['Price', 'price'],
+          ['Robux Balance', 'robuxBalance'],
+          ['Limited Items', 'limitedItems'],
+          ['Game with Gamepass', 'gamepass'],
+        ].map(([label, name]) => (
+          <div key={name} style={{ marginBottom: '10px' }}>
+            <label>{label}:</label>
+            <input type="text" name={name} value={formData[name]} onChange={handleChange} />
+          </div>
+        ))}
+
+        {/* ✅ Dropdown Fields */}
+        <div style={{ marginBottom: '10px' }}>
+          <label>Email:</label>
+          <select name="email" value={formData.email} onChange={handleChange}>
+            <option value="Verified">Verified</option>
+            <option value="Unverified">Unverified</option>
+          </select>
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>MOP:</label>
+          <select name="mop" value={formData.mop} onChange={handleChange}>
+            <option value="Gcash">Gcash</option>
+            <option value="Paymaya">Paymaya</option>
+            <option value="Paypal">Paypal</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Inventory:</label>
+          <select name="inventory" value={formData.inventory} onChange={handleChange}>
+            <option value="Public">Public</option>
+            <option value="Private">Private</option>
+          </select>
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Account Type:</label>
+          <select name="accountType" value={formData.accountType} onChange={handleChange}>
+            <option value="GLOBAL">GLOBAL</option>
+            <option value="VIETNAM">VIETNAM</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Premium Status:</label>
+          <select name="premium" value={formData.premium} onChange={handleChange}>
+            <option value="True">True</option>
+            <option value="False">False</option>
+          </select>
+        </div>
+
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Processing...' : editMode ? 'Update Account' : 'Add Account'}
+        </button>
       </form>
-      <hr />
-      <input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
-      {filtered.map(acc => (
-        <div key={acc.id}>
+
+      <hr style={{ margin: '30px 0' }} />
+
+      <h3>Account List</h3>
+      <input
+        type="text"
+        placeholder="Search Username"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ marginBottom: '10px' }}
+      />
+
+      {filteredAccounts.map(acc => (
+        <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px' }}>
           <strong>{acc.username}</strong> - ₱{acc.price}
-          <div>
-            <button onClick={() => handleEdit(acc)}>Edit</button>
-            <button onClick={() => handleDelete(acc.id)}>Delete</button>
+          <div>Account Age: {acc.age} days</div>
+          <div style={{ marginTop: '5px' }}>
+            <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>
+              Edit
+            </button>
+            <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>
+              Delete
+            </button>
           </div>
         </div>
       ))}
     </div>
   );
-        }
+          }
