@@ -1,18 +1,22 @@
-// api/seller-listings.js
-import fs from 'fs';
-import path from 'path';
+import { db } from '../firebase-admin';
 
-const filePath = path.resolve('data/sellers.json');
+export default async function handler(req, res) {
+  const { username } = req.query;
 
-export default function handler(req, res) {
-  const { token } = req.query;
-  if (!token) return res.status(400).json({ error: 'Missing token' });
+  if (!username) return res.status(400).json({ error: 'Missing username' });
 
-  const username = Buffer.from(token, 'base64').toString();
-  const sellers = JSON.parse(fs.readFileSync(filePath));
+  try {
+    const listingsRef = db.collection('listings');
+    const snapshot = await listingsRef.where('username', '==', username).get();
 
-  const seller = sellers.find(u => u.username === username);
-  if (!seller) return res.status(401).json({ error: 'Invalid token' });
+    const listings = [];
+    snapshot.forEach(doc => {
+      listings.push({ id: doc.id, ...doc.data() });
+    });
 
-  res.status(200).json({ listings: seller.listings });
+    res.status(200).json({ listings });
+  } catch (err) {
+    console.error('Listings Error:', err);
+    res.status(500).json({ error: 'Failed to fetch listings' });
+  }
 }
