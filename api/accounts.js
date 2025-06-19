@@ -1,13 +1,26 @@
 import { db } from '../firebase';
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, getDocs as getDocsQuery, increment, serverTimestamp } from "firebase/firestore";
+import {
+  collection, addDoc, getDocs, deleteDoc, doc, updateDoc,
+  query, where, getDocs as getDocsQuery, increment, serverTimestamp
+} from "firebase/firestore";
 import axios from 'axios';
 
 export default async function handler(req, res) {
   const accountsRef = collection(db, "accounts");
   const counterRef = doc(db, "meta", "salesCounter");
 
+  // ✅ Extract seller username if passed
+  const sellerUsername = req.headers.authorization || null;
+
   if (req.method === 'GET') {
-    const snapshot = await getDocs(accountsRef);
+    let snapshot;
+    if (sellerUsername) {
+      const sellerQuery = query(accountsRef, where("username", "==", sellerUsername));
+      snapshot = await getDocs(sellerQuery);
+    } else {
+      snapshot = await getDocs(accountsRef);
+    }
+
     const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return res.status(200).json({ accounts });
   }
@@ -17,6 +30,11 @@ export default async function handler(req, res) {
       username, email, price, mop,
       robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium
     } = req.body;
+
+    // 🔐 Seller can only add for themselves
+    if (sellerUsername && sellerUsername !== username) {
+      return res.status(403).json({ message: 'Unauthorized seller' });
+    }
 
     let profile = "";
     let avatar = "";
@@ -74,8 +92,10 @@ export default async function handler(req, res) {
   else if (req.method === 'PUT') {
     const { id, username, totalSummary, premium, ...rest } = req.body;
 
-    if (!id) {
-      return res.status(400).json({ message: 'Missing document ID' });
+    if (!id) return res.status(400).json({ message: 'Missing document ID' });
+
+    if (sellerUsername && sellerUsername !== username) {
+      return res.status(403).json({ message: 'Unauthorized seller' });
     }
 
     let profile = "";
@@ -111,6 +131,18 @@ export default async function handler(req, res) {
 
   else if (req.method === 'DELETE') {
     const { id } = req.body;
+
+    if (!id) return res.status(400).json({ message: 'Missing ID' });
+
+    if (sellerUsername) {
+      const toDelete = doc(accountsRef, id);
+      const snap = await getDocs(query(accountsRef, where('__name__', '==', id)));
+      const found = snap.docs[0];
+      if (!found || found.data().username !== sellerUsername) {
+        return res.status(403).json({ message: 'Unauthorized delete' });
+      }
+    }
+
     await deleteDoc(doc(accountsRef, id));
     return res.status(200).json({ message: 'Deleted' });
   }
@@ -118,4 +150,4 @@ export default async function handler(req, res) {
   else {
     return res.status(405).end();
   }
-}
+        }
