@@ -1,25 +1,28 @@
-// api/delete-listing.js
-import fs from 'fs';
-import path from 'path';
+import { db } from '../firebase-admin';
 
-const filePath = path.resolve('data/sellers.json');
-
-export default function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
-
-  const { token, listingId } = req.body;
-  if (!token || !listingId) {
-    return res.status(400).json({ error: 'Missing token or listing ID' });
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const username = Buffer.from(token, 'base64').toString();
-  const sellers = JSON.parse(fs.readFileSync(filePath));
+  const { sellerId, listingId } = req.body;
 
-  const seller = sellers.find(u => u.username === username);
-  if (!seller) return res.status(401).json({ error: 'Invalid token' });
+  if (!sellerId || !listingId) {
+    return res.status(400).json({ error: 'Missing sellerId or listingId' });
+  }
 
-  seller.listings = seller.listings.filter(l => l.id !== listingId);
-  fs.writeFileSync(filePath, JSON.stringify(sellers, null, 2));
+  try {
+    const docRef = db.collection('sellers').doc(sellerId).collection('listings').doc(listingId);
+    const doc = await docRef.get();
 
-  res.status(200).json({ success: true, message: 'Listing deleted' });
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Listing not found' });
+    }
+
+    await docRef.delete();
+    return res.status(200).json({ message: 'Listing deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting listing:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 }
