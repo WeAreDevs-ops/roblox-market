@@ -29,6 +29,15 @@ export default function Admin() {
 
   const isSeller = !!seller;
 
+  // ✅ Load seller from localStorage on first load
+  useEffect(() => {
+    const storedSeller = localStorage.getItem('seller');
+    if (storedSeller) {
+      setSeller(JSON.parse(storedSeller));
+    }
+  }, []);
+
+  // ✅ Fetch listings based on role
   useEffect(() => {
     if (isAuthorized || isSeller) fetchAccounts();
   }, [isAuthorized, seller]);
@@ -36,8 +45,9 @@ export default function Admin() {
   const fetchAccounts = async () => {
     const res = await fetch('/api/accounts');
     const data = await res.json();
+
     if (isSeller) {
-      const username = seller?.username; // ✅ FIXED LINE
+      const username = JSON.parse(localStorage.getItem('seller'))?.username;
       const sellerListings = data.accounts.filter(acc => acc.seller === username);
       setAccounts(sellerListings);
     } else {
@@ -85,8 +95,9 @@ export default function Admin() {
 
       if (response.ok) {
         Swal.fire('Welcome!', 'Seller login successful', 'success');
-        localStorage.setItem('seller', JSON.stringify({ username }));
-        setSeller({ username });
+        const sellerData = { username: username.trim() };
+        localStorage.setItem('seller', JSON.stringify(sellerData));
+        setSeller(sellerData);
       } else {
         Swal.fire('Login Failed', data.error || 'Invalid login', 'error');
       }
@@ -319,4 +330,4 @@ export default function Admin() {
       ))}
     </div>
   );
-          }
+      }
