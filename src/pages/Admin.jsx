@@ -5,7 +5,6 @@ export default function Admin() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [seller, setSeller] = useState(null);
-  const [sellerLogin, setSellerLogin] = useState({ username: '', password: '' });
 
   const [formData, setFormData] = useState({
     username: '',
@@ -36,6 +35,7 @@ export default function Admin() {
   const fetchAccounts = async () => {
     const res = await fetch('/api/accounts');
     const data = await res.json();
+
     if (isSeller) {
       const username = JSON.parse(localStorage.getItem('seller'))?.username;
       const sellerListings = data.accounts.filter(acc => acc.seller === username);
@@ -67,12 +67,7 @@ export default function Admin() {
 
   const handleSellerLogin = async (e) => {
     e.preventDefault();
-    const { username, password } = sellerLogin;
-
-    if (!username || !password) {
-      Swal.fire('Missing Fields', 'Please enter both username and password.', 'warning');
-      return;
-    }
+    const { username, password } = seller;
 
     try {
       const response = await fetch('/api/seller-login', {
@@ -207,22 +202,8 @@ export default function Admin() {
         <hr style={{ margin: '30px 0' }} />
         <h2>Seller Login</h2>
         <form onSubmit={handleSellerLogin}>
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={sellerLogin.username}
-            required
-            onChange={e => setSellerLogin({ ...sellerLogin, username: e.target.value })}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={sellerLogin.password}
-            required
-            onChange={e => setSellerLogin({ ...sellerLogin, password: e.target.value })}
-          />
+          <input type="text" name="username" placeholder="Username" required onChange={e => setSeller({ ...seller, username: e.target.value })} />
+          <input type="password" name="password" placeholder="Password" required onChange={e => setSeller({ ...seller, password: e.target.value })} />
           <button type="submit">Login</button>
         </form>
       </div>
@@ -255,6 +236,7 @@ export default function Admin() {
             <option value="Unverified">Unverified</option>
           </select>
         </div>
+
         <div style={{ marginBottom: '10px' }}>
           <label>MOP:</label>
           <select name="mop" value={formData.mop} onChange={handleChange}>
@@ -264,6 +246,7 @@ export default function Admin() {
             <option value="Others">Others</option>
           </select>
         </div>
+
         <div style={{ marginBottom: '10px' }}>
           <label>Inventory:</label>
           <select name="inventory" value={formData.inventory} onChange={handleChange}>
@@ -271,6 +254,7 @@ export default function Admin() {
             <option value="Private">Private</option>
           </select>
         </div>
+
         <div style={{ marginBottom: '10px' }}>
           <label>Account Type:</label>
           <select name="accountType" value={formData.accountType} onChange={handleChange}>
@@ -279,6 +263,7 @@ export default function Admin() {
             <option value="Others">Others</option>
           </select>
         </div>
+
         <div style={{ marginBottom: '10px' }}>
           <label>Premium Status:</label>
           <select name="premium" value={formData.premium} onChange={handleChange}>
@@ -319,4 +304,4 @@ export default function Admin() {
       ))}
     </div>
   );
-      }
+            }
