@@ -4,7 +4,8 @@ import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Register from './pages/Register';
 import SellerLogin from './pages/SellerLogin';
-import SellerPanel from './pages/SellerPanel';
+import SellerDashboard from './pages/SellerDashboard';
+import SellerListing from './pages/SellerListing';
 
 export default function App() {
   return (
@@ -12,11 +13,11 @@ export default function App() {
       <header>
         <h1>𝗔𝗰𝗰𝗼𝘂𝗻𝘁 𝗠𝗮𝗿𝗸𝗲𝘁𝗽𝗹𝗮𝗰𝗲</h1>
         <nav>
-          <Link to="/">DASHBOARD</Link> |{" "}
-          <Link to="/admin">LISTING</Link> |{" "}
-          <Link to="/register">REGISTER</Link> |{" "}
-          <Link to="/sellerlogin">SELLER LOGIN</Link> |{" "}
-          <Link to="/sellerpanel">SELLER PANEL</Link>
+          <Link to="/">Dashboard</Link> |{" "}
+          <Link to="/admin">Admin Panel</Link> |{" "}
+          <Link to="/seller-dashboard">Seller Dashboard</Link> |{" "}
+          <Link to="/seller-login">Seller Login</Link> |{" "}
+          <Link to="/register">Register</Link>
         </nav>
       </header>
 
@@ -24,8 +25,9 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/sellerlogin" element={<SellerLogin />} />
-        <Route path="/sellerpanel" element={<SellerPanel />} />
+        <Route path="/seller-login" element={<SellerLogin />} />
+        <Route path="/seller-dashboard" element={<SellerDashboard />} />
+        <Route path="/seller-listing" element={<SellerListing />} />
       </Routes>
     </BrowserRouter>
   );
