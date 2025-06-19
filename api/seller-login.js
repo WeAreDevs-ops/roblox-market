@@ -1,39 +1,43 @@
-// File: api/seller-login.js
-import { db } from '../firebase-admin.js'; // Make sure to include .js extension
+import { db } from '../firebase-admin.js';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   const { username, password } = req.body;
 
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password are required' });
-  }
-
   try {
-    const sellerRef = db.collection('sellers');
-    const snapshot = await sellerRef.where('username', '==', username).limit(1).get();
-
-    if (snapshot.empty) {
-      return res.status(401).json({ error: 'Unauthorized: Username not found' });
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Missing username or password' });
     }
 
-    const doc = snapshot.docs[0];
+    const docRef = db.collection('sellers').doc(username);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
     const seller = doc.data();
 
-    const isMatch = await bcrypt.compare(password, seller.hashedPassword);
-
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Unauthorized: Incorrect password' });
+    // ✅ Check if hashed password exists
+    if (!seller.passwordHash) {
+      return res.status(500).json({ error: 'No password set for this user' });
     }
 
-    // Optional: include a token/session here later
-    return res.status(200).json({ message: 'Login successful', sellerId: doc.id });
+    const isMatch = await bcrypt.compare(password, seller.passwordHash);
+
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Incorrect password' });
+    }
+
+    // Success
+    return res.status(200).json({ message: 'Login successful', username });
+
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: 'Something went wrong' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
