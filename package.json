@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "axios": "0.27.2",
+    "bcryptjs": "^2.4.3",
     "firebase": "^10.8.1",
     "firebase-admin": "^11.10.1",
     "react": "^18.2.0",
