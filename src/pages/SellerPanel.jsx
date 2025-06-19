@@ -2,23 +2,28 @@ import React, { useEffect, useState } from 'react';
 
 export default function SellerPanel() {
   const [listings, setListings] = useState([]);
-  const [newListing, setNewListing] = useState({ username: '', price: 0 });
-
-  const token = localStorage.getItem('sellerToken');
+  const [message, setMessage] = useState('');
+  const [form, setForm] = useState({ username: '', price: '', robux: '' });
 
   const fetchListings = async () => {
-    const res = await fetch(`/api/seller-listings?token=${token}`);
+    const res = await fetch('/api/seller-listings');
     const data = await res.json();
-    setListings(data.listings);
+    if (res.ok) {
+      setListings(data.listings);
+    } else {
+      setMessage(data.error);
+    }
   };
 
-  const createListing = async () => {
-    await fetch('/api/create-listing', {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const res = await fetch('/api/create-listing', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, listing: newListing })
+      body: JSON.stringify(form)
     });
-    setNewListing({ username: '', price: 0 });
+    const data = await res.json();
+    setMessage(data.message || data.error);
     fetchListings();
   };
 
@@ -26,27 +31,29 @@ export default function SellerPanel() {
     fetchListings();
   }, []);
 
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Seller Panel</h2>
+    <div className="container" style={{ marginTop: 40 }}>
+      <h2>📋 Seller Panel</h2>
 
-      <input
-        placeholder="Username"
-        value={newListing.username}
-        onChange={(e) => setNewListing({ ...newListing, username: e.target.value })}
-      />
-      <input
-        type="number"
-        placeholder="Price"
-        value={newListing.price}
-        onChange={(e) => setNewListing({ ...newListing, price: Number(e.target.value) })}
-      />
-      <button onClick={createListing}>Add Listing</button>
+      <form onSubmit={handleSubmit}>
+        <input name="username" placeholder="Username" onChange={handleChange} required />
+        <input name="price" placeholder="Price (₱)" onChange={handleChange} required />
+        <input name="robux" placeholder="Robux" onChange={handleChange} required />
+        <button className="buy" type="submit">Create Listing</button>
+      </form>
 
-      <h3>Your Listings</h3>
+      {message && <p style={{ marginTop: 10 }}>{message}</p>}
+
+      <h3 style={{ marginTop: 30 }}>Your Listings</h3>
       <ul>
-        {listings.map((l) => (
-          <li key={l.id}>{l.username} — ₱{l.price}</li>
+        {listings.map((acc, idx) => (
+          <li key={idx}>
+            {acc.username} – ₱{acc.price} – {acc.robux} Robux
+          </li>
         ))}
       </ul>
     </div>
