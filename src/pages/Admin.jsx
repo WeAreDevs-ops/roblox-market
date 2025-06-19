@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { app } from '../firebase'; // your firebase init
+
+const auth = getAuth(app);
 
 export default function Admin() {
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSeller, setIsSeller] = useState(false);
+  const [uid, setUid] = useState(null);
   const [adminPassword, setAdminPassword] = useState("");
+  const [accounts, setAccounts] = useState([]);
   const [formData, setFormData] = useState({
     username: "",
     totalSummary: "",
@@ -18,20 +25,30 @@ export default function Admin() {
     premium: "False"
   });
 
-  const [accounts, setAccounts] = useState([]);
   const [search, setSearch] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (isAuthorized) fetchAccounts();
-  }, [isAuthorized]);
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const token = await user.getIdToken();
+        setUid(user.uid);
+        setIsSeller(true);
+        fetchAccounts(user.uid, token);
+      }
+    });
+  }, []);
 
-  const fetchAccounts = async () => {
-    const res = await fetch('/api/accounts');
+  const fetchAccounts = async (uid = null, token = null) => {
+    const res = await fetch('/api/accounts', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
     const data = await res.json();
-    setAccounts(data.accounts);
+    const all = data.accounts || [];
+    const filtered = isSeller ? all.filter(acc => acc.sellerId === uid) : all;
+    setAccounts(filtered);
   };
 
   const handleLogin = async () => {
@@ -43,7 +60,8 @@ export default function Admin() {
       });
 
       if (response.ok) {
-        setIsAuthorized(true);
+        setIsAdmin(true);
+        fetchAccounts(); // admin sees all
       } else {
         Swal.fire("Access Denied", "Invalid admin password!", "error");
       }
@@ -63,13 +81,18 @@ export default function Admin() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
+
       const url = '/api/accounts';
       const method = editMode ? 'PUT' : 'POST';
-      const payload = editMode ? { id: editId, ...formData } : formData;
+      const payload = editMode ? { id: editId, ...formData } : { ...formData, sellerId: uid };
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` })
+        },
         body: JSON.stringify(payload)
       });
 
@@ -90,7 +113,7 @@ export default function Admin() {
         });
         setEditMode(false);
         setEditId(null);
-        fetchAccounts();
+        fetchAccounts(uid, token);
       } else if (response.status === 409) {
         Swal.fire('Error', 'Username already exists', 'error');
       } else {
@@ -107,14 +130,19 @@ export default function Admin() {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this account?")) return;
     try {
+      const token = await auth.currentUser?.getIdToken();
+
       const res = await fetch('/api/accounts', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` })
+        },
         body: JSON.stringify({ id })
       });
       if (res.ok) {
         Swal.fire('Deleted!', 'Account deleted successfully.', 'success');
-        fetchAccounts();
+        fetchAccounts(uid, token);
       }
     } catch (error) {
       console.error(error);
@@ -122,148 +150,62 @@ export default function Admin() {
     }
   };
 
-  const handleEdit = (account) => {
+  const handleEdit = (acc) => {
     setFormData({
-      username: account.username || "",
-      totalSummary: account.totalSummary || "",
-      email: account.email || "Verified",
-      price: account.price || "",
-      mop: account.mop || "Gcash",
-      robuxBalance: account.robuxBalance || "",
-      limitedItems: account.limitedItems || "",
-      inventory: account.inventory || "Public",
-      gamepass: account.gamepass || "",
-      accountType: account.accountType || "Global Account",
-      premium: account.premium || "False"
+      username: acc.username || "",
+      totalSummary: acc.totalSummary || "",
+      email: acc.email || "Verified",
+      price: acc.price || "",
+      mop: acc.mop || "Gcash",
+      robuxBalance: acc.robuxBalance || "",
+      limitedItems: acc.limitedItems || "",
+      inventory: acc.inventory || "Public",
+      gamepass: acc.gamepass || "",
+      accountType: acc.accountType || "Global Account",
+      premium: acc.premium || "False"
     });
     setEditMode(true);
-    setEditId(account.id);
+    setEditId(acc.id);
   };
 
-  const filteredAccounts = accounts.filter(acc =>
-    acc.username.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = accounts.filter(acc => acc.username.toLowerCase().includes(search.toLowerCase()));
 
-  if (!isAuthorized) {
+  if (!isAdmin && !isSeller) {
     return (
-      <div className="container" style={{ padding: "20px" }}>
+      <div style={{ padding: "20px" }}>
         <h2>Admin Panel Login</h2>
         <input
           type="password"
           placeholder="Enter admin password"
           value={adminPassword}
           onChange={(e) => setAdminPassword(e.target.value)}
-          style={{ marginBottom: "10px", padding: "10px", width: "300px" }}
         />
         <br />
-        <button onClick={handleLogin} style={{ padding: "10px 20px" }}>Login</button>
+        <button onClick={handleLogin}>Login</button>
       </div>
     );
   }
 
   return (
-    <div className="container" style={{ padding: "20px" }}>
-      <h2>Admin Panel</h2>
-
+    <div style={{ padding: "20px" }}>
+      <h2>{isAdmin ? "Admin Panel" : "Seller Panel"}</h2>
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "10px" }}>
-          <label>Username:</label>
-          <input type="text" name="username" value={formData.username} onChange={handleChange} required />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Total Summary:</label>
-          <input type="text" name="totalSummary" value={formData.totalSummary} onChange={handleChange} />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Email:</label>
-          <select name="email" value={formData.email} onChange={handleChange}>
-            <option value="Verified">Verified</option>
-            <option value="Unverified">Unverified</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Price:</label>
-          <input type="number" name="price" value={formData.price} onChange={handleChange} required />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>MOP:</label>
-          <select name="mop" value={formData.mop} onChange={handleChange}>
-            <option value="Gcash">Gcash</option>
-            <option value="Paymaya">Paymaya</option>
-            <option value="Paypal">Paypal</option>
-            <option value="Others">Others</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Robux Balance:</label>
-          <input type="number" name="robuxBalance" value={formData.robuxBalance} onChange={handleChange} />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Limited Items:</label>
-          <input type="number" name="limitedItems" value={formData.limitedItems} onChange={handleChange} />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Inventory:</label>
-          <select name="inventory" value={formData.inventory} onChange={handleChange}>
-            <option value="Public">Public</option>
-            <option value="Private">Private</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Game with Gamepass:</label>
-          <input type="text" name="gamepass" value={formData.gamepass} onChange={handleChange} />
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Account Type:</label>
-          <select name="accountType" value={formData.accountType} onChange={handleChange}>
-            <option value="GLOBAL">GLOBAL</option>
-            <option value="VIETNAM">VIETNAM</option>
-            <option value="Others">Others</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <label>Premium Status:</label>
-          <select name="premium" value={formData.premium} onChange={handleChange}>
-            <option value="True">True</option>
-            <option value="False">False</option>
-          </select>
-        </div>
-
-        <button type="submit" disabled={isSubmitting} style={{ padding: "10px 20px", background: "#007bff", color: "#fff", border: "none", borderRadius: "5px" }}>
-          {isSubmitting ? "Processing..." : (editMode ? "Update Account" : "Add Account")}
-        </button>
+        <input name="username" value={formData.username} onChange={handleChange} placeholder="Username" required />
+        <input name="totalSummary" value={formData.totalSummary} onChange={handleChange} placeholder="Summary" />
+        <input name="price" value={formData.price} onChange={handleChange} type="number" placeholder="₱ Price" required />
+        <button type="submit" disabled={isSubmitting}>{editMode ? "Update" : "Add"} Account</button>
       </form>
-
-      <hr style={{ margin: "30px 0" }} />
-
-      <h3>Account List</h3>
-
-      <input type="text" placeholder="Search Username" value={search} onChange={(e) => setSearch(e.target.value)} style={{ marginBottom: "10px", padding: "5px", width: "100%", maxWidth: "300px" }} />
-
-      {filteredAccounts.map(acc => (
-        <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', borderRadius: '5px' }}>
+      <hr />
+      <input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      {filtered.map(acc => (
+        <div key={acc.id}>
           <strong>{acc.username}</strong> - ₱{acc.price}
-          <div>Account Age: {acc.age} days</div>
-          <div style={{ marginTop: "5px" }}>
-            <button onClick={() => handleEdit(acc)} style={{ background: "orange", color: "white", border: "none", padding: "5px 10px", marginRight: "10px" }}>
-              Edit
-            </button>
-            <button onClick={() => handleDelete(acc.id)} style={{ background: "red", color: "white", border: "none", padding: "5px 10px" }}>
-              Delete
-            </button>
+          <div>
+            <button onClick={() => handleEdit(acc)}>Edit</button>
+            <button onClick={() => handleDelete(acc.id)}>Delete</button>
           </div>
         </div>
       ))}
     </div>
   );
-      }
+        }
