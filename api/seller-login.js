@@ -1,5 +1,5 @@
 // File: api/seller-login.js
-import { db } from '../../firebase-admin.js'; // Make sure to include .js extension
+import { db } from '../firebase-admin.js'; // Make sure to include .js extension
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
