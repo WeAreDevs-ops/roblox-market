@@ -4,7 +4,8 @@ import Swal from 'sweetalert2';
 export default function Admin() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
-  const [seller, setSeller] = useState({ username: '', password: '' });
+  const [seller, setSeller] = useState(null);
+  const [sellerLogin, setSellerLogin] = useState({ username: '', password: '' });
 
   const [formData, setFormData] = useState({
     username: '',
@@ -16,7 +17,7 @@ export default function Admin() {
     limitedItems: '',
     inventory: 'Public',
     gamepass: '',
-    accountType: 'GLOBAL',
+    accountType: 'Global Account',
     premium: 'False',
   });
 
@@ -26,14 +27,7 @@ export default function Admin() {
   const [editId, setEditId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isSeller = seller?.username && !isAuthorized;
-
-  useEffect(() => {
-    const stored = localStorage.getItem('seller');
-    if (stored) {
-      setSeller(JSON.parse(stored));
-    }
-  }, []);
+  const isSeller = !!seller;
 
   useEffect(() => {
     if (isAuthorized || isSeller) fetchAccounts();
@@ -43,8 +37,8 @@ export default function Admin() {
     const res = await fetch('/api/accounts');
     const data = await res.json();
     if (isSeller) {
-      const username = seller.username;
-      const sellerListings = data.accounts.filter(acc => acc.username === username);
+      const username = JSON.parse(localStorage.getItem('seller'))?.username;
+      const sellerListings = data.accounts.filter(acc => acc.seller === username);
       setAccounts(sellerListings);
     } else {
       setAccounts(data.accounts);
@@ -73,10 +67,11 @@ export default function Admin() {
 
   const handleSellerLogin = async (e) => {
     e.preventDefault();
-    const { username, password } = seller;
+    const { username, password } = sellerLogin;
 
     if (!username || !password) {
-      return Swal.fire('Error', 'Username and password required', 'warning');
+      Swal.fire('Missing Fields', 'Please enter both username and password.', 'warning');
+      return;
     }
 
     try {
@@ -90,8 +85,8 @@ export default function Admin() {
 
       if (response.ok) {
         Swal.fire('Welcome!', 'Seller login successful', 'success');
-        localStorage.setItem('seller', JSON.stringify({ username, password }));
-        setSeller({ username, password });
+        localStorage.setItem('seller', JSON.stringify({ username }));
+        setSeller({ username });
       } else {
         Swal.fire('Login Failed', data.error || 'Invalid login', 'error');
       }
@@ -111,7 +106,11 @@ export default function Admin() {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    const payload = editMode ? { id: editId, ...formData } : formData;
+    const payload = {
+      ...(editMode ? { id: editId } : {}),
+      ...formData,
+      ...(isSeller ? { seller: seller.username } : {}),
+    };
 
     try {
       const response = await fetch('/api/accounts', {
@@ -132,7 +131,7 @@ export default function Admin() {
           limitedItems: '',
           inventory: 'Public',
           gamepass: '',
-          accountType: 'GLOBAL',
+          accountType: 'Global Account',
           premium: 'False',
         });
         setEditMode(false);
@@ -182,7 +181,7 @@ export default function Admin() {
       limitedItems: account.limitedItems || '',
       inventory: account.inventory || 'Public',
       gamepass: account.gamepass || '',
-      accountType: account.accountType || 'GLOBAL',
+      accountType: account.accountType || 'Global Account',
       premium: account.premium || 'False',
     });
     setEditMode(true);
@@ -193,7 +192,7 @@ export default function Admin() {
     acc.username.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (!isAuthorized && !seller?.username) {
+  if (!isAuthorized && !seller) {
     return (
       <div className="container" style={{ padding: '20px' }}>
         <h2>Admin Login</h2>
@@ -212,17 +211,17 @@ export default function Admin() {
             type="text"
             name="username"
             placeholder="Username"
+            value={sellerLogin.username}
             required
-            value={seller.username}
-            onChange={e => setSeller({ ...seller, username: e.target.value })}
+            onChange={e => setSellerLogin({ ...sellerLogin, username: e.target.value })}
           />
           <input
             type="password"
             name="password"
             placeholder="Password"
+            value={sellerLogin.password}
             required
-            value={seller.password}
-            onChange={e => setSeller({ ...seller, password: e.target.value })}
+            onChange={e => setSellerLogin({ ...sellerLogin, password: e.target.value })}
           />
           <button type="submit">Login</button>
         </form>
@@ -320,4 +319,4 @@ export default function Admin() {
       ))}
     </div>
   );
-           }
+      }
