@@ -4,7 +4,6 @@ import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Register from './pages/Register';
 import SellerLogin from './pages/SellerLogin';
-import SellerDashboard from './pages/SellerDashboard';
 import SellerListing from './pages/SellerListing';
 
 export default function App() {
@@ -15,18 +14,15 @@ export default function App() {
         <nav>
           <Link to="/">Dashboard</Link> |{" "}
           <Link to="/admin">Admin Panel</Link> |{" "}
-          <Link to="/seller-dashboard">Seller Dashboard</Link> |{" "}
-          <Link to="/seller-login">Seller Login</Link> |{" "}
-          <Link to="/register">Register</Link>
+          <Link to="/register">Register</Link> |{" "}
+          <Link to="/seller-login">Seller Login</Link>
         </nav>
       </header>
-
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/seller-login" element={<SellerLogin />} />
-        <Route path="/seller-dashboard" element={<SellerDashboard />} />
         <Route path="/seller-listing" element={<SellerListing />} />
       </Routes>
     </BrowserRouter>
