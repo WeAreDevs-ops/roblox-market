@@ -29,7 +29,6 @@ export default function Admin() {
 
   const isSeller = !!seller;
 
-  // ✅ Load seller from localStorage on first load
   useEffect(() => {
     const storedSeller = localStorage.getItem('seller');
     if (storedSeller) {
@@ -37,7 +36,6 @@ export default function Admin() {
     }
   }, []);
 
-  // ✅ Fetch listings based on role
   useEffect(() => {
     if (isAuthorized || isSeller) fetchAccounts();
   }, [isAuthorized, seller]);
@@ -53,6 +51,13 @@ export default function Admin() {
     } else {
       setAccounts(data.accounts);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('seller');
+    setSeller(null);
+    setIsAuthorized(false);
+    window.location.reload();
   };
 
   const handleAdminLogin = async () => {
@@ -243,6 +248,12 @@ export default function Admin() {
   return (
     <div className="container" style={{ padding: '20px' }}>
       <h2>{isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}</h2>
+      <button
+        onClick={handleLogout}
+        style={{ marginBottom: '20px', backgroundColor: '#444', color: 'white', padding: '5px 10px' }}
+      >
+        Logout
+      </button>
 
       <form onSubmit={handleSubmit}>
         {[
@@ -330,4 +341,4 @@ export default function Admin() {
       ))}
     </div>
   );
-      }
+          }
