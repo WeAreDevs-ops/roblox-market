@@ -1,22 +1,19 @@
-// api/create-listing.js
-import fs from 'fs';
-import path from 'path';
+import { db } from '../firebase-admin';
 
-const filePath = path.resolve('data/sellers.json');
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-export default function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+  const { username, listing } = req.body;
 
-  const { token, listing } = req.body;
-  if (!token || !listing) return res.status(400).json({ error: 'Missing fields' });
+  if (!username || !listing) return res.status(400).json({ error: 'Missing data' });
 
-  const username = Buffer.from(token, 'base64').toString();
-  const sellers = JSON.parse(fs.readFileSync(filePath));
+  try {
+    const listingsRef = db.collection('listings');
+    await listingsRef.add({ ...listing, username });
 
-  const seller = sellers.find(u => u.username === username);
-  if (!seller) return res.status(401).json({ error: 'Invalid token' });
-
-  seller.listings.push({ ...listing, id: Date.now() });
-  fs.writeFileSync(filePath, JSON.stringify(sellers, null, 2));
-  res.status(200).json({ success: true });
+    res.status(200).json({ message: 'Listing created' });
+  } catch (err) {
+    console.error('Create Listing Error:', err);
+    res.status(500).json({ error: 'Failed to create listing' });
+  }
 }
