@@ -1,238 +1,177 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
 export default function SellerPanel() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [sellerUsername, setSellerUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [accounts, setAccounts] = useState([]);
-  const [formData, setFormData] = useState({
-    username: "",
-    totalSummary: "",
-    email: "Verified",
-    price: "",
-    mop: "Gcash",
-    robuxBalance: "",
-    limitedItems: "",
-    inventory: "Public",
-    gamepass: "",
-    accountType: "Global Account",
-    premium: "False"
+  const [search, setSearch] = useState("");
+  const [sortOption, setSortOption] = useState("");
+  const [emailFilter, setEmailFilter] = useState("");
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved === 'true';
   });
 
-  const [editMode, setEditMode] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [search, setSearch] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   useEffect(() => {
-    const storedSeller = localStorage.getItem('seller');
-    if (storedSeller) {
-      const parsed = JSON.parse(storedSeller);
-      setIsAuthenticated(true);
-      setSellerUsername(parsed.username);
-      fetchAccounts(parsed.username);
-    }
+    fetch('/api/seller-accounts')
+      .then(res => res.json())
+      .then(data => setAccounts(data.accounts))
+      .catch(err => console.error("Failed to fetch seller accounts:", err));
   }, []);
 
-  const fetchAccounts = async (username) => {
-    try {
-      const res = await fetch('/api/seller-accounts?username=' + username);
-      const data = await res.json();
-      setAccounts(data.accounts || []);
-    } catch (err) {
-      console.error(err);
-    }
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem('darkMode', newMode);
   };
 
-  const handleLogin = async () => {
-    try {
-      const res = await fetch('/api/seller-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: sellerUsername, password })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setIsAuthenticated(true);
-        localStorage.setItem('seller', JSON.stringify({ username: sellerUsername }));
-        fetchAccounts(sellerUsername);
-      } else {
-        Swal.fire('Unauthorized', data.error || 'Login failed', 'error');
-      }
-    } catch (err) {
-      console.error(err);
-      Swal.fire('Error', 'Something went wrong during login', 'error');
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-
-    try {
-      const payload = {
-        ...formData,
-        owner: sellerUsername
-      };
-
-      const url = editMode ? '/api/seller-accounts' : '/api/seller-accounts';
-      const method = editMode ? 'PUT' : 'POST';
-
-      if (editMode) payload.id = editId;
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (res.ok) {
-        Swal.fire('Success', editMode ? 'Updated!' : 'Added!', 'success');
-        fetchAccounts(sellerUsername);
-        setFormData({
-          username: "",
-          totalSummary: "",
-          email: "Verified",
-          price: "",
-          mop: "Gcash",
-          robuxBalance: "",
-          limitedItems: "",
-          inventory: "Public",
-          gamepass: "",
-          accountType: "Global Account",
-          premium: "False"
-        });
-        setEditMode(false);
-        setEditId(null);
-      } else {
-        const errData = await res.json();
-        Swal.fire('Error', errData.error || 'Failed to save account', 'error');
-      }
-    } catch (err) {
-      console.error(err);
-      Swal.fire('Error', 'Unexpected error occurred', 'error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this listing?')) return;
-    try {
-      const res = await fetch('/api/seller-accounts', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-
-      if (res.ok) {
-        Swal.fire('Deleted', 'Listing removed', 'success');
-        fetchAccounts(sellerUsername);
-      }
-    } catch (err) {
-      console.error(err);
-      Swal.fire('Error', 'Failed to delete', 'error');
-    }
-  };
-
-  const handleEdit = (acc) => {
-    setEditMode(true);
-    setEditId(acc.id);
-    setFormData({
-      username: acc.username || "",
-      totalSummary: acc.totalSummary || "",
-      email: acc.email || "Verified",
-      price: acc.price || "",
-      mop: acc.mop || "Gcash",
-      robuxBalance: acc.robuxBalance || "",
-      limitedItems: acc.limitedItems || "",
-      inventory: acc.inventory || "Public",
-      gamepass: acc.gamepass || "",
-      accountType: acc.accountType || "Global Account",
-      premium: acc.premium || "False"
-    });
-  };
-
-  const filteredAccounts = accounts.filter(acc =>
+  let filteredAccounts = accounts.filter(acc =>
     acc.username.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (!isAuthenticated) {
-    return (
-      <div className="container" style={{ padding: "20px" }}>
-        <h2>Seller Login</h2>
-        <input type="text" placeholder="Username" value={sellerUsername} onChange={(e) => setSellerUsername(e.target.value)} />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <br />
-        <button onClick={handleLogin}>Login</button>
-      </div>
-    );
+  if (emailFilter) {
+    filteredAccounts = filteredAccounts.filter(acc => acc.email === emailFilter);
   }
 
-  return (
-    <div className="container" style={{ padding: "20px" }}>
-      <h2>Seller Panel ({sellerUsername})</h2>
+  if (sortOption === "low-high") {
+    filteredAccounts = filteredAccounts.sort((a, b) => a.price - b.price);
+  } else if (sortOption === "high-low") {
+    filteredAccounts = filteredAccounts.sort((a, b) => b.price - a.price);
+  }
 
-      <form onSubmit={handleSubmit}>
-        <input name="username" value={formData.username} onChange={handleChange} placeholder="Username" required />
-        <input name="totalSummary" value={formData.totalSummary} onChange={handleChange} placeholder="Total Summary" />
-        <select name="email" value={formData.email} onChange={handleChange}>
+  const resetFilters = () => {
+    setSearch("");
+    setSortOption("");
+    setEmailFilter("");
+  };
+
+  const Tag = ({ text, color }) => (
+    <span style={{
+      backgroundColor: color, color: '#000', padding: '3px 10px',
+      borderRadius: '20px', fontSize: '0.85rem', marginLeft: '8px', fontWeight: 'bold'
+    }}>{text}</span>
+  );
+
+  const DetailRow = ({ label, value }) => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', marginBottom: '8px' }}>
+      <strong>{label}</strong>
+      <span className="badge">{value}</span>
+    </div>
+  );
+
+  const buyNow = () => {
+    Swal.fire({
+      title: 'Contact Seller',
+      text: 'Please message the seller on Facebook or Discord to buy this account.',
+      icon: 'info'
+    });
+  };
+
+  const [expandedId, setExpandedId] = useState(null);
+
+  return (
+    <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "20px", minHeight: '100vh' }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h2>All Seller Listings</h2>
+        <label className="switch">
+          <input type="checkbox" checked={darkMode} onChange={toggleDarkMode} />
+          <span className="slider round"></span>
+        </label>
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", marginBottom: "15px" }}>
+        <input 
+          type="text" 
+          placeholder="🔎 Search by username..."
+          value={search} 
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+          <option value="">Sort Price</option>
+          <option value="low-high">Low to High</option>
+          <option value="high-low">High to Low</option>
+        </select>
+
+        <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)}>
+          <option value="">Email Status</option>
           <option value="Verified">Verified</option>
           <option value="Unverified">Unverified</option>
         </select>
-        <input type="number" name="price" value={formData.price} onChange={handleChange} placeholder="Price" required />
-        <select name="mop" value={formData.mop} onChange={handleChange}>
-          <option value="Gcash">Gcash</option>
-          <option value="Paymaya">Paymaya</option>
-          <option value="Paypal">Paypal</option>
-        </select>
-        <input type="number" name="robuxBalance" value={formData.robuxBalance} onChange={handleChange} placeholder="Robux" />
-        <input type="number" name="limitedItems" value={formData.limitedItems} onChange={handleChange} placeholder="Limited Items" />
-        <select name="inventory" value={formData.inventory} onChange={handleChange}>
-          <option value="Public">Public</option>
-          <option value="Private">Private</option>
-        </select>
-        <input name="gamepass" value={formData.gamepass} onChange={handleChange} placeholder="Gamepass" />
-        <select name="accountType" value={formData.accountType} onChange={handleChange}>
-          <option value="GLOBAL">GLOBAL</option>
-          <option value="VIETNAM">VIETNAM</option>
-        </select>
-        <select name="premium" value={formData.premium} onChange={handleChange}>
-          <option value="True">True</option>
-          <option value="False">False</option>
-        </select>
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Processing..." : editMode ? "Update" : "Add"}
-        </button>
-      </form>
+        <button className="delete" onClick={resetFilters}>Reset</button>
+      </div>
 
-      <input
-        type="text"
-        placeholder="Search Username"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{ margin: "20px 0", padding: "5px" }}
-      />
+      {filteredAccounts.length === 0 && <p>No listings found.</p>}
 
-      {filteredAccounts.map(acc => (
-        <div key={acc.id} style={{ border: "1px solid #ccc", padding: "10px", marginBottom: "10px" }}>
-          <strong>{acc.username}</strong> - ₱{acc.price}
-          <div style={{ marginTop: "5px" }}>
-            <button onClick={() => handleEdit(acc)} style={{ marginRight: "10px" }}>Edit</button>
-            <button onClick={() => handleDelete(acc.id)}>Delete</button>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+        gap: '20px' 
+      }}>
+        {filteredAccounts.map(acc => (
+          <div key={acc.id} className="card" style={{ backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
+            <h3>{acc.username}</h3>
+
+            <div style={{ marginTop: '15px' }}>
+              <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
+              <DetailRow label="➤ Summary:" value={acc.totalSummary || "N/A"} />
+              <DetailRow label="➤ Premium:" value={acc.premium === "True" ? "Yes" : "No"} />
+              <DetailRow label="➤ Email:" value={acc.email} />
+              <DetailRow label="➤ Robux:" value={acc.robuxBalance} />
+              <DetailRow label="➤ Inventory:" value={acc.inventory} />
+              <DetailRow label="➤ Type:" value={acc.accountType} />
+              <DetailRow label="➤ MOP:" value={acc.mop} />
+              <DetailRow label="➤ Gamepass:" value={acc.gamepass || "None"} />
+            </div>
+
+            <div className="buttons" style={{ marginTop: "10px" }}>
+              <button onClick={buyNow} className="delete">
+                Contact Seller
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+
+      <style>{`
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 40px;
+          height: 22px;
+        }
+        .switch input { display: none; }
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0; left: 0;
+          right: 0; bottom: 0;
+          background-color: #ccc;
+          transition: .4s;
+          border-radius: 34px;
+        }
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 16px;
+          width: 16px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          transition: .4s;
+          border-radius: 50%;
+        }
+        input:checked + .slider {
+          background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+          transform: translateX(18px);
+        }
+        .dark-mode {
+          background-color: #121212 !important;
+          color: white !important;
+        }
+      `}</style>
     </div>
   );
-          }
+}
