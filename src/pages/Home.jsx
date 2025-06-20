@@ -118,13 +118,16 @@ export default function Home() {
         </label>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, auto)',
-        gap: '10px',
-        justifyContent: 'center',
-        marginBottom: '20px'
-      }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '10px',
+          justifyContent: 'center',
+          marginBottom: '20px'
+        }}
+        className="dashboard-grid"
+      >
         <div className="badge">Total Accounts: {dashboardStats.totalAccounts}</div>
         <div className="badge">Total Revenue: ₱{dashboardStats.totalRevenue}</div>
         <div className="badge">Daily New Stock: {dashboardStats.newStock}</div>
@@ -274,7 +277,13 @@ export default function Home() {
         body {
           transition: background-color 0.3s ease;
         }
+
+        @media screen and (min-width: 768px) {
+          .dashboard-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+          }
+        }
       `}</style>
     </div>
   );
-               }
+      }
