@@ -127,7 +127,7 @@ export default function Home() {
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", marginBottom: "15px" }}>
         <input 
           type="text" 
-          placeholder="🔎 Search by username, gamepass or seller..."
+          placeholder="🔎 Search by username, seller or gamepass..."
           value={search} 
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -163,7 +163,6 @@ export default function Home() {
 
             <h3>{acc.username}</h3>
 
-            {/* Moved seller below avatar and username */}
             {acc.seller && (
               <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: darkMode ? '#aaa' : '#444' }}>
                 Seller: {acc.seller}
