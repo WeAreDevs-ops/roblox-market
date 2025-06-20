@@ -163,6 +163,7 @@ export default function Home() {
 
             <h3>{acc.username}</h3>
 
+            {/* Moved seller below avatar and username */}
             {acc.seller && (
               <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: darkMode ? '#aaa' : '#444' }}>
                 Seller: {acc.seller}
@@ -226,6 +227,49 @@ export default function Home() {
           </div>
         ))}
       </div>
+
+      <style>{`
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 40px;
+          height: 22px;
+        }
+        .switch input { display: none; }
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0; left: 0;
+          right: 0; bottom: 0;
+          background-color: #ccc;
+          transition: .4s;
+          border-radius: 34px;
+        }
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 16px;
+          width: 16px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          transition: .4s;
+          border-radius: 50%;
+        }
+        input:checked + .slider {
+          background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+          transform: translateX(18px);
+        }
+        .dark-mode {
+          background-color: #121212 !important;
+          color: white !important;
+        }
+        body {
+          transition: background-color 0.3s ease;
+        }
+      `}</style>
     </div>
   );
-}
+        }
