@@ -13,11 +13,37 @@ header {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
 nav a {
   color: #000;
-  margin: 0 15px;
+  margin: 5px 10px;
   text-decoration: none;
   font-weight: bold;
+}
+
+/* Special layout for mobile */
+@media (max-width: 600px) {
+  nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  nav a:nth-child(1), nav a:nth-child(2) {
+    flex: 1 1 45%;
+    text-align: center;
+  }
+
+  nav a:nth-child(3) {
+    flex: 1 1 100%;
+    text-align: center;
+  }
 }
 
 .container {
@@ -89,7 +115,6 @@ nav a {
 }
 
 button {
-  /* Removed flex: 1; to make buttons size fit content */
   padding: 10px 20px;
   border: none;
   border-radius: 10px;
@@ -123,14 +148,4 @@ select {
   padding: 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
-}
-
-/* ✅ Responsive header nav alignment for mobile */
-@media (max-width: 600px) {
-  header nav {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
-  }
 }
