@@ -19,6 +19,8 @@ export default function Admin() {
     gamepass: '',
     accountType: 'Global Account',
     premium: 'False',
+    facebookLink: '',       // ✅ added
+    discordLink: ''         // ✅ added
   });
 
   const [accounts, setAccounts] = useState([]);
@@ -150,6 +152,8 @@ export default function Admin() {
           gamepass: '',
           accountType: 'Global Account',
           premium: 'False',
+          facebookLink: '',
+          discordLink: ''
         });
         setEditMode(false);
         setEditId(null);
@@ -200,6 +204,8 @@ export default function Admin() {
       gamepass: account.gamepass || '',
       accountType: account.accountType || 'Global Account',
       premium: account.premium || 'False',
+      facebookLink: account.facebookLink || '',   // ✅
+      discordLink: account.discordLink || ''      // ✅
     });
     setEditMode(true);
     setEditId(account.id);
@@ -271,12 +277,22 @@ export default function Admin() {
         ))}
 
         <div style={{ marginBottom: '10px' }}>
+          <label>Facebook Link:</label>
+          <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Discord Link:</label>
+          <input type="text" name="discordLink" value={formData.discordLink} onChange={handleChange} />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
           <label>Email:</label>
           <select name="email" value={formData.email} onChange={handleChange}>
             <option value="Verified">Verified</option>
             <option value="Unverified">Unverified</option>
           </select>
         </div>
+
         <div style={{ marginBottom: '10px' }}>
           <label>MOP:</label>
           <select name="mop" value={formData.mop} onChange={handleChange}>
@@ -286,6 +302,7 @@ export default function Admin() {
             <option value="Others">Others</option>
           </select>
         </div>
+
         <div style={{ marginBottom: '10px' }}>
           <label>Inventory:</label>
           <select name="inventory" value={formData.inventory} onChange={handleChange}>
@@ -293,6 +310,7 @@ export default function Admin() {
             <option value="Private">Private</option>
           </select>
         </div>
+
         <div style={{ marginBottom: '10px' }}>
           <label>Account Type:</label>
           <select name="accountType" value={formData.accountType} onChange={handleChange}>
@@ -301,6 +319,7 @@ export default function Admin() {
             <option value="Others">Others</option>
           </select>
         </div>
+
         <div style={{ marginBottom: '10px' }}>
           <label>Premium Status:</label>
           <select name="premium" value={formData.premium} onChange={handleChange}>
@@ -350,4 +369,4 @@ export default function Admin() {
       ))}
     </div>
   );
-  }
+          }
