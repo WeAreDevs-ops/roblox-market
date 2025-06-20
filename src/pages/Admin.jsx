@@ -29,7 +29,6 @@ export default function Admin() {
 
   const isSeller = !!seller;
 
-  // Load seller on page load
   useEffect(() => {
     const storedSeller = localStorage.getItem('seller');
     if (storedSeller) setSeller(JSON.parse(storedSeller));
@@ -132,7 +131,7 @@ export default function Admin() {
         method: editMode ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(isSeller && { Authorization: seller.username }) // ✅ send seller header
+          ...(isSeller && { Authorization: seller.username })
         },
         body: JSON.stringify(payload),
       });
@@ -310,7 +309,17 @@ export default function Admin() {
           </select>
         </div>
 
-        <button type="submit" disabled={isSubmitting}>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          style={{
+            backgroundColor: '#FF0000',
+            color: 'white',
+            padding: '10px 15px',
+            border: 'none',
+            borderRadius: '5px'
+          }}
+        >
           {isSubmitting ? 'Processing...' : editMode ? 'Update Account' : 'Add Account'}
         </button>
       </form>
@@ -341,4 +350,4 @@ export default function Admin() {
       ))}
     </div>
   );
-           }
+  }
