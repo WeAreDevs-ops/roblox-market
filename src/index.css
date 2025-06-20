@@ -13,37 +13,19 @@ header {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
+/* ✅ Updated nav for responsive wrap and layout */
 nav {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 15px;
   margin-top: 10px;
 }
 
 nav a {
   color: #000;
-  margin: 5px 10px;
   text-decoration: none;
   font-weight: bold;
-}
-
-/* Special layout for mobile */
-@media (max-width: 600px) {
-  nav {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  nav a:nth-child(1), nav a:nth-child(2) {
-    flex: 1 1 45%;
-    text-align: center;
-  }
-
-  nav a:nth-child(3) {
-    flex: 1 1 100%;
-    text-align: center;
-  }
 }
 
 .container {
@@ -52,7 +34,8 @@ nav a {
   margin: 30px auto;
 }
 
-/* Updated Card Design */
+/* ... rest of your CSS unchanged ... */
+
 .card {
   background: rgba(255, 255, 255, 0.85);
   padding: 25px;
