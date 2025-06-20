@@ -50,7 +50,13 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    document.body.style.backgroundColor = darkMode ? '#121212' : '#ffffff';
+    const originalBg = document.body.style.backgroundColor;
+    if (window.location.pathname === "/") {
+      document.body.style.backgroundColor = darkMode ? '#121212' : '#ffffff';
+    }
+    return () => {
+      document.body.style.backgroundColor = originalBg;
+    };
   }, [darkMode]);
 
   const buyNow = () => {
@@ -63,7 +69,7 @@ export default function Home() {
     });
   };
 
-  let filteredAccounts = accounts.filter(acc => 
+  let filteredAccounts = accounts.filter(acc =>
     acc.username.toLowerCase().includes(search.toLowerCase()) ||
     (acc.gamepass || "").toLowerCase().includes(search.toLowerCase()) ||
     (acc.seller || "").toLowerCase().includes(search.toLowerCase())
@@ -156,7 +162,6 @@ export default function Home() {
       }}>
         {filteredAccounts.map(acc => (
           <div key={acc.id} className="card" style={{ backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
-            
             {acc.avatar && (
               <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
             )}
@@ -271,4 +276,4 @@ export default function Home() {
       `}</style>
     </div>
   );
-        }
+          }
