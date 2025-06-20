@@ -18,15 +18,15 @@ export default async function handler(req, res) {
       return createdAt && createdAt >= today;
     }).length;
 
-    // Read live sales counter from meta collection
-    const counterSnap = await getDoc(doc(db, "meta", "salesCounter"));
-    const salesCount = counterSnap.exists() ? counterSnap.data().count : 0;
+    // Count total sellers from sellers collection
+    const sellersSnapshot = await getDocs(collection(db, "sellers"));
+    const sellerCount = sellersSnapshot.size;
 
     res.status(200).json({
       totalAccounts,
       totalRevenue,
       newStock,
-      salesCount
+      sellerCount // replaced salesCount
     });
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
