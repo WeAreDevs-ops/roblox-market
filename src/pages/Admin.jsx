@@ -274,7 +274,7 @@ export default function Admin() {
         ))}
 
         <div style={{ marginBottom: '10px' }}>
-          <label>Facebook Link:</label>
+          <label>Contact Link -FB-:</label>
           <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
         </div>
 
