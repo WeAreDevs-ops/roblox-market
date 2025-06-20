@@ -8,7 +8,7 @@ export default function Home() {
   const [emailFilter, setEmailFilter] = useState("");
   const [dashboardStats, setDashboardStats] = useState({
     totalAccounts: 0,
-    salesCount: 0,
+    sellerCount: 0,
     totalRevenue: 0,
     newStock: 0
   });
@@ -31,22 +31,15 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let currentSalesCount = 0;
-    const fetchAndStartCounter = () => {
+    const fetchStats = () => {
       fetch('/api/dashboard-stats')
         .then(res => res.json())
         .then(data => {
           setDashboardStats(data);
-          currentSalesCount = data.salesCount;
-          const interval = setInterval(() => {
-            currentSalesCount += 1;
-            setDashboardStats(prev => ({ ...prev, salesCount: currentSalesCount }));
-          }, 60000);
-          return () => clearInterval(interval);
         })
         .catch(err => console.error(err));
     };
-    fetchAndStartCounter();
+    fetchStats();
   }, []);
 
   useEffect(() => {
@@ -131,7 +124,7 @@ export default function Home() {
         <div className="badge">Total Accounts: {dashboardStats.totalAccounts}</div>
         <div className="badge">Total Revenue: ₱{dashboardStats.totalRevenue}</div>
         <div className="badge">Daily New Stock: {dashboardStats.newStock}</div>
-        <div className="badge">Live Sales: {dashboardStats.salesCount}</div>
+        <div className="badge">Total Sellers: {dashboardStats.sellerCount}</div>
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", marginBottom: "15px" }}>
@@ -286,4 +279,4 @@ export default function Home() {
       `}</style>
     </div>
   );
-      }
+                }
