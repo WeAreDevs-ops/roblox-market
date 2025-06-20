@@ -9,16 +9,16 @@ export default async function handler(req, res) {
   const accountsRef = collection(db, "accounts");
   const counterRef = doc(db, "meta", "salesCounter");
 
-  // ✅ Read seller username from request header (for filtering and auth)
+  // ✅ Extract seller username if passed
   const sellerUsername = req.headers.authorization || null;
 
   if (req.method === 'GET') {
     let snapshot;
     if (sellerUsername) {
-      const sellerQuery = query(accountsRef, where("seller", "==", sellerUsername)); // ✅ Only get this seller's listings
+      const sellerQuery = query(accountsRef, where("seller", "==", sellerUsername));
       snapshot = await getDocs(sellerQuery);
     } else {
-      snapshot = await getDocs(accountsRef); // Admin gets all
+      snapshot = await getDocs(accountsRef);
     }
 
     const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -31,7 +31,8 @@ export default async function handler(req, res) {
       robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium
     } = req.body;
 
-    if (sellerUsername && sellerUsername !== username) {
+    // 🔐 Seller can only add for themselves
+    if (sellerUsername && sellerUsername !== req.body.seller) {
       return res.status(403).json({ message: 'Unauthorized seller' });
     }
 
@@ -76,7 +77,7 @@ export default async function handler(req, res) {
         robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
         profile, avatar,
         age: ageInDays,
-        seller: sellerUsername || null, // ✅ Save the seller name
+        seller: sellerUsername || null, // ✅ Save seller username
         createdAt: serverTimestamp()
       });
 
@@ -94,7 +95,7 @@ export default async function handler(req, res) {
 
     if (!id) return res.status(400).json({ message: 'Missing document ID' });
 
-    if (sellerUsername && sellerUsername !== username) {
+    if (sellerUsername && sellerUsername !== req.body.seller) {
       return res.status(403).json({ message: 'Unauthorized seller' });
     }
 
@@ -135,6 +136,7 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ message: 'Missing ID' });
 
     if (sellerUsername) {
+      const toDelete = doc(accountsRef, id);
       const snap = await getDocs(query(accountsRef, where('__name__', '==', id)));
       const found = snap.docs[0];
       if (!found || found.data().seller !== sellerUsername) {
@@ -149,4 +151,4 @@ export default async function handler(req, res) {
   else {
     return res.status(405).end();
   }
-      }
+                    }
