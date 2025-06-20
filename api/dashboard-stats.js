@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 export default async function handler(req, res) {
   try {
@@ -18,15 +18,18 @@ export default async function handler(req, res) {
       return createdAt && createdAt >= today;
     }).length;
 
-    // Count total sellers from sellers collection
-    const sellersSnapshot = await getDocs(collection(db, "sellers"));
-    const sellerCount = sellersSnapshot.size;
+    // Count unique sellers
+    const sellerSet = new Set();
+    accounts.forEach(acc => {
+      if (acc.seller) sellerSet.add(acc.seller);
+    });
+    const sellerCount = sellerSet.size;
 
     res.status(200).json({
       totalAccounts,
       totalRevenue,
       newStock,
-      sellerCount // replaced salesCount
+      sellerCount
     });
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
