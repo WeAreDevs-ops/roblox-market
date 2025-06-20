@@ -59,12 +59,15 @@ export default function Home() {
     };
   }, [darkMode]);
 
-  const buyNow = () => {
+  const showContact = (acc) => {
+    const fb = acc.facebookLink || 'https://www.facebook.com/mix.nthe.clubb';
+    const dc = acc.discordLink || 'https://discord.gg/P5xRPech';
+
     Swal.fire({
       title: 'Contact Me',
       html: `Contact me on:<br>
-        <a href="https://www.facebook.com/mix.nthe.clubb" target="_blank">Facebook</a><br>
-        <a href="https://discord.gg/P5xRPech" target="_blank">Discord</a>`,
+        <a href="${fb}" target="_blank">Facebook</a><br>
+        <a href="${dc}" target="_blank">Discord</a>`,
       icon: 'info'
     });
   };
@@ -109,6 +112,7 @@ export default function Home() {
 
   return (
     <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "20px", minHeight: '100vh' }}>
+      {/* Top bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h2>Available Accounts</h2>
         <label className="switch">
@@ -117,6 +121,7 @@ export default function Home() {
         </label>
       </div>
 
+      {/* Stats */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(2, auto)',
@@ -130,6 +135,7 @@ export default function Home() {
         <div className="badge">Live Sales: {dashboardStats.salesCount}</div>
       </div>
 
+      {/* Filters */}
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", marginBottom: "15px" }}>
         <input 
           type="text" 
@@ -153,8 +159,10 @@ export default function Home() {
         <button className="delete" onClick={resetFilters}>Reset</button>
       </div>
 
+      {/* No result */}
       {filteredAccounts.length === 0 && <p>No results found.</p>}
 
+      {/* Listings */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
@@ -224,7 +232,7 @@ export default function Home() {
               <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} className="buy">
                 {expandedId === acc.id ? 'Hide Details' : 'View Details'}
               </button>
-              <button onClick={buyNow} className="delete" style={{ marginLeft: '10px' }}>
+              <button onClick={() => showContact(acc)} className="delete" style={{ marginLeft: '10px' }}>
                 Contact Me
               </button>
             </div>
@@ -276,4 +284,4 @@ export default function Home() {
       `}</style>
     </div>
   );
-          }
+                                 }
