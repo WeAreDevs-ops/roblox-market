@@ -65,7 +65,8 @@ export default function Home() {
 
   let filteredAccounts = accounts.filter(acc => 
     acc.username.toLowerCase().includes(search.toLowerCase()) ||
-    (acc.gamepass || "").toLowerCase().includes(search.toLowerCase())
+    (acc.gamepass || "").toLowerCase().includes(search.toLowerCase()) ||
+    (acc.seller || "").toLowerCase().includes(search.toLowerCase())
   );
 
   if (emailFilter) {
@@ -126,7 +127,7 @@ export default function Home() {
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", marginBottom: "15px" }}>
         <input 
           type="text" 
-          placeholder="🔎 Search by username or gamepass..."
+          placeholder="🔎 Search by username, gamepass or seller..."
           value={search} 
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -156,20 +157,17 @@ export default function Home() {
         {filteredAccounts.map(acc => (
           <div key={acc.id} className="card" style={{ backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
             
-            {/* Seller label */}
+            {acc.avatar && (
+              <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
+            )}
+
+            <h3>{acc.username}</h3>
+
             {acc.seller && (
               <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: darkMode ? '#aaa' : '#444' }}>
                 Seller: {acc.seller}
               </div>
             )}
-
-            {/* Avatar image */}
-            {acc.avatar && (
-              <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
-            )}
-
-            {/* Username below avatar */}
-            <h3>{acc.username}</h3>
 
             <div style={{ marginTop: '15px' }}>
               <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
@@ -228,49 +226,6 @@ export default function Home() {
           </div>
         ))}
       </div>
-
-      <style>{`
-        .switch {
-          position: relative;
-          display: inline-block;
-          width: 40px;
-          height: 22px;
-        }
-        .switch input { display: none; }
-        .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0; left: 0;
-          right: 0; bottom: 0;
-          background-color: #ccc;
-          transition: .4s;
-          border-radius: 34px;
-        }
-        .slider:before {
-          position: absolute;
-          content: "";
-          height: 16px;
-          width: 16px;
-          left: 3px;
-          bottom: 3px;
-          background-color: white;
-          transition: .4s;
-          border-radius: 50%;
-        }
-        input:checked + .slider {
-          background-color: #2196F3;
-        }
-        input:checked + .slider:before {
-          transform: translateX(18px);
-        }
-        .dark-mode {
-          background-color: #121212 !important;
-          color: white !important;
-        }
-        body {
-          transition: background-color 0.3s ease;
-        }
-      `}</style>
     </div>
   );
-        }
+}
