@@ -1,7 +1,15 @@
 import { db } from '../firebase';
 import {
-  collection, addDoc, getDocs, deleteDoc, doc, updateDoc,
-  query, where, getDocs as getDocsQuery, increment, serverTimestamp
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc,
+  query,
+  where,
+  increment,
+  serverTimestamp,
 } from "firebase/firestore";
 import axios from 'axios';
 
@@ -9,30 +17,35 @@ export default async function handler(req, res) {
   const accountsRef = collection(db, "accounts");
   const counterRef = doc(db, "meta", "salesCounter");
 
-  // ✅ Extract seller username if passed
   const sellerUsername = req.headers.authorization || null;
 
   if (req.method === 'GET') {
-    let snapshot;
-    if (sellerUsername) {
-      const sellerQuery = query(accountsRef, where("seller", "==", sellerUsername));
-      snapshot = await getDocs(sellerQuery);
-    } else {
-      snapshot = await getDocs(accountsRef);
-    }
+    try {
+      let snapshot;
+      if (sellerUsername) {
+        const sellerQuery = query(accountsRef, where("seller", "==", sellerUsername));
+        snapshot = await getDocs(sellerQuery);
+      } else {
+        snapshot = await getDocs(accountsRef);
+      }
 
-    const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return res.status(200).json({ accounts });
+      const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      return res.status(200).json({ accounts });
+    } catch (error) {
+      console.error("GET accounts error:", error);
+      return res.status(500).json({ message: 'Failed to fetch accounts.' });
+    }
   }
 
-  else if (req.method === 'POST') {
+  if (req.method === 'POST') {
     const {
       username, email, price, mop,
-      robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium
+      robuxBalance, limitedItems, inventory,
+      accountType, gamepass, totalSummary, premium,
+      seller // optionally from frontend too
     } = req.body;
 
-    // 🔐 Seller can only add for themselves
-    if (sellerUsername && sellerUsername !== req.body.seller) {
+    if (sellerUsername && sellerUsername !== seller) {
       return res.status(403).json({ message: 'Unauthorized seller' });
     }
 
@@ -43,9 +56,7 @@ export default async function handler(req, res) {
     try {
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
         usernames: [username]
-      }, {
-        headers: { "Content-Type": "application/json" }
-      });
+      }, { headers: { "Content-Type": "application/json" } });
 
       if (robloxRes.data?.data?.length > 0) {
         const userId = robloxRes.data.data[0].id;
@@ -62,22 +73,22 @@ export default async function handler(req, res) {
         ageInDays = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
       }
     } catch (error) {
-      console.error("Failed to fetch Roblox user info:", error.message);
+      console.error("Roblox API error:", error.message);
     }
 
     try {
-      const q = query(accountsRef, where("username", "==", username));
-      const existingSnap = await getDocsQuery(q);
+      const existingSnap = await getDocs(query(accountsRef, where("username", "==", username)));
       if (!existingSnap.empty) {
         return res.status(409).json({ message: 'Username already exists' });
       }
 
       await addDoc(accountsRef, {
         username, email, price, mop,
-        robuxBalance, limitedItems, inventory, accountType, gamepass, totalSummary, premium,
+        robuxBalance, limitedItems, inventory,
+        accountType, gamepass, totalSummary, premium,
+        seller: sellerUsername || null,
         profile, avatar,
         age: ageInDays,
-        seller: sellerUsername || null, // ✅ Save seller username
         createdAt: serverTimestamp()
       });
 
@@ -85,18 +96,18 @@ export default async function handler(req, res) {
 
       return res.status(201).json({ message: 'Account added' });
     } catch (error) {
-      console.error("Error adding account:", error);
+      console.error("POST account error:", error);
       return res.status(500).json({ message: 'Failed to add account' });
     }
   }
 
-  else if (req.method === 'PUT') {
+  if (req.method === 'PUT') {
     const { id, username, totalSummary, premium, ...rest } = req.body;
 
     if (!id) return res.status(400).json({ message: 'Missing document ID' });
 
     if (sellerUsername && sellerUsername !== req.body.seller) {
-      return res.status(403).json({ message: 'Unauthorized seller' });
+      return res.status(403).json({ message: 'Unauthorized seller update' });
     }
 
     let profile = "";
@@ -105,9 +116,7 @@ export default async function handler(req, res) {
     try {
       const robloxRes = await axios.post("https://users.roblox.com/v1/usernames/users", {
         usernames: [username]
-      }, {
-        headers: { "Content-Type": "application/json" }
-      });
+      }, { headers: { "Content-Type": "application/json" } });
 
       if (robloxRes.data?.data?.length > 0) {
         const userId = robloxRes.data.data[0].id;
@@ -119,7 +128,7 @@ export default async function handler(req, res) {
         }
       }
     } catch (error) {
-      console.error("Failed to fetch Roblox user info on update:", error.message);
+      console.error("Update Roblox info error:", error.message);
     }
 
     const docRef = doc(accountsRef, id);
@@ -130,13 +139,11 @@ export default async function handler(req, res) {
     return res.status(200).json({ message: 'Updated successfully' });
   }
 
-  else if (req.method === 'DELETE') {
+  if (req.method === 'DELETE') {
     const { id } = req.body;
-
     if (!id) return res.status(400).json({ message: 'Missing ID' });
 
     if (sellerUsername) {
-      const toDelete = doc(accountsRef, id);
       const snap = await getDocs(query(accountsRef, where('__name__', '==', id)));
       const found = snap.docs[0];
       if (!found || found.data().seller !== sellerUsername) {
@@ -148,7 +155,5 @@ export default async function handler(req, res) {
     return res.status(200).json({ message: 'Deleted' });
   }
 
-  else {
-    return res.status(405).end();
-  }
-                    }
+  return res.status(405).end(); // Method Not Allowed
+}
