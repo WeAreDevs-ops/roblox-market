@@ -29,11 +29,10 @@ export default function Admin() {
 
   const isSeller = !!seller;
 
+  // Load seller on page load
   useEffect(() => {
     const storedSeller = localStorage.getItem('seller');
-    if (storedSeller) {
-      setSeller(JSON.parse(storedSeller));
-    }
+    if (storedSeller) setSeller(JSON.parse(storedSeller));
   }, []);
 
   useEffect(() => {
@@ -43,7 +42,6 @@ export default function Admin() {
   const fetchAccounts = async () => {
     const res = await fetch('/api/accounts');
     const data = await res.json();
-
     if (isSeller) {
       const username = JSON.parse(localStorage.getItem('seller'))?.username;
       const sellerListings = data.accounts.filter(acc => acc.seller === username);
@@ -51,13 +49,6 @@ export default function Admin() {
     } else {
       setAccounts(data.accounts);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('seller');
-    setSeller(null);
-    setIsAuthorized(false);
-    window.location.reload();
   };
 
   const handleAdminLogin = async () => {
@@ -112,6 +103,14 @@ export default function Admin() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('seller');
+    setSeller(null);
+    setIsAuthorized(false);
+    setAccounts([]);
+    Swal.fire('Logged out', 'You have been logged out.', 'success');
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -131,7 +130,10 @@ export default function Admin() {
     try {
       const response = await fetch('/api/accounts', {
         method: editMode ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(isSeller && { Authorization: seller.username }) // ✅ send seller header
+        },
         body: JSON.stringify(payload),
       });
 
@@ -247,13 +249,12 @@ export default function Admin() {
 
   return (
     <div className="container" style={{ padding: '20px' }}>
-      <h2>{isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}</h2>
-      <button
-        onClick={handleLogout}
-        style={{ marginBottom: '20px', backgroundColor: '#444', color: 'white', padding: '5px 10px' }}
-      >
-        Logout
-      </button>
+      <h2>
+        {isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}
+        <button onClick={handleLogout} style={{ marginLeft: '20px', background: 'red', color: '#fff' }}>
+          Logout
+        </button>
+      </h2>
 
       <form onSubmit={handleSubmit}>
         {[
@@ -315,7 +316,6 @@ export default function Admin() {
       </form>
 
       <hr style={{ margin: '30px 0' }} />
-
       <h3>Account List</h3>
       <input
         type="text"
@@ -341,4 +341,4 @@ export default function Admin() {
       ))}
     </div>
   );
-          }
+           }
