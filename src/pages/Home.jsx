@@ -155,15 +155,21 @@ export default function Home() {
       }}>
         {filteredAccounts.map(acc => (
           <div key={acc.id} className="card" style={{ backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}>
-            <h3>{acc.username}</h3>
-
+            
+            {/* Seller label */}
             {acc.seller && (
               <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: darkMode ? '#aaa' : '#444' }}>
                 Seller: {acc.seller}
               </div>
             )}
 
-            {acc.avatar && <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />}
+            {/* Avatar image */}
+            {acc.avatar && (
+              <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
+            )}
+
+            {/* Username below avatar */}
+            <h3>{acc.username}</h3>
 
             <div style={{ marginTop: '15px' }}>
               <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
@@ -183,7 +189,7 @@ export default function Home() {
 
                 <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                   <strong>🔗 Profile:</strong>&nbsp;
-                  <a href={acc.profile} target="_blank" rel="noreferrer" style={{ color: '#ceb2eb', fontWeight: 'bold' }} > View Profile </a>
+                  <a href={acc.profile} target="_blank" rel="noreferrer" style={{ color: '#ceb2eb', fontWeight: 'bold' }}> View Profile </a>
                 </div>
 
                 <div style={{ marginTop: "10px" }}>
