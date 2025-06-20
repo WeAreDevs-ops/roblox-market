@@ -19,8 +19,7 @@ export default function Admin() {
     gamepass: '',
     accountType: 'Global Account',
     premium: 'False',
-    facebookLink: '',       // ✅ added
-    discordLink: ''         // ✅ added
+    facebookLink: '' // Discord link removed
   });
 
   const [accounts, setAccounts] = useState([]);
@@ -152,8 +151,7 @@ export default function Admin() {
           gamepass: '',
           accountType: 'Global Account',
           premium: 'False',
-          facebookLink: '',
-          discordLink: ''
+          facebookLink: ''
         });
         setEditMode(false);
         setEditId(null);
@@ -204,8 +202,7 @@ export default function Admin() {
       gamepass: account.gamepass || '',
       accountType: account.accountType || 'Global Account',
       premium: account.premium || 'False',
-      facebookLink: account.facebookLink || '',   // ✅
-      discordLink: account.discordLink || ''      // ✅
+      facebookLink: account.facebookLink || ''
     });
     setEditMode(true);
     setEditId(account.id);
@@ -279,10 +276,6 @@ export default function Admin() {
         <div style={{ marginBottom: '10px' }}>
           <label>Facebook Link:</label>
           <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
-        </div>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Discord Link:</label>
-          <input type="text" name="discordLink" value={formData.discordLink} onChange={handleChange} />
         </div>
 
         <div style={{ marginBottom: '10px' }}>
@@ -369,4 +362,4 @@ export default function Admin() {
       ))}
     </div>
   );
-          }
+                }
