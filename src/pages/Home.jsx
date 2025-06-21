@@ -52,13 +52,22 @@ export default function Home() {
     };
   }, [darkMode]);
 
+  // ✅ UPDATED TO REMOVE HARDCODED FB LINK
   const showContact = (acc) => {
-    const fb = acc.facebookLink || 'https://www.facebook.com/mix.nthe.clubb';
+    const fb = acc.facebookLink;
+
+    if (!fb) {
+      Swal.fire({
+        title: 'No Contact Info',
+        text: 'This seller did not provide a Facebook link.',
+        icon: 'warning'
+      });
+      return;
+    }
 
     Swal.fire({
       title: 'Contact Me',
-      html: `Contact me on:<br>
-        <a href="${fb}" target="_blank">Facebook</a>`,
+      html: `Contact me on:<br><a href="${fb}" target="_blank">Facebook</a>`,
       icon: 'info'
     });
   };
@@ -279,4 +288,4 @@ export default function Home() {
       `}</style>
     </div>
   );
-                }
+      }
