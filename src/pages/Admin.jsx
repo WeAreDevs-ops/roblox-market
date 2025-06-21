@@ -19,7 +19,7 @@ export default function Admin() {
     gamepass: '',
     accountType: 'Global Account',
     premium: 'False',
-    facebookLink: '' // Discord link removed
+    facebookLink: ''
   });
 
   const [accounts, setAccounts] = useState([]);
@@ -120,6 +120,24 @@ export default function Admin() {
     e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
+
+    // ✅ Validate required fields
+    const requiredFields = [
+      'username',
+      'price',
+      'robuxBalance',
+      'limitedItems',
+      'gamepass',
+      'facebookLink'
+    ];
+
+    for (const field of requiredFields) {
+      if (!formData[field] || formData[field].trim() === '') {
+        Swal.fire('Missing Field', `Please fill out the "${field}" field.`, 'warning');
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     const payload = {
       ...(editMode ? { id: editId } : {}),
@@ -362,4 +380,4 @@ export default function Admin() {
       ))}
     </div>
   );
-                }
+      }
