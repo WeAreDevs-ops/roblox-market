@@ -175,110 +175,150 @@ export default function Home() {
         >
           No results found.
         </motion.p>
-      )}import { motion, AnimatePresence } from 'framer-motion';
-
-...
-
-{filteredAccounts.length === 0 && <p>No results found.</p>}
-
-<div style={{ 
-  display: 'grid', 
-  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-  gap: '20px' 
-}}>
-  <AnimatePresence mode="wait">
-    {filteredAccounts.map(acc => (
-      <motion.div
-        key={acc.id}
-        className="card"
-        style={{ backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.3 }}
-      >
-        {acc.avatar && (
-          <motion.img
-            src={acc.avatar}
-            alt={`${acc.username} avatar`}
-            style={{ width: "150px", borderRadius: "10px" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          />
-        )}
-
-        <h3>{acc.username}</h3>
-
-        {acc.seller && (
-          <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: darkMode ? '#aaa' : '#444' }}>
-            Seller: {acc.seller}
-          </div>
-        )}
-
-        <div style={{ marginTop: '15px' }}>
-          <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
-          <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
-          <DetailRow label="➤ Premium Status:" value={acc.premium === "True" ? "True" : "False"} />
-        </div>
-
+      )} <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+        gap: '20px' 
+      }}>
         <AnimatePresence>
-          {expandedId === acc.id && (
+          {filteredAccounts.map(acc => (
             <motion.div
-              style={{ marginTop: '15px' }}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
+              key={acc.id}
+              layout
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
+              className="card"
+              style={{ backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}
             >
-              <DetailRow label="➤ Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
-              <DetailRow label="➤ Email:" value={acc.email} />
-              <DetailRow label="➤ Robux Balance:" value={acc.robuxBalance} />
-              <DetailRow label="➤ Limited item:" value={acc.limitedItems} />
-              <DetailRow label="➤ Inventory:" value={acc.inventory} />
-              <DetailRow label="🌍 Type:" value={acc.accountType} />
-              <DetailRow label="💳 MOP:" value={acc.mop} />
+              {acc.avatar && (
+                <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
+              )}
 
-              <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                <strong>🔗 Profile:</strong>&nbsp;
-                <a href={acc.profile} target="_blank" rel="noreferrer" style={{ color: '#ceb2eb', fontWeight: 'bold' }}> View Profile </a>
+              <h3>{acc.username}</h3>
+
+              {acc.seller && (
+                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: darkMode ? '#aaa' : '#444' }}>
+                  Seller: {acc.seller}
+                </div>
+              )}
+
+              <div style={{ marginTop: '15px' }}>
+                <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
+                <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
+                <DetailRow label="➤ Premium Status:" value={acc.premium === "True" ? "True" : "False"} />
               </div>
 
-              <div style={{ marginTop: "10px" }}>
-                <strong>🎮 Games with Gamepasses:</strong>
-                <div style={{ 
-                  marginTop: '8px', 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: '5px', 
-                  maxHeight: '150px', 
-                  overflowY: 'auto', 
-                  paddingRight: '5px',
-                  border: '1px solid #ccc',
-                  borderRadius: '8px'
-                }}>
-                  {acc.gamepass && acc.gamepass.trim() !== "" ? (
-                    acc.gamepass.split(",").map((game, index) => (
-                      <Tag key={index} text={game.trim()} color="#ceb2eb" />
-                    ))
-                  ) : (
-                    <Tag text="No Gamepass Found" color="#999" />
-                  )}
-                </div>
+              <AnimatePresence>
+                {expandedId === acc.id && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    style={{ overflow: 'hidden', marginTop: '15px' }}
+                  >
+                    <DetailRow label="➤ Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
+                    <DetailRow label="➤ Email:" value={acc.email} />
+                    <DetailRow label="➤ Robux Balance:" value={acc.robuxBalance} />
+                    <DetailRow label="➤ Limited item:" value={acc.limitedItems} />
+                    <DetailRow label="➤ Inventory:" value={acc.inventory} />
+                    <DetailRow label="🌍 Type:" value={acc.accountType} />
+                    <DetailRow label="💳 MOP:" value={acc.mop} />
+
+                    <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <strong>🔗 Profile:</strong>&nbsp;
+                      <a href={acc.profile} target="_blank" rel="noreferrer" style={{ color: '#ceb2eb', fontWeight: 'bold' }}> View Profile </a>
+                    </div>
+
+                    <div style={{ marginTop: "10px" }}>
+                      <strong>🎮 Games with Gamepasses:</strong>
+                      <div style={{ 
+                        marginTop: '8px', 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: '5px', 
+                        maxHeight: '150px', 
+                        overflowY: 'auto', 
+                        paddingRight: '5px',
+                        border: '1px solid #ccc',
+                        borderRadius: '8px'
+                      }}>
+                        {acc.gamepass && acc.gamepass.trim() !== "" ? (
+                          acc.gamepass.split(",").map((game, index) => (
+                            <Tag key={index} text={game.trim()} color="#ceb2eb" />
+                          ))
+                        ) : (
+                          <Tag text="No Gamepass Found" color="#999" />
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="buttons" style={{ marginTop: "10px" }}>
+                <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} className="buy">
+                  {expandedId === acc.id ? 'Hide Details' : 'View Details'}
+                </button>
+                <button onClick={() => showContact(acc)} className="delete" style={{ marginLeft: '10px' }}>
+                  Contact Me
+                </button>
               </div>
             </motion.div>
-          )}
+          ))}
         </AnimatePresence>
+      </div>
 
-        <div className="buttons" style={{ marginTop: "10px" }}>
-          <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} className="buy">
-            {expandedId === acc.id ? 'Hide Details' : 'View Details'}
-          </button>
-          <button onClick={() => showContact(acc)} className="delete" style={{ marginLeft: '10px' }}>
-            Contact Me
-          </button>
-        </div>
-      </motion.div>
-    ))}
-  </AnimatePresence>
-</div>
+      <style>{`
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 40px;
+          height: 22px;
+        }
+        .switch input { display: none; }
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0; left: 0;
+          right: 0; bottom: 0;
+          background-color: #ccc;
+          transition: .4s;
+          border-radius: 34px;
+        }
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 16px;
+          width: 16px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          transition: .4s;
+          border-radius: 50%;
+        }
+        input:checked + .slider {
+          background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+          transform: translateX(18px);
+        }
+        .dark-mode {
+          background-color: #121212 !important;
+          color: white !important;
+        }
+        body {
+          transition: background-color 0.3s ease;
+        }
+
+        @media screen and (min-width: 768px) {
+          .dashboard-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
