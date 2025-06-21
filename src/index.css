@@ -6,7 +6,8 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed; /* Optional: fixed background */
+  background-attachment: fixed;
+  color: white;
 }
 
 /* Optional dark overlay for readability */
