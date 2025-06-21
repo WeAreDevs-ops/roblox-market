@@ -7,8 +7,6 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
-  const [expandedId, setExpandedId] = useState(null);
-
   const [dashboardStats, setDashboardStats] = useState({
     totalAccounts: 0,
     sellerCount: 0,
@@ -37,7 +35,9 @@ export default function Home() {
     const fetchStats = () => {
       fetch('/api/dashboard-stats')
         .then(res => res.json())
-        .then(data => setDashboardStats(data))
+        .then(data => {
+          setDashboardStats(data);
+        })
         .catch(err => console.error(err));
     };
     fetchStats();
@@ -55,10 +55,16 @@ export default function Home() {
 
   const showContact = (acc) => {
     const fb = acc.facebookLink;
+
     if (!fb) {
-      Swal.fire('No Contact Info', 'This seller did not provide a Facebook link.', 'warning');
+      Swal.fire({
+        title: 'No Contact Info',
+        text: 'This seller did not provide a Facebook link.',
+        icon: 'warning'
+      });
       return;
     }
+
     Swal.fire({
       title: 'Contact Me',
       html: `Contact me on:<br><a href="${fb}" target="_blank">Facebook</a>`,
@@ -102,13 +108,8 @@ export default function Home() {
     </div>
   );
 
-  return (
-    <motion.div
-      className={`container ${darkMode ? 'dark-mode' : ''}`}
-      style={{ padding: "20px", minHeight: '100vh' }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
+  const [expandedId, setExpandedId] = useState(null);return (
+    <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "20px", minHeight: '100vh' }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h2>Available Accounts</h2>
         <label className="switch">
@@ -117,75 +118,61 @@ export default function Home() {
         </label>
       </div>
 
-      <div className="dashboard-grid" style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: '10px',
-        justifyContent: 'center',
-        marginBottom: '20px'
-      }}>
-        <div className="badge">Total Accounts: {dashboardStats.totalAccounts}</div>
-        <div className="badge">Total Revenue: ₱{dashboardStats.totalRevenue}</div>
-        <div className="badge">Daily New Stock: {dashboardStats.newStock}</div>
-        <div className="badge">Total Sellers: {dashboardStats.sellerCount}</div>
-      </div>
-
-      <motion.div
-        layout
-        style={{ display: "flex", flexWrap: "wrap", alignItems: "center", marginBottom: "15px" }}
-      >
+      {/* Filters */}
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", marginBottom: "15px" }}>
         <input 
           type="text" 
-          placeholder="🔎 Search by username, seller or gamepass..."
+          placeholder="🔍 Search by username, seller or gamepass..."
           value={search} 
           onChange={(e) => setSearch(e.target.value)}
         />
-
         <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
           <option value="">Sort Price</option>
           <option value="low-high">Low to High</option>
           <option value="high-low">High to Low</option>
         </select>
-
         <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)}>
           <option value="">Email Status</option>
           <option value="Verified">Verified</option>
           <option value="Unverified">Unverified</option>
         </select>
-
         <button className="delete" onClick={resetFilters}>Reset</button>
-      </motion.div>
+      </div>
 
-      {filteredAccounts.length === 0 && <p>No results found.</p>}
-
-      <motion.div layout style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-        gap: '20px' 
-      }}>
-        <AnimatePresence>
-          {filteredAccounts.map((acc, index) => (
+      {/* Cards */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={filteredAccounts.length}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -30 }}
+          transition={{ duration: 0.3 }}
+          style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+            gap: '20px' 
+          }}
+        >
+          {filteredAccounts.map(acc => (
             <motion.div
               key={acc.id}
-              className="card"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ duration: 0.3 }}
+              className="card"
               style={{ backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}
             >
               {acc.avatar && (
-                <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
+                <img src={acc.avatar} alt={acc.username} style={{ width: "150px", borderRadius: "10px" }} />
               )}
-
               <h3>{acc.username}</h3>
-
               {acc.seller && (
                 <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: darkMode ? '#aaa' : '#444' }}>
                   Seller: {acc.seller}
                 </div>
               )}
-
               <div style={{ marginTop: '15px' }}>
                 <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
                 <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
@@ -195,10 +182,9 @@ export default function Home() {
               <AnimatePresence>
                 {expandedId === acc.id && (
                   <motion.div
-                    key="details"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3 }}
                     style={{ overflow: 'hidden', marginTop: '15px' }}
                   >
@@ -209,12 +195,10 @@ export default function Home() {
                     <DetailRow label="➤ Inventory:" value={acc.inventory} />
                     <DetailRow label="🌍 Type:" value={acc.accountType} />
                     <DetailRow label="💳 MOP:" value={acc.mop} />
-
                     <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                       <strong>🔗 Profile:</strong>&nbsp;
                       <a href={acc.profile} target="_blank" rel="noreferrer" style={{ color: '#ceb2eb', fontWeight: 'bold' }}> View Profile </a>
                     </div>
-
                     <div style={{ marginTop: "10px" }}>
                       <strong>🎮 Games with Gamepasses:</strong>
                       <div style={{ 
@@ -251,8 +235,8 @@ export default function Home() {
               </div>
             </motion.div>
           ))}
-        </AnimatePresence>
-      </motion.div>
-    </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
-            }
+    }
