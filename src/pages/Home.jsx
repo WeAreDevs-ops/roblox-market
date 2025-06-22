@@ -197,7 +197,7 @@ export default function Home() {
 
                     <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
                       <strong>🔗 Profile:</strong>&nbsp;
-                      <a href={acc.profile} target="_blank" rel="noreferrer" style={{ color: '#16a34a', fontWeight: 'bold' }}> View Profile </a>
+                      <a href={acc.profile} target="_blank" rel="noreferrer" style={{ color: '#22c55e', fontWeight: 'bold' }}> View Profile </a>
                     </div>
 
                     <div style={{ marginTop: "10px" }}>
@@ -215,7 +215,7 @@ export default function Home() {
                       }}>
                         {acc.gamepass && acc.gamepass.trim() !== "" ? (
                           acc.gamepass.split(",").map((game, index) => (
-                            <Tag key={index} text={game.trim()} color="#16a34a" />
+                            <Tag key={index} text={game.trim()} color="#22c55e" />
                           ))
                         ) : (
                           <Tag text="No Gamepass Found" color="#999" />
