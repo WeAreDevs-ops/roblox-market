@@ -34,7 +34,7 @@ export default function SellerLogin() {
 
   return (
     <div className="container">
-      <h2>Seller Login</h2>
+      <h2 style={{ color: 'white' }}>Seller Login</h2>
       <form onSubmit={handleLogin}>
         <input 
           type="text" 
