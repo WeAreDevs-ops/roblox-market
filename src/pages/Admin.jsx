@@ -354,7 +354,7 @@ export default function Admin() {
       </form>
 
       <hr style={{ margin: '30px 0' }} />
-      <h3>Account List</h3>
+      <h3 style={{ color: 'white' }}>Account List</h3>
       <input
         type="text"
         placeholder="Search Username"
@@ -364,7 +364,7 @@ export default function Admin() {
       />
 
       {filteredAccounts.map(acc => (
-        <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px' }}>
+        <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px' , color: 'white' }}>
           <strong>{acc.username}</strong> - ₱{acc.price}
           <div>Account Age: {acc.age} days</div>
           <div style={{ marginTop: '5px' }}>
