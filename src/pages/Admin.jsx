@@ -9,7 +9,7 @@ export default function Admin() {
   const [listingType, setListingType] = useState('account');
 
   const initialFormData = {
-    // Account fields
+    // Account Listing fields
     username: '',
     totalSummary: '',
     email: 'Verified',
@@ -22,7 +22,7 @@ export default function Admin() {
     accountType: 'Global Account',
     premium: 'False',
     facebookLink: '',
-    // Robux fields
+    // Robux Listing fields
     robux: '',
     via: ''
   };
@@ -33,7 +33,6 @@ export default function Admin() {
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const isSeller = !!seller;
 
   useEffect(() => {
@@ -216,7 +215,7 @@ export default function Admin() {
             </div>
           </>
         ) : (
-          ['username', 'totalSummary', 'price', 'robuxBalance', 'limitedItems', 'gamepass', 'facebookLink'].map(name => (
+          ['username', 'totalSummary', 'email', 'price', 'mop', 'robuxBalance', 'limitedItems', 'inventory', 'gamepass', 'accountType', 'premium', 'facebookLink'].map(name => (
             <div key={name} style={{ marginBottom: '10px' }}>
               <label style={{ color: 'white' }}>{name}:</label>
               <input type="text" name={name} value={formData[name]} onChange={handleChange} />
@@ -230,12 +229,7 @@ export default function Admin() {
 
       <hr />
       <h3 style={{ color: 'white' }}>Listings</h3>
-      <input
-        type="text"
-        placeholder="Search"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <input type="text" placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
 
       {filtered.map(acc => (
         <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', color: 'white' }}>
@@ -243,25 +237,25 @@ export default function Admin() {
             <>
               <strong>Robux:</strong> {acc.robux}<br />
               <strong>Via:</strong> {acc.via}<br />
-              <strong>Contact:</strong> <a href={acc.facebookLink} style={{ color: '#60a5fa' }} target="_blank" rel="noreferrer">{acc.facebookLink}</a><br />
+              <strong>Contact:</strong> <a href={acc.facebookLink} target="_blank" rel="noreferrer" style={{ color: '#60a5fa' }}>{acc.facebookLink}</a><br />
               <strong>Seller:</strong> {acc.seller}
             </>
           ) : (
             <>
-              <strong>{acc.username}</strong> - ₱{acc.price}
-              <div>Age: {acc.age} days</div>
+              <strong>{acc.username}</strong> - ₱{acc.price}<br />
+              Email: {acc.email} | Premium: {acc.premium}<br />
+              MOP: {acc.mop} | Inventory: {acc.inventory}<br />
+              Gamepass: {acc.gamepass} | Type: {acc.accountType}<br />
+              Limited: {acc.limitedItems} | Robux: {acc.robuxBalance}<br />
+              Contact: <a href={acc.facebookLink} target="_blank" rel="noreferrer" style={{ color: '#60a5fa' }}>{acc.facebookLink}</a>
             </>
           )}
           <div style={{ marginTop: '5px' }}>
-            <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>
-              Edit
-            </button>
-            <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>
-              Delete
-            </button>
+            <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>Edit</button>
+            <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>Delete</button>
           </div>
         </div>
       ))}
     </div>
   );
-                                           }
+    }
