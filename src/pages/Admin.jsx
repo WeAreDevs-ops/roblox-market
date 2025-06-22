@@ -277,24 +277,25 @@ export default function Admin() {
       </h2>
 
       <form onSubmit={handleSubmit}>
-        {[
-          ['Username', 'username'],
-          ['Total Summary', 'totalSummary'],
-          ['Price', 'price'],
-          ['Robux Balance', 'robuxBalance'],
-          ['Limited Items', 'limitedItems'],
-          ['Game with Gamepass', 'gamepass'],
-        ].map(([label, name]) => (
-          <div key={name} style={{ marginBottom: '10px' }}>
-            <label>{label}:</label>
-            <input type="text" name={name} value={formData[name]} onChange={handleChange} />
-          </div>
-        ))}
+  {[
+    ['Username', 'username'],
+    ['Total Summary', 'totalSummary'],
+    ['Price', 'price'],
+    ['Robux Balance', 'robuxBalance'],
+    ['Limited Items', 'limitedItems'],
+    ['Game with Gamepass', 'gamepass'],
+  ].map(([label, name]) => (
+    <div key={name} style={{ marginBottom: '10px' }}>
+      <label style={{ color: 'white' }}>{label}:</label>
+      <input type="text" name={name} value={formData[name]} onChange={handleChange} />
+    </div>
+  ))}
 
-        <div style={{ marginBottom: '10px' }}>
-          <label>Contact Link -FB-:</label>
-          <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
-        </div>
+  <div style={{ marginBottom: '10px' }}>
+    <label style={{ color: 'white' }}>Contact Link -FB-:</label>
+    <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
+  </div>
+</form>
 
         <div style={{ marginBottom: '10px' }}>
           <label>Email:</label>
