@@ -7,6 +7,8 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
+  const [selectedType, setSelectedType] = useState("account"); // 👈 new
+
   const [dashboardStats, setDashboardStats] = useState({
     totalAccounts: 0,
     sellerCount: 0,
@@ -29,7 +31,6 @@ export default function Home() {
 
   const showContact = (acc) => {
     const fb = acc.facebookLink;
-
     if (!fb) {
       Swal.fire({
         title: 'No Contact Info',
@@ -46,8 +47,35 @@ export default function Home() {
     });
   };
 
+  const resetFilters = () => {
+    setSearch("");
+    setSortOption("");
+    setEmailFilter("");
+  };
+
+  const Tag = ({ text, color }) => (
+    <span style={{
+      backgroundColor: color,
+      color: '#000',
+      padding: '3px 10px',
+      borderRadius: '20px',
+      fontSize: '0.85rem',
+      marginLeft: '8px',
+      fontWeight: 'bold'
+    }}>{text}</span>
+  );
+
+  const DetailRow = ({ label, value }) => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', marginBottom: '8px' }}>
+      <strong>{label}</strong>
+      <span className="badge">{value}</span>
+    </div>
+  );
+
+  const [expandedId, setExpandedId] = useState(null);
+
   let filteredAccounts = accounts.filter(acc =>
-    acc.username.toLowerCase().includes(search.toLowerCase()) ||
+    acc.username?.toLowerCase().includes(search.toLowerCase()) ||
     (acc.gamepass || "").toLowerCase().includes(search.toLowerCase()) ||
     (acc.seller || "").toLowerCase().includes(search.toLowerCase())
   );
@@ -62,31 +90,17 @@ export default function Home() {
     filteredAccounts = filteredAccounts.sort((a, b) => b.price - a.price);
   }
 
-  const resetFilters = () => {
-    setSearch("");
-    setSortOption("");
-    setEmailFilter("");
-  };
-
-  const Tag = ({ text, color }) => (
-    <span style={{
-      backgroundColor: color, color: '#000', padding: '3px 10px',
-      borderRadius: '20px', fontSize: '0.85rem', marginLeft: '8px', fontWeight: 'bold'
-    }}>{text}</span>
-  );
-
-  const DetailRow = ({ label, value }) => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', marginBottom: '8px' }}>
-      <strong>{label}</strong>
-      <span className="badge">{value}</span>
-    </div>
-  );
-
-  const [expandedId, setExpandedId] = useState(null);
+  // 👇 New: filter based on listing type
+  const visibleAccounts = filteredAccounts.filter(acc => {
+    if (selectedType === "account") {
+      return acc.username && acc.robuxBalance !== "Only Robux";
+    } else {
+      return acc.robuxBalance === "Only Robux";
+    }
+  });
 
   return (
     <div className="container" style={{ padding: "20px", minHeight: '100vh' }}>
-      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -118,39 +132,65 @@ export default function Home() {
           value={search} 
           onChange={(e) => setSearch(e.target.value)}
         />
-
         <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
           <option value="">Sort Price</option>
           <option value="low-high">Low to High</option>
           <option value="high-low">High to Low</option>
         </select>
-
         <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)}>
           <option value="">Email Status</option>
           <option value="Verified">Verified</option>
           <option value="Unverified">Unverified</option>
         </select>
-
         <button className="delete" onClick={resetFilters}>Reset</button>
       </motion.div>
 
-      {filteredAccounts.length === 0 && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
+      {/* 👇 NEW: Toggle between Account / Robux */}
+      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <button
+          onClick={() => setSelectedType("account")}
+          style={{
+            padding: '8px 16px',
+            marginRight: '10px',
+            backgroundColor: selectedType === 'account' ? '#22c55e' : '#eee',
+            color: selectedType === 'account' ? '#fff' : '#333',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
         >
+          ACCOUNT LIST
+        </button>
+        <button
+          onClick={() => setSelectedType("robux")}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: selectedType === 'robux' ? '#22c55e' : '#eee',
+            color: selectedType === 'robux' ? '#fff' : '#333',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+        >
+          ROBUX LIST
+        </button>
+      </div>
+
+      {visibleAccounts.length === 0 && (
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
           No results found.
         </motion.p>
       )}
 
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-        gap: '20px' 
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '20px'
       }}>
         <AnimatePresence>
-          {filteredAccounts.map(acc => (
+          {visibleAccounts.map(acc => (
             <motion.div
               key={acc.id}
               layout
@@ -160,11 +200,11 @@ export default function Home() {
               transition={{ duration: 0.3 }}
               className="card"
             >
-              {acc.avatar && (
+              {acc.avatar && selectedType === "account" && (
                 <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
               )}
 
-              <h3>{acc.username}</h3>
+              <h3>{selectedType === "account" ? acc.username : `${acc.robuxBalance} Robux`}</h3>
 
               {acc.seller && (
                 <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#444' }}>
@@ -174,62 +214,75 @@ export default function Home() {
 
               <div style={{ marginTop: '15px' }}>
                 <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
-                <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
-                <DetailRow label="➤ Premium Status:" value={acc.premium === "True" ? "True" : "False"} />
+                {selectedType === "account" && (
+                  <>
+                    <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
+                    <DetailRow label="➤ Premium Status:" value={acc.premium === "True" ? "True" : "False"} />
+                  </>
+                )}
               </div>
 
-              <AnimatePresence>
-                {expandedId === acc.id && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    style={{ overflow: 'hidden', marginTop: '15px' }}
-                  >
-                    <DetailRow label="➤ Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
-                    <DetailRow label="➤ Email:" value={acc.email} />
-                    <DetailRow label="➤ Robux Balance:" value={acc.robuxBalance} />
-                    <DetailRow label="➤ Limited item:" value={acc.limitedItems} />
-                    <DetailRow label="➤ Inventory:" value={acc.inventory} />
-                    <DetailRow label="🌍 Type:" value={acc.accountType} />
-                    <DetailRow label="💳 MOP:" value={acc.mop} />
+              {selectedType === "account" && (
+                <AnimatePresence>
+                  {expandedId === acc.id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      style={{ overflow: 'hidden', marginTop: '15px' }}
+                    >
+                      <DetailRow label="➤ Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
+                      <DetailRow label="➤ Email:" value={acc.email} />
+                      <DetailRow label="➤ Robux Balance:" value={acc.robuxBalance} />
+                      <DetailRow label="➤ Limited item:" value={acc.limitedItems} />
+                      <DetailRow label="➤ Inventory:" value={acc.inventory} />
+                      <DetailRow label="🌍 Type:" value={acc.accountType} />
+                      <DetailRow label="💳 MOP:" value={acc.mop} />
 
-                    <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-                      <strong>🔗 Profile:</strong>&nbsp;
-                      <a href={acc.profile} target="_blank" rel="noreferrer" style={{ background: 'linear-gradient(90deg, #7DC387, #DBE9EA)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 'bold' }}> View Profile </a>
-                    </div>
-
-                    <div style={{ marginTop: "10px" }}>
-                      <strong style={{ color: "black" }}>🎮 Games with Gamepasses:</strong>
-                      <div style={{ 
-                        marginTop: '8px', 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        gap: '5px', 
-                        maxHeight: '150px', 
-                        overflowY: 'auto', 
-                        paddingRight: '5px',
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }}>
-                        {acc.gamepass && acc.gamepass.trim() !== "" ? (
-                          acc.gamepass.split(",").map((game, index) => (
-                            <Tag key={index} text={game.trim()} color="#7DC387" />
-                          ))
-                        ) : (
-                          <Tag text="No Gamepass Found" color="#999" />
-                        )}
+                      <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <strong>🔗 Profile:</strong>&nbsp;
+                        <a href={acc.profile} target="_blank" rel="noreferrer" style={{
+                          background: 'linear-gradient(90deg, #7DC387, #DBE9EA)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          fontWeight: 'bold'
+                        }}> View Profile </a>
                       </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+
+                      <div style={{ marginTop: "10px" }}>
+                        <strong style={{ color: "black" }}>🎮 Games with Gamepasses:</strong>
+                        <div style={{
+                          marginTop: '8px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '5px',
+                          maxHeight: '150px',
+                          overflowY: 'auto',
+                          paddingRight: '5px',
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }}>
+                          {acc.gamepass && acc.gamepass.trim() !== "" ? (
+                            acc.gamepass.split(",").map((game, index) => (
+                              <Tag key={index} text={game.trim()} color="#7DC387" />
+                            ))
+                          ) : (
+                            <Tag text="No Gamepass Found" color="#999" />
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
 
               <div className="buttons" style={{ marginTop: "10px" }}>
-                <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} className="buy">
-                  {expandedId === acc.id ? 'Hide Details' : 'View Details'}
-                </button>
+                {selectedType === "account" && (
+                  <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} className="buy">
+                    {expandedId === acc.id ? 'Hide Details' : 'View Details'}
+                  </button>
+                )}
                 <button onClick={() => showContact(acc)} className="delete" style={{ marginLeft: '10px' }}>
                   Contact Me
                 </button>
