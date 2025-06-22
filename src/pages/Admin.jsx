@@ -20,7 +20,9 @@ export default function Admin() {
     gamepass: '',
     accountType: 'Global Account',
     premium: 'False',
-    facebookLink: ''
+    facebookLink: '',
+    via: '',
+    robux: ''
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -42,14 +44,19 @@ export default function Admin() {
   }, [isAuthorized, seller, listingType]);
 
   const fetchAccounts = async () => {
-    const res = await fetch(`/api/${listingType === 'robux' ? 'robux' : 'accounts'}`);
-    const data = await res.json();
-    if (isSeller) {
-      const username = JSON.parse(localStorage.getItem('seller'))?.username;
-      const sellerListings = data.accounts.filter(acc => acc.seller === username);
-      setAccounts(sellerListings);
-    } else {
-      setAccounts(data.accounts);
+    try {
+      const res = await fetch(`/api/${listingType === 'robux' ? 'robux' : 'accounts'}`);
+      const data = await res.json();
+      if (isSeller) {
+        const username = JSON.parse(localStorage.getItem('seller'))?.username;
+        const sellerListings = data.accounts.filter(acc => acc.seller === username);
+        setAccounts(sellerListings);
+      } else {
+        setAccounts(data.accounts);
+      }
+    } catch (err) {
+      console.error('Fetch Error:', err);
+      Swal.fire('Error', 'Failed to fetch listings', 'error');
     }
   };
 
@@ -104,7 +111,10 @@ export default function Admin() {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    const requiredFields = ['username', 'price', 'robuxBalance', 'facebookLink'];
+    const requiredFields = listingType === 'robux'
+      ? ['username', 'facebookLink', 'via', 'robux']
+      : ['username', 'price', 'robuxBalance', 'facebookLink'];
+
     for (const field of requiredFields) {
       if (!formData[field] || formData[field].trim() === '') {
         Swal.fire('Missing Field', `Please fill out the "${field}" field.`, 'warning');
@@ -124,7 +134,7 @@ export default function Admin() {
         method: editMode ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(isSeller && { Authorization: seller.username }),
+          ...(isSeller && { Authorization: seller.username })
         },
         body: JSON.stringify(payload),
       });
@@ -135,8 +145,6 @@ export default function Admin() {
         setEditMode(false);
         setEditId(null);
         fetchAccounts();
-      } else if (response.status === 409) {
-        Swal.fire('Error', 'Username already exists', 'error');
       } else {
         Swal.fire('Error', 'Failed to save', 'error');
       }
@@ -165,7 +173,7 @@ export default function Admin() {
   };
 
   const filtered = accounts.filter(acc =>
-    acc.username.toLowerCase().includes(search.toLowerCase())
+    acc.username?.toLowerCase().includes(search.toLowerCase())
   );
 
   if (!isAuthorized && !seller) {
@@ -189,18 +197,14 @@ export default function Admin() {
             name="username"
             placeholder="Username"
             value={sellerLogin.username}
-            onChange={(e) =>
-              setSellerLogin({ ...sellerLogin, username: e.target.value })
-            }
+            onChange={(e) => setSellerLogin({ ...sellerLogin, username: e.target.value })}
           />
           <input
             type="password"
             name="password"
             placeholder="Password"
             value={sellerLogin.password}
-            onChange={(e) =>
-              setSellerLogin({ ...sellerLogin, password: e.target.value })
-            }
+            onChange={(e) => setSellerLogin({ ...sellerLogin, password: e.target.value })}
           />
           <button type="submit">Login</button>
         </form>
@@ -221,25 +225,19 @@ export default function Admin() {
       </h2>
 
       <div style={{ marginBottom: '20px' }}>
-        <button
-          onClick={() => setListingType('account')}
-          style={{ marginRight: '10px' }}
-        >
+        <button onClick={() => setListingType('account')} style={{ marginRight: '10px' }}>
           Account Listing
         </button>
-        <button onClick={() => setListingType('robux')}>Robux Listing</button>
+        <button onClick={() => setListingType('robux')}>
+          Robux Listing
+        </button>
       </div>
 
       <form onSubmit={handleSubmit}>
-        {[
-          'username',
-          'totalSummary',
-          'price',
-          'robuxBalance',
-          'limitedItems',
-          'gamepass',
-          'facebookLink',
-        ].map((name) => (
+        {(listingType === 'robux'
+          ? ['robux', 'username', 'facebookLink', 'via']
+          : ['username', 'totalSummary', 'price', 'robuxBalance', 'limitedItems', 'gamepass', 'facebookLink']
+        ).map((name) => (
           <div key={name} style={{ marginBottom: '10px' }}>
             <label style={{ color: 'white' }}>{name}:</label>
             <input
@@ -250,12 +248,7 @@ export default function Admin() {
             />
           </div>
         ))}
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          style={{ backgroundColor: '#22c55e', color: 'white' }}
-        >
+        <button type="submit" disabled={isSubmitting} style={{ backgroundColor: '#22c55e', color: 'white' }}>
           {isSubmitting ? 'Processing...' : editMode ? 'Update' : 'Add'}
         </button>
       </form>
@@ -270,37 +263,40 @@ export default function Admin() {
       />
 
       {filtered.map((acc) => (
-        <div
-          key={acc.id}
-          style={{
-            border: '1px solid #ccc',
-            padding: '10px',
-            marginBottom: '10px',
-            color: 'white',
-          }}
-        >
-          <strong>{acc.username}</strong> - ₱{acc.price}
-          <div>Age: {acc.age} days</div>
-          <div style={{ marginTop: '5px' }}>
-            <button
-              onClick={() => handleEdit(acc)}
-              style={{
-                background: 'orange',
-                color: 'white',
-                marginRight: '10px',
-              }}
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => handleDelete(acc.id)}
-              style={{ background: 'red', color: 'white' }}
-            >
-              Delete
-            </button>
-          </div>
+        <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', color: 'white' }}>
+          {listingType === 'robux' ? (
+            <>
+              <div><strong>Robux:</strong> {acc.robux}</div>
+              <div><strong>Seller Name:</strong> {acc.username}</div>
+              <div><strong>Contact Link:</strong> <a href={acc.facebookLink} target="_blank" rel="noreferrer">{acc.facebookLink}</a></div>
+              <div><strong>Via:</strong> {acc.via}</div>
+              {isAuthorized && (
+                <div style={{ marginTop: '5px' }}>
+                  <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>
+                    Edit
+                  </button>
+                  <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>
+                    Delete
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <strong>{acc.username}</strong> - ₱{acc.price}
+              <div>Age: {acc.age} days</div>
+              <div style={{ marginTop: '5px' }}>
+                <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>
+                  Edit
+                </button>
+                <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>
+                  Delete
+                </button>
+              </div>
+            </>
+          )}
         </div>
       ))}
     </div>
   );
-            }
+                                   }
