@@ -9,6 +9,7 @@ export default function Admin() {
   const [listingType, setListingType] = useState('account');
 
   const initialFormData = {
+    // Account fields
     username: '',
     totalSummary: '',
     email: 'Verified',
@@ -21,6 +22,7 @@ export default function Admin() {
     accountType: 'Global Account',
     premium: 'False',
     facebookLink: '',
+    // Robux fields
     robux: '',
     via: ''
   };
@@ -59,7 +61,7 @@ export default function Admin() {
     const response = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: adminPassword })
+      body: JSON.stringify({ password: adminPassword }),
     });
     if (response.ok) {
       setIsAuthorized(true);
@@ -99,30 +101,24 @@ export default function Admin() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
+  };const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    const requiredFields = listingType === 'robux'
-      ? ['robux', 'via', 'facebookLink']
-      : ['username', 'price', 'robuxBalance', 'facebookLink'];
-
-    for (const field of requiredFields) {
-      if (!formData[field] || formData[field].trim() === '') {
-        Swal.fire('Missing Field', `Please fill out the "${field}" field.`, 'warning');
-        setIsSubmitting(false);
-        return;
-      }
-    }
-
-    const payload = {
-      ...(editMode ? { id: editId } : {}),
-      ...formData,
-      ...(isSeller ? { seller: seller.username } : {})
-    };
+    const payload = listingType === 'robux'
+      ? {
+          ...(editMode ? { id: editId } : {}),
+          robux: formData.robux,
+          via: formData.via,
+          facebookLink: formData.facebookLink,
+          seller: seller?.username || ''
+        }
+      : {
+          ...(editMode ? { id: editId } : {}),
+          ...formData,
+          ...(isSeller ? { seller: seller.username } : {})
+        };
 
     try {
       const response = await fetch(`/api/${listingType === 'robux' ? 'robux' : 'accounts'}`, {
@@ -140,8 +136,6 @@ export default function Admin() {
         setEditMode(false);
         setEditId(null);
         fetchAccounts();
-      } else if (response.status === 409) {
-        Swal.fire('Error', 'Username already exists', 'error');
       } else {
         Swal.fire('Error', 'Failed to save', 'error');
       }
@@ -150,20 +144,18 @@ export default function Admin() {
     } finally {
       setIsSubmitting(false);
     }
-  };const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this listing?')) return;
+  };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure?')) return;
     const res = await fetch(`/api/${listingType === 'robux' ? 'robux' : 'accounts'}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     });
-
     if (res.ok) {
-      Swal.fire('Deleted!', 'Listing has been removed.', 'success');
+      Swal.fire('Deleted!', 'Successfully deleted.', 'success');
       fetchAccounts();
-    } else {
-      Swal.fire('Error', 'Failed to delete listing.', 'error');
     }
   };
 
@@ -174,39 +166,21 @@ export default function Admin() {
   };
 
   const filtered = accounts.filter(acc =>
-    acc.username?.toLowerCase().includes(search.toLowerCase())
+    acc.username?.toLowerCase().includes(search.toLowerCase()) ||
+    acc.seller?.toLowerCase().includes(search.toLowerCase())
   );
 
   if (!isAuthorized && !seller) {
     return (
       <div className="container" style={{ padding: '20px' }}>
         <h2 style={{ color: 'white' }}>Admin Login</h2>
-        <input
-          type="password"
-          placeholder="Enter admin password"
-          value={adminPassword}
-          onChange={(e) => setAdminPassword(e.target.value)}
-        />
+        <input type="password" placeholder="Enter admin password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} />
         <button onClick={handleAdminLogin}>Login</button>
-
         <hr />
-
         <h2 style={{ color: 'white' }}>Seller Login</h2>
         <form onSubmit={handleSellerLogin}>
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={sellerLogin.username}
-            onChange={e => setSellerLogin({ ...sellerLogin, username: e.target.value })}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={sellerLogin.password}
-            onChange={e => setSellerLogin({ ...sellerLogin, password: e.target.value })}
-          />
+          <input type="text" name="username" placeholder="Username" value={sellerLogin.username} onChange={e => setSellerLogin({ ...sellerLogin, username: e.target.value })} />
+          <input type="password" name="password" placeholder="Password" value={sellerLogin.password} onChange={e => setSellerLogin({ ...sellerLogin, password: e.target.value })} />
           <button type="submit">Login</button>
         </form>
       </div>
@@ -217,21 +191,12 @@ export default function Admin() {
     <div className="container" style={{ padding: '20px' }}>
       <h2 style={{ color: 'white' }}>
         {isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}
-        <button
-          onClick={handleLogout}
-          style={{ marginLeft: '20px', background: 'red', color: '#fff' }}
-        >
-          Logout
-        </button>
+        <button onClick={handleLogout} style={{ marginLeft: '20px', background: 'red', color: '#fff' }}>Logout</button>
       </h2>
 
       <div style={{ marginBottom: '20px' }}>
-        <button onClick={() => setListingType('account')} style={{ marginRight: '10px' }}>
-          Account Listing
-        </button>
-        <button onClick={() => setListingType('robux')}>
-          Robux Listing
-        </button>
+        <button onClick={() => setListingType('account')} style={{ marginRight: '10px' }}>Account Listing</button>
+        <button onClick={() => setListingType('robux')}>Robux Listing</button>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -239,50 +204,22 @@ export default function Admin() {
           <>
             <div style={{ marginBottom: '10px' }}>
               <label style={{ color: 'white' }}>Robux:</label>
-              <input
-                type="text"
-                name="robux"
-                value={formData.robux}
-                onChange={handleChange}
-              />
+              <input type="text" name="robux" value={formData.robux} onChange={handleChange} />
             </div>
             <div style={{ marginBottom: '10px' }}>
               <label style={{ color: 'white' }}>Via:</label>
-              <input
-                type="text"
-                name="via"
-                value={formData.via}
-                onChange={handleChange}
-              />
+              <input type="text" name="via" value={formData.via} onChange={handleChange} />
             </div>
             <div style={{ marginBottom: '10px' }}>
               <label style={{ color: 'white' }}>Contact Link:</label>
-              <input
-                type="text"
-                name="facebookLink"
-                value={formData.facebookLink}
-                onChange={handleChange}
-              />
-            </div>
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Seller:</label>
-              <input
-                type="text"
-                value={seller?.username || ''}
-                disabled
-              />
+              <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
             </div>
           </>
         ) : (
           ['username', 'totalSummary', 'price', 'robuxBalance', 'limitedItems', 'gamepass', 'facebookLink'].map(name => (
             <div key={name} style={{ marginBottom: '10px' }}>
               <label style={{ color: 'white' }}>{name}:</label>
-              <input
-                type="text"
-                name={name}
-                value={formData[name]}
-                onChange={handleChange}
-              />
+              <input type="text" name={name} value={formData[name]} onChange={handleChange} />
             </div>
           ))
         )}
@@ -295,7 +232,7 @@ export default function Admin() {
       <h3 style={{ color: 'white' }}>Listings</h3>
       <input
         type="text"
-        placeholder="Search Username"
+        placeholder="Search"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
@@ -304,10 +241,10 @@ export default function Admin() {
         <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', color: 'white' }}>
           {listingType === 'robux' ? (
             <>
-              <strong>{acc.robux} Robux</strong> <br />
-              <div>Via: {acc.via}</div>
-              <div>Contact: <a href={acc.facebookLink} target="_blank" rel="noreferrer">{acc.facebookLink}</a></div>
-              <div>Seller: {acc.seller}</div>
+              <strong>Robux:</strong> {acc.robux}<br />
+              <strong>Via:</strong> {acc.via}<br />
+              <strong>Contact:</strong> <a href={acc.facebookLink} style={{ color: '#60a5fa' }} target="_blank" rel="noreferrer">{acc.facebookLink}</a><br />
+              <strong>Seller:</strong> {acc.seller}
             </>
           ) : (
             <>
@@ -327,4 +264,4 @@ export default function Admin() {
       ))}
     </div>
   );
-            }
+                                           }
