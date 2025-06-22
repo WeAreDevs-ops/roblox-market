@@ -21,8 +21,8 @@ export default function Admin() {
     accountType: 'Global Account',
     premium: 'False',
     facebookLink: '',
-    via: '',
-    robux: ''
+    robux: '',
+    via: ''
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -44,19 +44,14 @@ export default function Admin() {
   }, [isAuthorized, seller, listingType]);
 
   const fetchAccounts = async () => {
-    try {
-      const res = await fetch(`/api/${listingType === 'robux' ? 'robux' : 'accounts'}`);
-      const data = await res.json();
-      if (isSeller) {
-        const username = JSON.parse(localStorage.getItem('seller'))?.username;
-        const sellerListings = data.accounts.filter(acc => acc.seller === username);
-        setAccounts(sellerListings);
-      } else {
-        setAccounts(data.accounts);
-      }
-    } catch (err) {
-      console.error('Fetch Error:', err);
-      Swal.fire('Error', 'Failed to fetch listings', 'error');
+    const res = await fetch(`/api/${listingType === 'robux' ? 'robux' : 'accounts'}`);
+    const data = await res.json();
+    if (isSeller) {
+      const username = JSON.parse(localStorage.getItem('seller'))?.username;
+      const sellerListings = data.accounts.filter(acc => acc.seller === username);
+      setAccounts(sellerListings);
+    } else {
+      setAccounts(data.accounts);
     }
   };
 
@@ -64,7 +59,7 @@ export default function Admin() {
     const response = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: adminPassword }),
+      body: JSON.stringify({ password: adminPassword })
     });
     if (response.ok) {
       setIsAuthorized(true);
@@ -112,7 +107,7 @@ export default function Admin() {
     setIsSubmitting(true);
 
     const requiredFields = listingType === 'robux'
-      ? ['username', 'facebookLink', 'via', 'robux']
+      ? ['robux', 'via', 'facebookLink']
       : ['username', 'price', 'robuxBalance', 'facebookLink'];
 
     for (const field of requiredFields) {
@@ -126,7 +121,7 @@ export default function Admin() {
     const payload = {
       ...(editMode ? { id: editId } : {}),
       ...formData,
-      ...(isSeller ? { seller: seller.username } : {}),
+      ...(isSeller ? { seller: seller.username } : {})
     };
 
     try {
@@ -145,6 +140,8 @@ export default function Admin() {
         setEditMode(false);
         setEditId(null);
         fetchAccounts();
+      } else if (response.status === 409) {
+        Swal.fire('Error', 'Username already exists', 'error');
       } else {
         Swal.fire('Error', 'Failed to save', 'error');
       }
@@ -154,15 +151,19 @@ export default function Admin() {
       setIsSubmitting(false);
     }
   };const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure?')) return;
+    if (!window.confirm('Are you sure you want to delete this listing?')) return;
+
     const res = await fetch(`/api/${listingType === 'robux' ? 'robux' : 'accounts'}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
     });
+
     if (res.ok) {
-      Swal.fire('Deleted!', 'Successfully deleted.', 'success');
+      Swal.fire('Deleted!', 'Listing has been removed.', 'success');
       fetchAccounts();
+    } else {
+      Swal.fire('Error', 'Failed to delete listing.', 'error');
     }
   };
 
@@ -197,14 +198,14 @@ export default function Admin() {
             name="username"
             placeholder="Username"
             value={sellerLogin.username}
-            onChange={(e) => setSellerLogin({ ...sellerLogin, username: e.target.value })}
+            onChange={e => setSellerLogin({ ...sellerLogin, username: e.target.value })}
           />
           <input
             type="password"
             name="password"
             placeholder="Password"
             value={sellerLogin.password}
-            onChange={(e) => setSellerLogin({ ...sellerLogin, password: e.target.value })}
+            onChange={e => setSellerLogin({ ...sellerLogin, password: e.target.value })}
           />
           <button type="submit">Login</button>
         </form>
@@ -234,20 +235,57 @@ export default function Admin() {
       </div>
 
       <form onSubmit={handleSubmit}>
-        {(listingType === 'robux'
-          ? ['robux', 'username', 'facebookLink', 'via']
-          : ['username', 'totalSummary', 'price', 'robuxBalance', 'limitedItems', 'gamepass', 'facebookLink']
-        ).map((name) => (
-          <div key={name} style={{ marginBottom: '10px' }}>
-            <label style={{ color: 'white' }}>{name}:</label>
-            <input
-              type="text"
-              name={name}
-              value={formData[name]}
-              onChange={handleChange}
-            />
-          </div>
-        ))}
+        {listingType === 'robux' ? (
+          <>
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ color: 'white' }}>Robux:</label>
+              <input
+                type="text"
+                name="robux"
+                value={formData.robux}
+                onChange={handleChange}
+              />
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ color: 'white' }}>Via:</label>
+              <input
+                type="text"
+                name="via"
+                value={formData.via}
+                onChange={handleChange}
+              />
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ color: 'white' }}>Contact Link:</label>
+              <input
+                type="text"
+                name="facebookLink"
+                value={formData.facebookLink}
+                onChange={handleChange}
+              />
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ color: 'white' }}>Seller:</label>
+              <input
+                type="text"
+                value={seller?.username || ''}
+                disabled
+              />
+            </div>
+          </>
+        ) : (
+          ['username', 'totalSummary', 'price', 'robuxBalance', 'limitedItems', 'gamepass', 'facebookLink'].map(name => (
+            <div key={name} style={{ marginBottom: '10px' }}>
+              <label style={{ color: 'white' }}>{name}:</label>
+              <input
+                type="text"
+                name={name}
+                value={formData[name]}
+                onChange={handleChange}
+              />
+            </div>
+          ))
+        )}
         <button type="submit" disabled={isSubmitting} style={{ backgroundColor: '#22c55e', color: 'white' }}>
           {isSubmitting ? 'Processing...' : editMode ? 'Update' : 'Add'}
         </button>
@@ -262,41 +300,31 @@ export default function Admin() {
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      {filtered.map((acc) => (
+      {filtered.map(acc => (
         <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', color: 'white' }}>
           {listingType === 'robux' ? (
             <>
-              <div><strong>Robux:</strong> {acc.robux}</div>
-              <div><strong>Seller Name:</strong> {acc.username}</div>
-              <div><strong>Contact Link:</strong> <a href={acc.facebookLink} target="_blank" rel="noreferrer">{acc.facebookLink}</a></div>
-              <div><strong>Via:</strong> {acc.via}</div>
-              {isAuthorized && (
-                <div style={{ marginTop: '5px' }}>
-                  <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>
-                    Edit
-                  </button>
-                  <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>
-                    Delete
-                  </button>
-                </div>
-              )}
+              <strong>{acc.robux} Robux</strong> <br />
+              <div>Via: {acc.via}</div>
+              <div>Contact: <a href={acc.facebookLink} target="_blank" rel="noreferrer">{acc.facebookLink}</a></div>
+              <div>Seller: {acc.seller}</div>
             </>
           ) : (
             <>
               <strong>{acc.username}</strong> - ₱{acc.price}
               <div>Age: {acc.age} days</div>
-              <div style={{ marginTop: '5px' }}>
-                <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>
-                  Edit
-                </button>
-                <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>
-                  Delete
-                </button>
-              </div>
             </>
           )}
+          <div style={{ marginTop: '5px' }}>
+            <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>
+              Edit
+            </button>
+            <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>
+              Delete
+            </button>
+          </div>
         </div>
       ))}
     </div>
   );
-                                   }
+            }
