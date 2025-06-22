@@ -243,7 +243,7 @@ export default function Admin() {
         <button onClick={handleAdminLogin}>Login</button>
 
         <hr style={{ margin: '30px 0' }} />
-        <h2>Seller Login</h2>
+        <h2 style={{ color: 'white' }}>Seller Login</h2>
         <form onSubmit={handleSellerLogin}>
           <input
             type="text"
