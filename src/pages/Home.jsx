@@ -14,17 +14,6 @@ export default function Home() {
     newStock: 0
   });
 
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
-    return saved === 'true';
-  });
-
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    localStorage.setItem('darkMode', newMode);
-  };
-
   useEffect(() => {
     fetch('/api/accounts')
       .then(res => res.json())
@@ -32,26 +21,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const fetchStats = () => {
-      fetch('/api/dashboard-stats')
-        .then(res => res.json())
-        .then(data => {
-          setDashboardStats(data);
-        })
-        .catch(err => console.error(err));
-    };
-    fetchStats();
+    fetch('/api/dashboard-stats')
+      .then(res => res.json())
+      .then(data => setDashboardStats(data))
+      .catch(err => console.error(err));
   }, []);
-
-  useEffect(() => {
-    const originalBg = document.body.style.backgroundColor;
-    if (window.location.pathname === "/") {
-      document.body.style.backgroundColor = darkMode ? '#121212' : '#ffffff';
-    }
-    return () => {
-      document.body.style.backgroundColor = originalBg;
-    };
-  }, [darkMode]);
 
   const showContact = (acc) => {
     const fb = acc.facebookLink;
@@ -111,13 +85,9 @@ export default function Home() {
   const [expandedId, setExpandedId] = useState(null);
 
   return (
-    <div className={`container ${darkMode ? 'dark-mode' : ''}`} style={{ padding: "20px", minHeight: '100vh' }}>
+    <div className="container" style={{ padding: "20px", minHeight: '100vh' }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <h2>Available Accounts</h2>
-        <label className="switch">
-          <input type="checkbox" checked={darkMode} onChange={toggleDarkMode} />
-          <span className="slider round"></span>
-        </label>
+        <h2 style={{ color: "white" }}>Available Accounts</h2>
       </div>
 
       <motion.div
@@ -175,7 +145,9 @@ export default function Home() {
         >
           No results found.
         </motion.p>
-      )} <div style={{ 
+      )}
+
+      <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
         gap: '20px' 
@@ -190,7 +162,6 @@ export default function Home() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
               className="card"
-              style={{ backgroundColor: darkMode ? '#1e1e1e' : '#fff' }}
             >
               {acc.avatar && (
                 <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
@@ -199,7 +170,7 @@ export default function Home() {
               <h3>{acc.username}</h3>
 
               {acc.seller && (
-                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: darkMode ? '#aaa' : '#444' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#444' }}>
                   Seller: {acc.seller}
                 </div>
               )}
@@ -233,7 +204,7 @@ export default function Home() {
                     </div>
 
                     <div style={{ marginTop: "10px" }}>
-                      <strong>🎮 Games with Gamepasses:</strong>
+                      <strong style={{ color: "white" }}>🎮 Games with Gamepasses:</strong>
                       <div style={{ 
                         marginTop: '8px', 
                         display: 'flex', 
@@ -270,55 +241,6 @@ export default function Home() {
           ))}
         </AnimatePresence>
       </div>
-
-      <style>{`
-        .switch {
-          position: relative;
-          display: inline-block;
-          width: 40px;
-          height: 22px;
-        }
-        .switch input { display: none; }
-        .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0; left: 0;
-          right: 0; bottom: 0;
-          background-color: #ccc;
-          transition: .4s;
-          border-radius: 34px;
-        }
-        .slider:before {
-          position: absolute;
-          content: "";
-          height: 16px;
-          width: 16px;
-          left: 3px;
-          bottom: 3px;
-          background-color: white;
-          transition: .4s;
-          border-radius: 50%;
-        }
-        input:checked + .slider {
-          background-color: #2196F3;
-        }
-        input:checked + .slider:before {
-          transform: translateX(18px);
-        }
-        .dark-mode {
-          background-color: #121212 !important;
-          color: white !important;
-        }
-        body {
-          transition: background-color 0.3s ease;
-        }
-
-        @media screen and (min-width: 768px) {
-          .dashboard-grid {
-            grid-template-columns: repeat(4, 1fr) !important;
-          }
-        }
-      `}</style>
     </div>
   );
-}
+      }
