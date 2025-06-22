@@ -201,7 +201,7 @@ export default function Home() {
                     </div>
 
                     <div style={{ marginTop: "10px" }}>
-                      <strong style={{ color: "white" }}>🎮 Games with Gamepasses:</strong>
+                      <strong style={{ color: "black" }}>🎮 Games with Gamepasses:</strong>
                       <div style={{ 
                         marginTop: '8px', 
                         display: 'flex', 
