@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
+import Swal from 'sweetalert2'; // ✅ Don't forget this
 
 export default function Register() {
   const [form, setForm] = useState({ username: '', password: '' });
-  const [message, setMessage] = useState('');
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -16,7 +16,12 @@ export default function Register() {
       body: JSON.stringify(form)
     });
     const data = await res.json();
-    setMessage(data.message || data.error);
+
+    if (data.message) {
+      Swal.fire('Success', data.message, 'success');
+    } else {
+      Swal.fire('Error', data.error || 'Registration failed', 'error');
+    }
   };
 
   return (
@@ -27,7 +32,6 @@ export default function Register() {
         <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
         <button className="buy" type="submit">Register</button>
       </form>
-      {message && <p style={{ marginTop: 10 }}>{message}</p>}
     </div>
   );
 }
