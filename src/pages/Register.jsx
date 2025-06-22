@@ -21,7 +21,7 @@ export default function Register() {
 
   return (
     <div className="container" style={{ marginTop: 40 }}>
-      <h2>📝 Register as a Seller</h2>
+      <h2 style={{ color: 'white' }}>📝 Register as a Seller</h2>
       <form onSubmit={handleRegister}>
         <input name="username" placeholder="Username" onChange={handleChange} required />
         <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
