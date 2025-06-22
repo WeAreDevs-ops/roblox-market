@@ -287,14 +287,28 @@ export default function Admin() {
   ].map(([label, name]) => (
     <div key={name} style={{ marginBottom: '10px' }}>
       <label style={{ color: 'white' }}>{label}:</label>
-      <input type="text" name={name} value={formData[name]} onChange={handleChange} />
+      <input
+        type="text"
+        name={name}
+        value={formData[name]}
+        onChange={handleChange}
+      />
     </div>
   ))}
 
   <div style={{ marginBottom: '10px' }}>
     <label style={{ color: 'white' }}>Contact Link -FB-:</label>
-    <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
+    <input
+      type="text"
+      name="facebookLink"
+      value={formData.facebookLink}
+      onChange={handleChange}
+    />
   </div>
+
+  <button type="submit">
+    {isSubmitting ? 'Processing...' : editMode ? 'Update Account' : 'Add Account'}
+  </button>
 </form>
 
         <div style={{ marginBottom: '10px' }}>
