@@ -233,7 +233,7 @@ export default function Admin() {
   if (!isAuthorized && !seller) {
     return (
       <div className="container" style={{ padding: '20px' }}>
-        <h2>Admin Login</h2>
+        <h2 style={{ color: 'white' }}>Admin Login</h2>
         <input
           type="password"
           placeholder="Enter admin password"
