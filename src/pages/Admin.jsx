@@ -268,8 +268,8 @@ export default function Admin() {
 
   return (
     <div className="container" style={{ padding: '20px' }}>
-      <h2>
-        {isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}
+      <h2 style={{ color: 'white' }}>
+       {isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}
         <button onClick={handleLogout} style={{ marginLeft: '20px', background: 'red', color: '#fff' }}>
           Logout
         </button>
