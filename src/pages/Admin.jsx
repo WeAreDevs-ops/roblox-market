@@ -121,7 +121,6 @@ export default function Admin() {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    // ✅ Validate required fields
     const requiredFields = [
       'username',
       'price',
@@ -277,42 +276,27 @@ export default function Admin() {
       </h2>
 
       <form onSubmit={handleSubmit}>
-  {[
-    ['Username', 'username'],
-    ['Total Summary', 'totalSummary'],
-    ['Price', 'price'],
-    ['Robux Balance', 'robuxBalance'],
-    ['Limited Items', 'limitedItems'],
-    ['Game with Gamepass', 'gamepass'],
-  ].map(([label, name]) => (
-    <div key={name} style={{ marginBottom: '10px' }}>
-      <label style={{ color: 'white' }}>{label}:</label>
-      <input
-        type="text"
-        name={name}
-        value={formData[name]}
-        onChange={handleChange}
-      />
-    </div>
-  ))}
-
-  <div style={{ marginBottom: '10px' }}>
-    <label style={{ color: 'white' }}>Contact Link -FB-:</label>
-    <input
-      type="text"
-      name="facebookLink"
-      value={formData.facebookLink}
-      onChange={handleChange}
-    />
-  </div>
-
-  <button type="submit">
-    {isSubmitting ? 'Processing...' : editMode ? 'Update Account' : 'Add Account'}
-  </button>
-</form>
+        {[
+          ['Username', 'username'],
+          ['Total Summary', 'totalSummary'],
+          ['Price', 'price'],
+          ['Robux Balance', 'robuxBalance'],
+          ['Limited Items', 'limitedItems'],
+          ['Game with Gamepass', 'gamepass'],
+        ].map(([label, name]) => (
+          <div key={name} style={{ marginBottom: '10px' }}>
+            <label style={{ color: 'white' }}>{label}:</label>
+            <input type="text" name={name} value={formData[name]} onChange={handleChange} />
+          </div>
+        ))}
 
         <div style={{ marginBottom: '10px' }}>
-          <label>Email:</label>
+          <label style={{ color: 'white' }}>Contact Link -FB-:</label>
+          <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label style={{ color: 'white' }}>Email:</label>
           <select name="email" value={formData.email} onChange={handleChange}>
             <option value="Verified">Verified</option>
             <option value="Unverified">Unverified</option>
@@ -320,7 +304,7 @@ export default function Admin() {
         </div>
 
         <div style={{ marginBottom: '10px' }}>
-          <label>MOP:</label>
+          <label style={{ color: 'white' }}>MOP:</label>
           <select name="mop" value={formData.mop} onChange={handleChange}>
             <option value="Gcash">Gcash</option>
             <option value="Paymaya">Paymaya</option>
@@ -330,7 +314,7 @@ export default function Admin() {
         </div>
 
         <div style={{ marginBottom: '10px' }}>
-          <label>Inventory:</label>
+          <label style={{ color: 'white' }}>Inventory:</label>
           <select name="inventory" value={formData.inventory} onChange={handleChange}>
             <option value="Public">Public</option>
             <option value="Private">Private</option>
@@ -338,7 +322,7 @@ export default function Admin() {
         </div>
 
         <div style={{ marginBottom: '10px' }}>
-          <label>Account Type:</label>
+          <label style={{ color: 'white' }}>Account Type:</label>
           <select name="accountType" value={formData.accountType} onChange={handleChange}>
             <option value="GLOBAL">GLOBAL</option>
             <option value="VIETNAM">VIETNAM</option>
@@ -347,7 +331,7 @@ export default function Admin() {
         </div>
 
         <div style={{ marginBottom: '10px' }}>
-          <label>Premium Status:</label>
+          <label style={{ color: 'white' }}>Premium Status:</label>
           <select name="premium" value={formData.premium} onChange={handleChange}>
             <option value="True">True</option>
             <option value="False">False</option>
@@ -395,4 +379,4 @@ export default function Admin() {
       ))}
     </div>
   );
-      }
+              }
