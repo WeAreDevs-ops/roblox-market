@@ -86,9 +86,7 @@ export default function Home() {
 
   return (
     <div className="container" style={{ padding: "20px", minHeight: '100vh' }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        
-
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -242,4 +240,4 @@ export default function Home() {
       </div>
     </div>
   );
-    
+}
