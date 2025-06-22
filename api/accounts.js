@@ -21,13 +21,19 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      let snapshot;
-      if (sellerUsername) {
-        const sellerQuery = query(accountsRef, where("seller", "==", sellerUsername));
-        snapshot = await getDocs(sellerQuery);
-      } else {
-        snapshot = await getDocs(accountsRef);
+      const { type } = req.query;
+      let filters = [];
+
+      if (type) {
+        filters.push(where("type", "==", type));
       }
+
+      if (sellerUsername) {
+        filters.push(where("seller", "==", sellerUsername));
+      }
+
+      const getQuery = filters.length > 0 ? query(accountsRef, ...filters) : accountsRef;
+      const snapshot = await getDocs(getQuery);
 
       const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       return res.status(200).json({ accounts });
@@ -42,7 +48,8 @@ export default async function handler(req, res) {
       username, email, price, mop,
       robuxBalance, limitedItems, inventory,
       accountType, gamepass, totalSummary, premium,
-      seller // optionally from frontend too
+      type = "account", // 👈 default to account
+      seller
     } = req.body;
 
     if (sellerUsername && sellerUsername !== seller) {
@@ -86,6 +93,7 @@ export default async function handler(req, res) {
         username, email, price, mop,
         robuxBalance, limitedItems, inventory,
         accountType, gamepass, totalSummary, premium,
+        type, // 👈 add type
         seller: sellerUsername || null,
         profile, avatar,
         age: ageInDays,
@@ -102,7 +110,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'PUT') {
-    const { id, username, totalSummary, premium, ...rest } = req.body;
+    const { id, username, totalSummary, premium, type = "account", ...rest } = req.body;
 
     if (!id) return res.status(400).json({ message: 'Missing document ID' });
 
@@ -133,7 +141,7 @@ export default async function handler(req, res) {
 
     const docRef = doc(accountsRef, id);
     await updateDoc(docRef, {
-      username, totalSummary, premium, ...rest, profile, avatar
+      username, totalSummary, premium, type, ...rest, profile, avatar
     });
 
     return res.status(200).json({ message: 'Updated successfully' });
@@ -156,4 +164,4 @@ export default async function handler(req, res) {
   }
 
   return res.status(405).end(); // Method Not Allowed
-}
+                    }
