@@ -412,16 +412,19 @@ export default function Admin() {
       </h2>
 
       {/* FORM TOGGLE BUTTONS */}
-      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
         <button
           onClick={() => setFormType('account')}
           style={{
-            padding: '10px 20px',
+            padding: '10px 25px',
             backgroundColor: formType === 'account' ? '#4CAF50' : '#e0e0e0',
             color: formType === 'account' ? 'white' : 'black',
             border: 'none',
-            borderRadius: '5px',
-            marginRight: '10px'
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            cursor: 'pointer',
+            transition: 'background-color 0.3s ease'
           }}
         >
           ACCOUNT LISTING FORM
