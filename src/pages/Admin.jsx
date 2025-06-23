@@ -24,31 +24,33 @@ export default function Admin() {
     facebookLink: ''
   });
 
-  // Robux form state (new)
-  const [robuxData, setRobuxData] = useState({
+  const [accounts, setAccounts] = useState([]);
+  const [search, setSearch] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Robux listing state
+  const [robuxListings, setRobuxListings] = useState([]);
+  const [robuxFormData, setRobuxFormData] = useState({
     amount: '',
     via: '',
     price: '',
     contact: ''
   });
-
-  const [accounts, setAccounts] = useState([]);
-  const [robuxListings, setRobuxListings] = useState([]);
-  const [search, setSearch] = useState('');
-  const [editMode, setEditMode] = useState(false);
-  const [editId, setEditId] = useState(null);
   const [robuxEditMode, setRobuxEditMode] = useState(false);
   const [robuxEditId, setRobuxEditId] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [robuxSubmitting, setRobuxSubmitting] = useState(false);
+  const [isRobuxSubmitting, setIsRobuxSubmitting] = useState(false);
 
   const isSeller = !!seller;
 
+  // Load seller from localStorage on mount
   useEffect(() => {
     const storedSeller = localStorage.getItem('seller');
     if (storedSeller) setSeller(JSON.parse(storedSeller));
   }, []);
 
+  // Fetch accounts and robux listings on login state change
   useEffect(() => {
     if (isAuthorized || isSeller) {
       fetchAccounts();
@@ -56,13 +58,13 @@ export default function Admin() {
     }
   }, [isAuthorized, seller]);
 
-  // Fetch account listings
+  // Fetch accounts API call
   const fetchAccounts = async () => {
     try {
       const res = await fetch('/api/accounts');
       const data = await res.json();
       if (isSeller) {
-        const username = JSON.parse(localStorage.getItem('seller'))?.username;
+        const username = seller?.username;
         setAccounts(data.accounts.filter(acc => acc.seller === username));
       } else {
         setAccounts(data.accounts);
@@ -72,15 +74,15 @@ export default function Admin() {
     }
   };
 
-  // Fetch robux listings
+  // Fetch robux listings API call
   const fetchRobuxListings = async () => {
     try {
       const res = await fetch('/api/robux');
       const data = await res.json();
       if (res.ok) {
         if (isSeller) {
-          const user = JSON.parse(localStorage.getItem('seller'))?.username;
-          setRobuxListings(data.robuxList.filter(r => r.seller === user));
+          const username = seller?.username;
+          setRobuxListings(data.robuxList.filter(item => item.seller === username));
         } else {
           setRobuxListings(data.robuxList);
         }
@@ -154,16 +156,10 @@ export default function Admin() {
     Swal.fire('Logged out', 'You have been logged out.', 'success');
   };
 
-  // Account form input change
+  // Account form input change handler
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Robux form input change
-  const handleRobuxChange = (e) => {
-    const { name, value } = e.target;
-    setRobuxData(prev => ({ ...prev, [name]: value }));
   };
 
   // Account form submit handler
@@ -172,6 +168,7 @@ export default function Admin() {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
+    // Required fields check
     const requiredFields = [
       'username',
       'price',
@@ -237,55 +234,30 @@ export default function Admin() {
     }
   };
 
-  // Robux form submit handler
-  const handleRobuxSubmit = async (e) => {
-    e.preventDefault();
-    if (robuxSubmitting) return;
-    setRobuxSubmitting(true);
-
-    const { amount, via, price, contact } = robuxData;
-
-    if (!amount.trim() || !via.trim() || !price.trim() || !contact.trim()) {
-      Swal.fire('Missing Fields', 'Please fill out all Robux fields.', 'warning');
-      setRobuxSubmitting(false);
-      return;
-    }
-
-    const payload = {
-      ...(robuxEditMode ? { id: robuxEditId } : {}),
-      amount,
-      via,
-      price,
-      contact,
-      ...(isSeller ? { seller: seller.username } : {}),
-    };
+  // Account delete handler
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this account?')) return;
 
     try {
-      const response = await fetch('/api/robux', {
-        method: robuxEditMode ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(isSeller && { Authorization: seller.username }),
-        },
-        body: JSON.stringify(payload),
+      const res = await fetch('/api/accounts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
       });
 
-      if (response.ok) {
-        Swal.fire('Success', robuxEditMode ? 'Robux listing updated!' : 'Robux listing added!', 'success');
-        setRobuxData({ amount: '', via: '', price: '', contact: '' });
-        setRobuxEditMode(false);
-        setRobuxEditId(null);
-        fetchRobuxListings();
-      } else {
-        Swal.fire('Error', 'Failed to save robux listing.', 'error');
+      if (res.ok) {
+        Swal.fire('Deleted!', 'Account deleted successfully.', 'success');
+        fetchAccounts();
       }
     } catch (error) {
       console.error(error);
-      Swal.fire('Error', 'Unexpected server error.', 'error');
-    } finally {
-      setRobuxSubmitting(false);
+      Swal.fire('Error', 'Failed to delete account', 'error');
     }
-  };const handleEdit = (account) => { setFormData({
+  };
+
+  // Account edit handler
+  const handleEdit = (account) => {
+    setFormData({
       username: account.username || '',
       totalSummary: account.totalSummary || '',
       email: account.email || 'Verified',
@@ -303,44 +275,64 @@ export default function Admin() {
     setEditId(account.id);
   };
 
-  // Account delete handler
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this account?')) return;
+  // Robux form input change handler
+  const handleRobuxChange = (e) => {
+    const { name, value } = e.target;
+    setRobuxFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Robux form submit handler (Add or Update)
+  const handleRobuxSubmit = async (e) => {
+    e.preventDefault();
+    if (isRobuxSubmitting) return;
+    setIsRobuxSubmitting(true);
+
+    const { amount, via, price, contact } = robuxFormData;
+
+    // Validate required fields
+    if (!amount.trim() || !via.trim() || !price.trim() || !contact.trim()) {
+      Swal.fire('Missing Fields', 'Please fill out all Robux listing fields.', 'warning');
+      setIsRobuxSubmitting(false);
+      return;
+    }
+
+    const payload = {
+      ...(robuxEditMode ? { id: robuxEditId } : {}),
+      amount,
+      via,
+      price,
+      contact,
+      seller: seller?.username || 'admin'
+    };
 
     try {
-      const res = await fetch('/api/accounts', {
-        method: 'DELETE',
+      const method = robuxEditMode ? 'PUT' : 'POST';
+      const res = await fetch('/api/robux', {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify(payload)
       });
 
       if (res.ok) {
-        Swal.fire('Deleted!', 'Account deleted successfully.', 'success');
-        fetchAccounts();
+        Swal.fire('Success', robuxEditMode ? 'Robux listing updated!' : 'Robux listing added!', 'success');
+        setRobuxFormData({ amount: '', via: '', price: '', contact: '' });
+        setRobuxEditMode(false);
+        setRobuxEditId(null);
+        fetchRobuxListings();
       } else {
-        Swal.fire('Error', 'Failed to delete account.', 'error');
+        Swal.fire('Error', 'Failed to save Robux listing.', 'error');
       }
     } catch (error) {
       console.error(error);
-      Swal.fire('Error', 'Failed to delete account', 'error');
+      Swal.fire('Error', 'An unexpected error occurred.', 'error');
+    } finally {
+      setIsRobuxSubmitting(false);
     }
-  };
-
-  // Robux edit handler (prefills robux form for editing)
-  const handleRobuxEdit = (listing) => {
-    setRobuxData({
-      amount: listing.amount || '',
-      via: listing.via || '',
-      price: listing.price || '',
-      contact: listing.contact || ''
-    });
-    setRobuxEditMode(true);
-    setRobuxEditId(listing.id);
   };
 
   // Robux delete handler
   const handleRobuxDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this robux listing?')) return;
+    if (!window.confirm('Are you sure you want to delete this Robux listing?')) return;
 
     try {
       const res = await fetch('/api/robux', {
@@ -350,18 +342,28 @@ export default function Admin() {
       });
 
       if (res.ok) {
-        Swal.fire('Deleted!', 'Robux listing deleted successfully.', 'success');
+        Swal.fire('Deleted', 'Robux listing deleted.', 'success');
         fetchRobuxListings();
-      } else {
-        Swal.fire('Error', 'Failed to delete robux listing.', 'error');
       }
     } catch (error) {
       console.error(error);
-      Swal.fire('Error', 'Failed to delete robux listing', 'error');
+      Swal.fire('Error', 'Failed to delete Robux listing.', 'error');
     }
   };
 
-  // Render section starts here
+  // Robux edit handler
+  const handleRobuxEdit = (listing) => {
+    setRobuxFormData({
+      amount: listing.amount || '',
+      via: listing.via || '',
+      price: listing.price || '',
+      contact: listing.contact || ''
+    });
+    setRobuxEditMode(true);
+    setRobuxEditId(listing.id);
+  };
+
+  // Render login screen if not authorized nor seller
   if (!isAuthorized && !seller) {
     return (
       <div className="container" style={{ padding: '20px' }}>
@@ -397,13 +399,14 @@ export default function Admin() {
         </form>
       </div>
     );
-  }
-
-  return (
+}return (
     <div className="container" style={{ padding: '20px' }}>
       <h2 style={{ color: 'white' }}>
         {isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}
-        <button onClick={handleLogout} style={{ marginLeft: '20px', background: 'red', color: '#fff' }}>
+        <button
+          onClick={handleLogout}
+          style={{ marginLeft: '20px', background: 'red', color: '#fff' }}
+        >
           Logout
         </button>
       </h2>
@@ -489,8 +492,8 @@ export default function Admin() {
             <div style={{ marginBottom: '10px' }}>
               <label style={{ color: 'white' }}>Account Type:</label>
               <select name="accountType" value={formData.accountType} onChange={handleChange}>
-                <option value="Global Account">Global Account</option>
-                <option value="Vietnam">Vietnam</option>
+                <option value="Global Account">GLOBAL</option>
+                <option value="Vietnam">VIETNAM</option>
                 <option value="Others">Others</option>
               </select>
             </div>
@@ -550,25 +553,24 @@ export default function Admin() {
       {/* === ROBUX FORM SECTION === */}
       {formType === 'robux' && (
         <>
-          <form onSubmit={handleRobuxSubmit}>
+          <form onSubmit={handleRobuxSubmit} style={{ marginBottom: '20px' }}>
             <div style={{ marginBottom: '10px' }}>
               <label style={{ color: 'white' }}>Robux Amount:</label>
               <input
                 type="number"
                 name="amount"
-                value={robuxData.amount}
+                value={robuxFormData.amount}
                 onChange={handleRobuxChange}
                 required
-                min="1"
               />
             </div>
 
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Method (e.g. Group Payout):</label>
+              <label style={{ color: 'white' }}>Method (e.g., Group Payout):</label>
               <input
                 type="text"
                 name="via"
-                value={robuxData.via}
+                value={robuxFormData.via}
                 onChange={handleRobuxChange}
                 required
               />
@@ -579,19 +581,20 @@ export default function Admin() {
               <input
                 type="number"
                 name="price"
-                value={robuxData.price}
+                value={robuxFormData.price}
                 onChange={handleRobuxChange}
                 required
-                min="1"
+                step="any"
+                min="0"
               />
             </div>
 
             <div style={{ marginBottom: '10px' }}>
               <label style={{ color: 'white' }}>Contact Link (Facebook, etc.):</label>
               <input
-                type="text"
+                type="url"
                 name="contact"
-                value={robuxData.contact}
+                value={robuxFormData.contact}
                 onChange={handleRobuxChange}
                 required
               />
@@ -599,18 +602,16 @@ export default function Admin() {
 
             <button
               type="submit"
-              disabled={robuxSubmitting}
+              disabled={isRobuxSubmitting}
               style={{
                 backgroundColor: '#2196F3',
                 color: 'white',
                 padding: '10px 15px',
                 border: 'none',
-                borderRadius: '5px',
-                marginBottom: '20px',
-                marginTop: '10px'
+                borderRadius: '5px'
               }}
             >
-              {robuxSubmitting ? 'Processing...' : robuxEditMode ? 'Update Robux Listing' : 'Add Robux Listing'}
+              {isRobuxSubmitting ? 'Processing...' : robuxEditMode ? 'Update Robux Listing' : 'Add Robux Listing'}
             </button>
           </form>
 
@@ -651,4 +652,4 @@ export default function Admin() {
       )}
     </div>
   );
-          }
+                }
