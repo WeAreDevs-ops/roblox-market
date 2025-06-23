@@ -158,7 +158,7 @@ export default function Home() {
           style={{
             padding: '8px 20px',
             borderRadius: '8px',
-            backgroundColor: viewType === 'robux' ? '#007bff' : '#ddd',
+            backgroundColor: viewType === 'robux' ? '#7DC387' : '#ddd',
             color: viewType === 'robux' ? 'white' : 'black',
             border: 'none',
             fontWeight: 'bold'
