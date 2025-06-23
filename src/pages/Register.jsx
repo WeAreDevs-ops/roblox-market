@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase'; // Firebase client SDK
+import { auth } from '../../firebase'; // Firebase client SDK
 
 export default function Register() {
   const [form, setForm] = useState({ username: '', password: '' });
