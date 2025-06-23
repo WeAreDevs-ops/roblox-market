@@ -28,8 +28,14 @@ export default function Admin() {
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [robuxListings, setRobuxListings] = useState([]);
+
+  const [robuxForm, setRobuxForm] = useState({
+    amount: '',
+    via: '',
+    price: '',
+    contact: ''
+  });
 
   const isSeller = !!seller;
 
@@ -139,6 +145,11 @@ export default function Admin() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleRobuxChange = (e) => {
+    const { name, value } = e.target;
+    setRobuxForm(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -207,9 +218,7 @@ export default function Admin() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleDelete = async (id) => {
+  };const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this account?')) return;
 
     try {
@@ -248,42 +257,40 @@ export default function Admin() {
     setEditId(account.id);
   };
 
-  if (!isAuthorized && !seller) {
-    return (
-      <div className="container" style={{ padding: '20px' }}>
-        <h2 style={{ color: 'white' }}>Admin Login</h2>
-        <input
-          type="password"
-          placeholder="Enter admin password"
-          value={adminPassword}
-          onChange={(e) => setAdminPassword(e.target.value)}
-        />
-        <button onClick={handleAdminLogin}>Login</button>
+  const handleRobuxSubmit = async (e) => {
+    e.preventDefault();
+    const { amount, via, price, contact } = robuxForm;
 
-        <hr style={{ margin: '30px 0' }} />
-        <h2 style={{ color: 'white' }}>Seller Login</h2>
-        <form onSubmit={handleSellerLogin}>
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={sellerLogin.username}
-            required
-            onChange={e => setSellerLogin({ ...sellerLogin, username: e.target.value })}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={sellerLogin.password}
-            required
-            onChange={e => setSellerLogin({ ...sellerLogin, password: e.target.value })}
-          />
-          <button type="submit">Login</button>
-        </form>
-      </div>
-    );
-  }
+    if (!amount || !via || !price || !contact) {
+      Swal.fire('Missing Fields', 'Please fill out all Robux fields.', 'warning');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/robux', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          seller: seller?.username || 'Admin',
+          amount,
+          via,
+          price,
+          contact
+        }),
+      });
+
+      if (res.ok) {
+        Swal.fire('Success', 'Robux listing added!', 'success');
+        setRobuxForm({ amount: '', via: '', price: '', contact: '' });
+        fetchRobuxListings();
+      } else {
+        Swal.fire('Error', 'Failed to add robux listing.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'Unexpected error occurred.', 'error');
+    }
+  };
 
   return (
     <div className="container" style={{ padding: '20px' }}>
@@ -294,7 +301,6 @@ export default function Admin() {
         </button>
       </h2>
 
-      {/* FORM TOGGLE BUTTONS */}
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <button
           onClick={() => setFormType('account')}
@@ -321,157 +327,32 @@ export default function Admin() {
         >
           ROBUX LISTING FORM
         </button>
-      </div>{/* === ACCOUNT FORM SECTION === */}
-      {formType === 'account' && (
-        <>
-          <form onSubmit={handleSubmit}>
-            {[
-              ['Username', 'username'],
-              ['Total Summary', 'totalSummary'],
-              ['Price', 'price'],
-              ['Robux Balance', 'robuxBalance'],
-              ['Limited Items', 'limitedItems'],
-              ['Game with Gamepass', 'gamepass'],
-            ].map(([label, name]) => (
-              <div key={name} style={{ marginBottom: '10px' }}>
-                <label style={{ color: 'white' }}>{label}:</label>
-                <input type="text" name={name} value={formData[name]} onChange={handleChange} />
-              </div>
-            ))}
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Contact Link -FB-:</label>
-              <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Email:</label>
-              <select name="email" value={formData.email} onChange={handleChange}>
-                <option value="Verified">Verified</option>
-                <option value="Unverified">Unverified</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>MOP:</label>
-              <select name="mop" value={formData.mop} onChange={handleChange}>
-                <option value="Gcash">Gcash</option>
-                <option value="Paymaya">Paymaya</option>
-                <option value="Paypal">Paypal</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Inventory:</label>
-              <select name="inventory" value={formData.inventory} onChange={handleChange}>
-                <option value="Public">Public</option>
-                <option value="Private">Private</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Account Type:</label>
-              <select name="accountType" value={formData.accountType} onChange={handleChange}>
-                <option value="GLOBAL">GLOBAL</option>
-                <option value="VIETNAM">VIETNAM</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Premium Status:</label>
-              <select name="premium" value={formData.premium} onChange={handleChange}>
-                <option value="True">True</option>
-                <option value="False">False</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                backgroundColor: '#FF0000',
-                color: 'white',
-                padding: '10px 15px',
-                border: 'none',
-                borderRadius: '5px'
-              }}
-            >
-              {isSubmitting ? 'Processing...' : editMode ? 'Update Account' : 'Add Account'}
-            </button>
-          </form>
-
-          <hr style={{ margin: '30px 0' }} />
-          <h3 style={{ color: 'white' }}>Account List</h3>
-          <input
-            type="text"
-            placeholder="Search Username"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ marginBottom: '10px' }}
-          />
-
-          {accounts
-            .filter(acc => acc.username.toLowerCase().includes(search.toLowerCase()))
-            .map(acc => (
-              <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', color: 'white' }}>
-                <strong>{acc.username}</strong> - ₱{acc.price}
-                <div>Account Age: {acc.age || 'N/A'} days</div>
-                <div style={{ marginTop: '5px' }}>
-                  <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>
-                    Edit
-                  </button>
-                  <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-        </>
-      )}
+      </div>
 
       {/* === ROBUX FORM SECTION === */}
       {formType === 'robux' && (
         <>
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const amount = prompt('Enter Robux Amount');
-              const via = prompt('Enter Method (Group Payout, Shirt Buying, etc.)');
-              const price = prompt('Enter Price (e.g. ₱150)');
-              const contact = prompt('Enter Contact Link (Facebook, etc.)');
+          <form onSubmit={handleRobuxSubmit}>
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ color: 'white' }}>Robux Amount:</label>
+              <input type="text" name="amount" value={robuxForm.amount} onChange={handleRobuxChange} />
+            </div>
 
-              if (!amount || !via || !price || !contact) {
-                Swal.fire('Missing Fields', 'Please fill out all Robux details.', 'warning');
-                return;
-              }
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ color: 'white' }}>Method (Via):</label>
+              <input type="text" name="via" value={robuxForm.via} onChange={handleRobuxChange} />
+            </div>
 
-              try {
-                const res = await fetch('/api/robux', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    seller: seller.username,
-                    amount,
-                    via,
-                    price,
-                    contact,
-                  }),
-                });
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ color: 'white' }}>Price:</label>
+              <input type="text" name="price" value={robuxForm.price} onChange={handleRobuxChange} />
+            </div>
 
-                if (res.ok) {
-                  Swal.fire('Success', 'Robux listing added!', 'success');
-                  fetchRobuxListings();
-                } else {
-                  Swal.fire('Error', 'Failed to add Robux listing.', 'error');
-                }
-              } catch (err) {
-                console.error(err);
-                Swal.fire('Error', 'Unexpected server error.', 'error');
-              }
-            }}
-          >
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ color: 'white' }}>Contact Link:</label>
+              <input type="text" name="contact" value={robuxForm.contact} onChange={handleRobuxChange} />
+            </div>
+
             <button
               type="submit"
               style={{
