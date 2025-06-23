@@ -34,7 +34,7 @@ export default function Home() {
   useEffect(() => {
     fetch('/api/robux')
       .then(res => res.json())
-      .then(data => setRobuxListings(data.robux || []))
+      .then(data => setRobuxListings(data.robuxList || []))
       .catch(err => console.error('Failed to fetch robux listings:', err));
   }, []);
 
