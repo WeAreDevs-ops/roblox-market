@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase'; // Firebase Client SDK
 
 export default function SellerLogin() {
   const [username, setUsername] = useState('');
@@ -9,26 +11,17 @@ export default function SellerLogin() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    const email = `${username}@rbxsm.com`; // Convert username to synthetic email
 
     try {
-      const res = await fetch('/api/seller-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
+      await signInWithEmailAndPassword(auth, email, password);
 
-      const data = await res.json();
-
-      if (res.ok) {
-        localStorage.setItem('seller', JSON.stringify(data));
-        Swal.fire('Success', 'Login successful!', 'success');
-        navigate('/seller-panel');
-      } else {
-        Swal.fire('Error', data.error || 'Login failed', 'error');
-      }
+      localStorage.setItem('seller', JSON.stringify({ username }));
+      Swal.fire('Success', 'Login successful!', 'success');
+      navigate('/seller-panel');
     } catch (err) {
-      console.error('Login error:', err);
-      Swal.fire('Error', 'Something went wrong', 'error');
+      console.error('Firebase login error:', err.message);
+      Swal.fire('Error', 'Invalid username or password', 'error');
     }
   };
 
