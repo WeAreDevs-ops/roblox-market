@@ -145,7 +145,7 @@ export default function Home() {
             marginRight: '10px',
             padding: '8px 20px',
             borderRadius: '8px',
-            backgroundColor: viewType === 'accounts' ? '#007bff' : '#ddd',
+            backgroundColor: viewType === 'accounts' ? '#7DC387' : '#ddd',
             color: viewType === 'accounts' ? 'white' : 'black',
             border: 'none',
             fontWeight: 'bold'
