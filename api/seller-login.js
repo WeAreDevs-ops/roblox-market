@@ -1,5 +1,5 @@
-import { db } from '../firebase-admin';
-import bcrypt from 'bcryptjs';
+import { auth } from '../firebase'; // Make sure this is the Firebase Client SDK
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -10,28 +10,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing username or password' });
   }
 
+  const syntheticEmail = `${username}@rbxsm.com`; // Convert username to fake email
+
   try {
-    const userRef = db.collection('sellers').doc(username);
-    const userDoc = await userRef.get();
-
-    if (!userDoc.exists) {
-      return res.status(401).json({ error: 'User not found' });
-    }
-
-    const userData = userDoc.data();
-
-    if (!userData.passwordHash) {
-      return res.status(401).json({ error: 'Password not set for user' });
-    }
-
-    const isMatch = await bcrypt.compare(password, userData.passwordHash);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid password' });
-    }
-
+    await signInWithEmailAndPassword(auth, syntheticEmail, password);
     return res.status(200).json({ message: 'Login successful', username });
   } catch (err) {
-    console.error('Login Error:', err);
-    return res.status(500).json({ error: 'Something went wrong' });
+    console.error('Firebase Auth Login Error:', err.message);
+    return res.status(401).json({ error: 'Invalid username or password' });
   }
 }
