@@ -1,13 +1,24 @@
-// api/limited-items.js
-import { db } from '../firebase-admin';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
-import { v4 as uuidv4 } from 'uuid';
+import { db, admin } from '../firebase-admin';
 
 export default async function handler(req, res) {
-  const { method } = req;
+  const limitedRef = db.collection('limited-items');
 
-  if (method === 'POST') {
-    try {
+  try {
+    if (req.method === 'GET') {
+      const seller = req.headers.authorization;
+      const snapshot = seller
+        ? await limitedRef.where('seller', '==', seller).get()
+        : await limitedRef.get();
+
+      const items = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      return res.status(200).json({ items });
+    }
+
+    if (req.method === 'POST') {
       const {
         assetId,
         name,
@@ -18,15 +29,14 @@ export default async function handler(req, res) {
         price,
         contact,
         poisonStatus,
-        seller
+        seller,
       } = req.body;
 
-      if (!assetId || !name || !creator || !price || !contact || !poisonStatus) {
+      if (!assetId || !name || !creator || !price || !contact || !poisonStatus || !seller) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      const newItem = {
-        id: uuidv4(),
+      const newDoc = await limitedRef.add({
         assetId,
         name,
         creator,
@@ -37,35 +47,57 @@ export default async function handler(req, res) {
         contact,
         poisonStatus,
         seller,
-        timestamp: Date.now()
-      };
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
 
-      await addDoc(collection(db, 'limited-items'), newItem);
-
-      return res.status(200).json({ message: 'Limited item listed successfully' });
-    } catch (error) {
-      console.error('Failed to add limited item:', error);
-      return res.status(500).json({ error: 'Failed to add limited item' });
+      return res.status(201).json({ id: newDoc.id });
     }
-  }
 
-  if (method === 'GET') {
-    try {
-      const sellerHeader = req.headers.authorization;
-      const colRef = collection(db, 'limited-items');
-      const q = sellerHeader
-        ? query(colRef, where('seller', '==', sellerHeader))
-        : colRef;
+    if (req.method === 'PUT') {
+      const {
+        id,
+        assetId,
+        name,
+        creator,
+        thumbnail,
+        itemType,
+        originalPrice,
+        price,
+        contact,
+        poisonStatus,
+        seller,
+      } = req.body;
 
-      const snapshot = await getDocs(q);
-      const items = snapshot.docs.map(doc => doc.data());
+      if (!id) return res.status(400).json({ error: 'Missing document ID' });
 
-      return res.status(200).json({ items });
-    } catch (error) {
-      console.error('Failed to fetch limited items:', error);
-      return res.status(500).json({ error: 'Failed to fetch items' });
+      await limitedRef.doc(id).update({
+        assetId,
+        name,
+        creator,
+        thumbnail,
+        itemType,
+        originalPrice: originalPrice || null,
+        price,
+        contact,
+        poisonStatus,
+        seller,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return res.status(200).json({ message: 'Updated successfully' });
     }
-  }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+    if (req.method === 'DELETE') {
+      const { id } = req.body;
+      if (!id) return res.status(400).json({ error: 'Missing document ID' });
+
+      await limitedRef.doc(id).delete();
+      return res.status(200).json({ message: 'Deleted successfully' });
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (err) {
+    console.error('Limited Items API error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
 }
