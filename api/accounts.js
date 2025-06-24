@@ -1,20 +1,9 @@
 import { db, admin } from '../firebase-admin';
-import {
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-  updateDoc,
-  query,
-  where,
-  serverTimestamp,
-} from "firebase/firestore";
 import axios from 'axios';
 
 export default async function handler(req, res) {
-  const accountsRef = collection(db, "accounts");
-  const counterRef = doc(db, "meta", "salesCounter");
+  const accountsRef = db.collection('accounts');
+  const counterRef = db.collection('meta').doc('salesCounter');
 
   const sellerUsername = req.headers.authorization || null;
 
@@ -22,10 +11,9 @@ export default async function handler(req, res) {
     try {
       let snapshot;
       if (sellerUsername) {
-        const sellerQuery = query(accountsRef, where("seller", "==", sellerUsername));
-        snapshot = await getDocs(sellerQuery);
+        snapshot = await accountsRef.where("seller", "==", sellerUsername).get();
       } else {
-        snapshot = await getDocs(accountsRef);
+        snapshot = await accountsRef.get();
       }
 
       const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -41,7 +29,7 @@ export default async function handler(req, res) {
       username, email, price, mop,
       robuxBalance, limitedItems, inventory,
       accountType, gamepass, totalSummary, premium,
-      seller // optionally from frontend too
+      seller
     } = req.body;
 
     if (sellerUsername && sellerUsername !== seller) {
@@ -76,22 +64,24 @@ export default async function handler(req, res) {
     }
 
     try {
-      const existingSnap = await getDocs(query(accountsRef, where("username", "==", username)));
+      const existingSnap = await accountsRef.where("username", "==", username).get();
       if (!existingSnap.empty) {
         return res.status(409).json({ message: 'Username already exists' });
       }
 
-      await addDoc(accountsRef, {
+      await accountsRef.add({
         username, email, price, mop,
         robuxBalance, limitedItems, inventory,
         accountType, gamepass, totalSummary, premium,
         seller: sellerUsername || null,
         profile, avatar,
         age: ageInDays,
-        createdAt: serverTimestamp()
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      await updateDoc(counterRef, { count: admin.firestore.FieldValue.increment(1) });
+      await counterRef.update({
+        count: admin.firestore.FieldValue.increment(1)
+      });
 
       return res.status(201).json({ message: 'Account added' });
     } catch (error) {
@@ -101,11 +91,11 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'PUT') {
-    const { id, username, totalSummary, premium, ...rest } = req.body;
+    const { id, username, totalSummary, premium, seller, ...rest } = req.body;
 
     if (!id) return res.status(400).json({ message: 'Missing document ID' });
 
-    if (sellerUsername && sellerUsername !== req.body.seller) {
+    if (sellerUsername && sellerUsername !== seller) {
       return res.status(403).json({ message: 'Unauthorized seller update' });
     }
 
@@ -130,29 +120,41 @@ export default async function handler(req, res) {
       console.error("Update Roblox info error:", error.message);
     }
 
-    const docRef = doc(accountsRef, id);
-    await updateDoc(docRef, {
-      username, totalSummary, premium, ...rest, profile, avatar
-    });
-
-    return res.status(200).json({ message: 'Updated successfully' });
+    try {
+      await accountsRef.doc(id).update({
+        username,
+        totalSummary,
+        premium,
+        ...rest,
+        profile,
+        avatar
+      });
+      return res.status(200).json({ message: 'Updated successfully' });
+    } catch (error) {
+      console.error("PUT account error:", error);
+      return res.status(500).json({ message: 'Update failed' });
+    }
   }
 
   if (req.method === 'DELETE') {
     const { id } = req.body;
     if (!id) return res.status(400).json({ message: 'Missing ID' });
 
-    if (sellerUsername) {
-      const snap = await getDocs(query(accountsRef, where('__name__', '==', id)));
-      const found = snap.docs[0];
-      if (!found || found.data().seller !== sellerUsername) {
+    try {
+      const docSnap = await accountsRef.doc(id).get();
+      if (!docSnap.exists) return res.status(404).json({ message: 'Not found' });
+
+      if (sellerUsername && docSnap.data().seller !== sellerUsername) {
         return res.status(403).json({ message: 'Unauthorized delete' });
       }
-    }
 
-    await deleteDoc(doc(accountsRef, id));
-    return res.status(200).json({ message: 'Deleted' });
+      await accountsRef.doc(id).delete();
+      return res.status(200).json({ message: 'Deleted' });
+    } catch (err) {
+      console.error("DELETE account error:", err);
+      return res.status(500).json({ message: 'Delete failed' });
+    }
   }
 
   return res.status(405).end(); // Method Not Allowed
-      }
+  }
