@@ -1,16 +1,16 @@
-const { db } = require('../firebase-admin');
+import { db, admin } from '../firebase-admin';
 
 export default async function handler(req, res) {
-  const robuxCollection = db.collection('robux');
+  const robuxRef = db.collection('robux');
 
   try {
     if (req.method === 'GET') {
-      const snapshot = await robuxCollection.get();
-      const robuxListings = snapshot.docs.map(doc => ({
+      const snapshot = await robuxRef.get();
+      const robuxList = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
-      return res.status(200).json({ robuxList: robuxListings });
+      return res.status(200).json({ robuxList });
     }
 
     if (req.method === 'POST') {
@@ -20,13 +20,13 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      const newDoc = await robuxCollection.add({
+      const newDoc = await robuxRef.add({
         amount,
         via,
         price,
         contact,
         seller,
-        createdAt: Date.now(),
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
       return res.status(201).json({ id: newDoc.id });
@@ -37,14 +37,13 @@ export default async function handler(req, res) {
 
       if (!id) return res.status(400).json({ error: 'Missing document ID' });
 
-      const docRef = robuxCollection.doc(id);
-      await docRef.update({
+      await robuxRef.doc(id).update({
         amount,
         via,
         price,
         contact,
         seller,
-        updatedAt: Date.now(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
       return res.status(200).json({ message: 'Updated successfully' });
@@ -52,12 +51,9 @@ export default async function handler(req, res) {
 
     if (req.method === 'DELETE') {
       const { id } = req.body;
-
       if (!id) return res.status(400).json({ error: 'Missing document ID' });
 
-      const docRef = robuxCollection.doc(id);
-      await docRef.delete();
-
+      await robuxRef.doc(id).delete();
       return res.status(200).json({ message: 'Deleted successfully' });
     }
 
