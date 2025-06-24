@@ -1,5 +1,5 @@
-// pages/api/limited-items.js
-import { db } from '../../firebase-admin';
+// api/limited-items.js
+import { db } from '../firebase-admin';
 import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -68,4 +68,4 @@ export default async function handler(req, res) {
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
-        }
+}
