@@ -1,9 +1,20 @@
-import { db } from '../firebase-admin';
+import { db, admin } from '../firebase-admin';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc,
+  query,
+  where,
+  serverTimestamp,
+} from "firebase/firestore";
 import axios from 'axios';
 
 export default async function handler(req, res) {
-  const accountsRef = db.collection("accounts");
-  const counterRef = db.collection("meta").doc("salesCounter");
+  const accountsRef = collection(db, "accounts");
+  const counterRef = doc(db, "meta", "salesCounter");
 
   const sellerUsername = req.headers.authorization || null;
 
@@ -11,9 +22,10 @@ export default async function handler(req, res) {
     try {
       let snapshot;
       if (sellerUsername) {
-        snapshot = await accountsRef.where("seller", "==", sellerUsername).get();
+        const sellerQuery = query(accountsRef, where("seller", "==", sellerUsername));
+        snapshot = await getDocs(sellerQuery);
       } else {
-        snapshot = await accountsRef.get();
+        snapshot = await getDocs(accountsRef);
       }
 
       const accounts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -29,7 +41,7 @@ export default async function handler(req, res) {
       username, email, price, mop,
       robuxBalance, limitedItems, inventory,
       accountType, gamepass, totalSummary, premium,
-      seller
+      seller // optionally from frontend too
     } = req.body;
 
     if (sellerUsername && sellerUsername !== seller) {
@@ -64,22 +76,22 @@ export default async function handler(req, res) {
     }
 
     try {
-      const existingSnap = await accountsRef.where("username", "==", username).get();
+      const existingSnap = await getDocs(query(accountsRef, where("username", "==", username)));
       if (!existingSnap.empty) {
         return res.status(409).json({ message: 'Username already exists' });
       }
 
-      await accountsRef.add({
+      await addDoc(accountsRef, {
         username, email, price, mop,
         robuxBalance, limitedItems, inventory,
         accountType, gamepass, totalSummary, premium,
         seller: sellerUsername || null,
         profile, avatar,
         age: ageInDays,
-        createdAt: Date.now()
+        createdAt: serverTimestamp()
       });
 
-      await counterRef.update({ count: db.FieldValue.increment(1) });
+      await updateDoc(counterRef, { count: admin.firestore.FieldValue.increment(1) });
 
       return res.status(201).json({ message: 'Account added' });
     } catch (error) {
@@ -118,36 +130,29 @@ export default async function handler(req, res) {
       console.error("Update Roblox info error:", error.message);
     }
 
-    try {
-      const docRef = accountsRef.doc(id);
-      await docRef.update({
-        username, totalSummary, premium, ...rest, profile, avatar
-      });
-      return res.status(200).json({ message: 'Updated successfully' });
-    } catch (error) {
-      console.error("PUT update error:", error);
-      return res.status(500).json({ message: 'Failed to update account' });
-    }
+    const docRef = doc(accountsRef, id);
+    await updateDoc(docRef, {
+      username, totalSummary, premium, ...rest, profile, avatar
+    });
+
+    return res.status(200).json({ message: 'Updated successfully' });
   }
 
   if (req.method === 'DELETE') {
     const { id } = req.body;
     if (!id) return res.status(400).json({ message: 'Missing ID' });
 
-    try {
-      const snap = await accountsRef.where('__name__', '==', id).get();
+    if (sellerUsername) {
+      const snap = await getDocs(query(accountsRef, where('__name__', '==', id)));
       const found = snap.docs[0];
-      if (!found || (sellerUsername && found.data().seller !== sellerUsername)) {
+      if (!found || found.data().seller !== sellerUsername) {
         return res.status(403).json({ message: 'Unauthorized delete' });
       }
-
-      await accountsRef.doc(id).delete();
-      return res.status(200).json({ message: 'Deleted' });
-    } catch (error) {
-      console.error("DELETE error:", error);
-      return res.status(500).json({ message: 'Failed to delete account' });
     }
+
+    await deleteDoc(doc(accountsRef, id));
+    return res.status(200).json({ message: 'Deleted' });
   }
 
   return res.status(405).end(); // Method Not Allowed
-        }
+      }
