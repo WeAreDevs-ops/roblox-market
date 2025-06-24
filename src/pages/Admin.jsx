@@ -1,3 +1,5 @@
+// Admin.jsx (Part 1/4)
+
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 
@@ -44,21 +46,32 @@ export default function Admin() {
 
   const isSeller = !!seller;
 
+  // === Limited Item Listing State ===
+  const [limitedFormData, setLimitedFormData] = useState({
+    assetId: '',
+    price: '',
+    contact: '',
+    poisonStatus: 'Safe',
+  });
+  const [limitedItemDetails, setLimitedItemDetails] = useState(null);
+  const [limitedItems, setLimitedItems] = useState([]);
+  const [isLimitedSubmitting, setIsLimitedSubmitting] = useState(false);
+
   // Load seller from localStorage on mount
   useEffect(() => {
     const storedSeller = localStorage.getItem('seller');
     if (storedSeller) setSeller(JSON.parse(storedSeller));
   }, []);
 
-  // Fetch accounts and robux listings on login state change
   useEffect(() => {
     if (isAuthorized || isSeller) {
       fetchAccounts();
       fetchRobuxListings();
+      fetchLimitedItems();
     }
   }, [isAuthorized, seller]);
 
-  // Fetch accounts API call
+  // Fetch functions
   const fetchAccounts = async () => {
     try {
       const res = await fetch('/api/accounts');
@@ -74,7 +87,6 @@ export default function Admin() {
     }
   };
 
-  // Fetch robux listings API call
   const fetchRobuxListings = async () => {
     try {
       const res = await fetch('/api/robux');
@@ -92,7 +104,43 @@ export default function Admin() {
     }
   };
 
-  // Admin login handler
+  const fetchLimitedItems = async () => {
+    try {
+      const res = await fetch('/api/limited-items');
+      const data = await res.json();
+      if (res.ok) {
+        if (isSeller) {
+          const username = seller?.username;
+          setLimitedItems(data.items.filter(item => item.seller === username));
+        } else {
+          setLimitedItems(data.items);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch limited items:', err);
+    }
+  };
+
+  const fetchLimitedItemDetails = async (assetId) => {
+    try {
+      const res = await fetch(`/api/roblox/asset/${assetId}`);
+      const data = await res.json();
+      if (res.ok && data?.name) {
+        setLimitedItemDetails(data);
+      } else {
+        Swal.fire('Error', 'Invalid asset ID or not a limited item.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'Failed to fetch asset info.', 'error');
+    }
+  };
+
+  const handleLimitedChange = (e) => {
+    const { name, value } = e.target;
+    setLimitedFormData(prev => ({ ...prev, [name]: value }));
+  };// Admin.jsx (Part 2/4)
+
   const handleAdminLogin = async () => {
     try {
       const response = await fetch('/api/login', {
@@ -113,7 +161,6 @@ export default function Admin() {
     }
   };
 
-  // Seller login handler
   const handleSellerLogin = async (e) => {
     e.preventDefault();
     const { username, password } = sellerLogin;
@@ -146,7 +193,6 @@ export default function Admin() {
     }
   };
 
-  // Logout handler
   const handleLogout = () => {
     localStorage.removeItem('seller');
     setSeller(null);
@@ -156,19 +202,16 @@ export default function Admin() {
     Swal.fire('Logged out', 'You have been logged out.', 'success');
   };
 
-  // Account form input change handler
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Account form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    // Required fields check
     const requiredFields = [
       'username',
       'price',
@@ -234,7 +277,6 @@ export default function Admin() {
     }
   };
 
-  // Account delete handler
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this account?')) return;
 
@@ -255,7 +297,6 @@ export default function Admin() {
     }
   };
 
-  // Account edit handler
   const handleEdit = (account) => {
     setFormData({
       username: account.username || '',
@@ -275,13 +316,11 @@ export default function Admin() {
     setEditId(account.id);
   };
 
-  // Robux form input change handler
   const handleRobuxChange = (e) => {
     const { name, value } = e.target;
     setRobuxFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Robux form submit handler (Add or Update)
   const handleRobuxSubmit = async (e) => {
     e.preventDefault();
     if (isRobuxSubmitting) return;
@@ -289,7 +328,6 @@ export default function Admin() {
 
     const { amount, via, price, contact } = robuxFormData;
 
-    // Validate required fields
     if (!amount.trim() || !via.trim() || !price.trim() || !contact.trim()) {
       Swal.fire('Missing Fields', 'Please fill out all Robux listing fields.', 'warning');
       setIsRobuxSubmitting(false);
@@ -328,9 +366,8 @@ export default function Admin() {
     } finally {
       setIsRobuxSubmitting(false);
     }
-  };
+  };// Admin.jsx (Part 3/4)
 
-  // Robux delete handler
   const handleRobuxDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this Robux listing?')) return;
 
@@ -351,7 +388,6 @@ export default function Admin() {
     }
   };
 
-  // Robux edit handler
   const handleRobuxEdit = (listing) => {
     setRobuxFormData({
       amount: listing.amount || '',
@@ -363,7 +399,63 @@ export default function Admin() {
     setRobuxEditId(listing.id);
   };
 
-  // Render login screen if not authorized nor seller
+  const handleLimitedSubmit = async (e) => {
+    e.preventDefault();
+    if (isLimitedSubmitting) return;
+    setIsLimitedSubmitting(true);
+
+    const { assetId, price, contact, poisonStatus } = limitedFormData;
+
+    if (!assetId.trim() || !price.trim() || !contact.trim()) {
+      Swal.fire('Missing Fields', 'All fields are required.', 'warning');
+      setIsLimitedSubmitting(false);
+      return;
+    }
+
+    await fetchLimitedItemDetails(assetId);
+
+    if (!limitedItemDetails || !limitedItemDetails.name) {
+      setIsLimitedSubmitting(false);
+      return;
+    }
+
+    const payload = {
+      assetId,
+      name: limitedItemDetails.name,
+      creator: limitedItemDetails.creator,
+      thumbnail: limitedItemDetails.thumbnail,
+      itemType: limitedItemDetails.itemType,
+      originalPrice: limitedItemDetails.originalPrice || null,
+      price,
+      contact,
+      poisonStatus,
+      seller: seller?.username || 'admin',
+    };
+
+    try {
+      const res = await fetch('/api/limited-items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        Swal.fire('Success', 'Limited item listed!', 'success');
+        setLimitedFormData({ assetId: '', price: '', contact: '', poisonStatus: 'Safe' });
+        setLimitedItemDetails(null);
+        fetchLimitedItems();
+      } else {
+        Swal.fire('Error', 'Failed to save limited item.', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'Unexpected error occurred.', 'error');
+    } finally {
+      setIsLimitedSubmitting(false);
+    }
+  };
+
+  // === RENDER ===
   if (!isAuthorized && !seller) {
     return (
       <div className="container" style={{ padding: '20px' }}>
@@ -399,7 +491,9 @@ export default function Admin() {
         </form>
       </div>
     );
-}return (
+            }// Admin.jsx (Part 4/4)
+
+  return (
     <div className="container" style={{ padding: '20px' }}>
       <h2 style={{ color: 'white' }}>
         {isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}
@@ -441,140 +535,31 @@ export default function Admin() {
         >
           ROBUX LISTING FORM
         </button>
+        <button
+          onClick={() => setFormType('limited')}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: formType === 'limited' ? '#8e44ad' : '#e0e0e0',
+            color: formType === 'limited' ? 'white' : 'black',
+            border: 'none',
+            borderRadius: '5px'
+          }}
+        >
+          LIMITED ITEM LISTING FORM
+        </button>
       </div>
 
-      {/* === ACCOUNT FORM SECTION === */}
-      {formType === 'account' && (
+      {/* === LIMITED ITEM FORM === */}
+      {formType === 'limited' && (
         <>
-          <form onSubmit={handleSubmit}>
-            {[
-              ['Username', 'username'],
-              ['Total Summary', 'totalSummary'],
-              ['Price', 'price'],
-              ['Robux Balance', 'robuxBalance'],
-              ['Limited Items', 'limitedItems'],
-              ['Game with Gamepass', 'gamepass'],
-            ].map(([label, name]) => (
-              <div key={name} style={{ marginBottom: '10px' }}>
-                <label style={{ color: 'white' }}>{label}:</label>
-                <input type="text" name={name} value={formData[name]} onChange={handleChange} />
-              </div>
-            ))}
-
+          <form onSubmit={handleLimitedSubmit} style={{ marginBottom: '20px' }}>
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Contact Link -FB-:</label>
-              <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Email:</label>
-              <select name="email" value={formData.email} onChange={handleChange}>
-                <option value="Verified">Verified</option>
-                <option value="Unverified">Unverified</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>MOP:</label>
-              <select name="mop" value={formData.mop} onChange={handleChange}>
-                <option value="Gcash">Gcash</option>
-                <option value="Paymaya">Paymaya</option>
-                <option value="Paypal">Paypal</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Inventory:</label>
-              <select name="inventory" value={formData.inventory} onChange={handleChange}>
-                <option value="Public">Public</option>
-                <option value="Private">Private</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Account Type:</label>
-              <select name="accountType" value={formData.accountType} onChange={handleChange}>
-                <option value="Global Account">GLOBAL</option>
-                <option value="Vietnam">VIETNAM</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Premium Status:</label>
-              <select name="premium" value={formData.premium} onChange={handleChange}>
-                <option value="True">True</option>
-                <option value="False">False</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                backgroundColor: '#FF0000',
-                color: 'white',
-                padding: '10px 15px',
-                border: 'none',
-                borderRadius: '5px'
-              }}
-            >
-              {isSubmitting ? 'Processing...' : editMode ? 'Update Account' : 'Add Account'}
-            </button>
-          </form>
-
-          <hr style={{ margin: '30px 0' }} />
-          <h3 style={{ color: 'white' }}>Account List</h3>
-          <input
-            type="text"
-            placeholder="Search Username"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ marginBottom: '10px' }}
-          />
-
-          {accounts
-            .filter(acc => acc.username.toLowerCase().includes(search.toLowerCase()))
-            .map(acc => (
-              <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', color: 'white' }}>
-                <strong>{acc.username}</strong> - ₱{acc.price}
-                <div>Account Age: {acc.age || 'N/A'} days</div>
-                <div style={{ marginTop: '5px' }}>
-                  <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>
-                    Edit
-                  </button>
-                  <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-        </>
-      )}
-
-      {/* === ROBUX FORM SECTION === */}
-      {formType === 'robux' && (
-        <>
-          <form onSubmit={handleRobuxSubmit} style={{ marginBottom: '20px' }}>
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Robux Amount:</label>
-              <input
-                type="number"
-                name="amount"
-                value={robuxFormData.amount}
-                onChange={handleRobuxChange}
-                required
-              />
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Method (e.g., Group Payout):</label>
+              <label style={{ color: 'white' }}>Asset ID:</label>
               <input
                 type="text"
-                name="via"
-                value={robuxFormData.via}
-                onChange={handleRobuxChange}
+                name="assetId"
+                value={limitedFormData.assetId}
+                onChange={handleLimitedChange}
                 required
               />
             </div>
@@ -584,75 +569,64 @@ export default function Admin() {
               <input
                 type="number"
                 name="price"
-                value={robuxFormData.price}
-                onChange={handleRobuxChange}
+                value={limitedFormData.price}
+                onChange={handleLimitedChange}
                 required
-                step="any"
-                min="0"
               />
             </div>
 
             <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Contact Link (Facebook, etc.):</label>
+              <label style={{ color: 'white' }}>Contact Link:</label>
               <input
                 type="url"
                 name="contact"
-                value={robuxFormData.contact}
-                onChange={handleRobuxChange}
+                value={limitedFormData.contact}
+                onChange={handleLimitedChange}
                 required
               />
             </div>
 
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ color: 'white' }}>Status:</label>
+              <select
+                name="poisonStatus"
+                value={limitedFormData.poisonStatus}
+                onChange={handleLimitedChange}
+              >
+                <option value="Safe">Safe</option>
+                <option value="Poison">Poison</option>
+              </select>
+            </div>
+
             <button
               type="submit"
-              disabled={isRobuxSubmitting}
+              disabled={isLimitedSubmitting}
               style={{
-                backgroundColor: '#2196F3',
+                backgroundColor: '#8e44ad',
                 color: 'white',
                 padding: '10px 15px',
                 border: 'none',
                 borderRadius: '5px'
               }}
             >
-              {isRobuxSubmitting ? 'Processing...' : robuxEditMode ? 'Update Robux Listing' : 'Add Robux Listing'}
+              {isLimitedSubmitting ? 'Processing...' : 'Add Limited Item'}
             </button>
           </form>
 
-          <h3 style={{ color: 'white' }}>Robux Listings</h3>
-          {robuxListings.length === 0 && (
-            <p style={{ color: 'gray' }}>No robux listings found.</p>
-          )}
-
-          {robuxListings.map(listing => (
-            <div key={listing.id} style={{
-              border: '1px solid #ccc',
-              padding: '10px',
-              marginBottom: '10px',
-              color: 'white'
-            }}>
-              <strong>Robux:</strong> {listing.amount} <br />
-              <strong>Via:</strong> {listing.via} <br />
-              <strong>Price:</strong> ₱{listing.price} <br />
-              <strong>Contact:</strong> <a href={listing.contact} target="_blank" rel="noopener noreferrer" style={{ color: '#00c3ff' }}>{listing.contact}</a> <br />
-              <strong>Seller:</strong> {listing.seller}
-              <div style={{ marginTop: '5px' }}>
-                <button
-                  onClick={() => handleRobuxEdit(listing)}
-                  style={{ background: 'orange', color: 'white', marginRight: '10px' }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleRobuxDelete(listing.id)}
-                  style={{ background: 'red', color: 'white' }}
-                >
-                  Delete
-                </button>
-              </div>
+          <h3 style={{ color: 'white' }}>Listed Limited Items</h3>
+          {limitedItems.map(item => (
+            <div key={item.id} style={{ background: '#222', padding: '10px', marginBottom: '10px', borderRadius: '8px', color: 'white' }}>
+              <img src={item.thumbnail} alt="thumb" width="80" style={{ borderRadius: '8px' }} />
+              <div><strong>{item.name}</strong> by {item.creator}</div>
+              <div>Type: {item.itemType}</div>
+              <div>Original Robux Price: {item.originalPrice || 'N/A'}</div>
+              <div>Sale Price: ₱{item.price}</div>
+              <div>Status: {item.poisonStatus}</div>
+              <div>Contact: <a href={item.contact} target="_blank" rel="noopener noreferrer">{item.contact}</a></div>
             </div>
           ))}
         </>
       )}
     </div>
   );
-                }
+}
