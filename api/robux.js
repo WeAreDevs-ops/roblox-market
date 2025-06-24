@@ -1,24 +1,16 @@
 const { db } = require('../firebase-admin');
-const {
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  deleteDoc,
-  updateDoc,
-} = require('firebase/firestore');
 
 export default async function handler(req, res) {
-  const robuxCollection = collection(db, 'robux');
+  const robuxCollection = db.collection('robux');
 
   try {
     if (req.method === 'GET') {
-      const snapshot = await getDocs(robuxCollection);
+      const snapshot = await robuxCollection.get();
       const robuxListings = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
-      return res.status(200).json({ robuxList: robuxListings }); // ✅ match frontend
+      return res.status(200).json({ robuxList: robuxListings });
     }
 
     if (req.method === 'POST') {
@@ -28,7 +20,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      const newDoc = await addDoc(robuxCollection, {
+      const newDoc = await robuxCollection.add({
         amount,
         via,
         price,
@@ -45,8 +37,8 @@ export default async function handler(req, res) {
 
       if (!id) return res.status(400).json({ error: 'Missing document ID' });
 
-      const docRef = doc(db, 'robux', id);
-      await updateDoc(docRef, {
+      const docRef = robuxCollection.doc(id);
+      await docRef.update({
         amount,
         via,
         price,
@@ -63,8 +55,8 @@ export default async function handler(req, res) {
 
       if (!id) return res.status(400).json({ error: 'Missing document ID' });
 
-      const docRef = doc(db, 'robux', id);
-      await deleteDoc(docRef);
+      const docRef = robuxCollection.doc(id);
+      await docRef.delete();
 
       return res.status(200).json({ message: 'Deleted successfully' });
     }
