@@ -450,22 +450,7 @@ const handleLimitedSubmit = async () => {
         <button onClick={() => setFormView("robux")} style={{ marginRight: "10px", padding: "10px", backgroundColor: formView === "robux" ? "#7DC387" : "#ccc" }}>Robux Listing Form</button>
         <button onClick={() => setFormView("limited")} style={{ padding: "10px", backgroundColor: formView === "limited" ? "#7DC387" : "#ccc" }}>Limited Item Listing Form</button>
       </div>
-  function Admin () { 
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminPassword, setAdminPassword] = useState("");
-  const [sellerLogin, setSellerLogin] = useState({ username: "", password: "" });
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [seller, setSeller] = useState(null);
-  const handleAdminLogin = () => {
-  };
-  const handleSellerLogin = (e) => {
-    e.preventDefault();
-  };  
-  const handleLogout = () => {
-    setIsAdmin(false);
-    setIsAuthorized(false);
-    setSeller(null);
-  };
+  
 if (!isAdmin) {
   return (
 <div className="container" style={{ padding: '20px' }}>
