@@ -450,7 +450,8 @@ const handleLimitedSubmit = async () => {
         <button onClick={() => setFormView("robux")} style={{ marginRight: "10px", padding: "10px", backgroundColor: formView === "robux" ? "#7DC387" : "#ccc" }}>Robux Listing Form</button>
         <button onClick={() => setFormView("limited")} style={{ padding: "10px", backgroundColor: formView === "limited" ? "#7DC387" : "#ccc" }}>Limited Item Listing Form</button>
       </div>
-
+if (!isAdmin) {
+  return (
 <div className="container" style={{ padding: '20px' }}>
         <h2 style={{ color: 'white' }}>Admin Login</h2>
         <input
@@ -484,7 +485,8 @@ const handleLimitedSubmit = async () => {
         </form>
       </div>
     );
-}return (
+}
+ return (
     <div className="container" style={{ padding: '20px' }}>
       <h2 style={{ color: 'white' }}>
         {isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}
