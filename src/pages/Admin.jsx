@@ -615,6 +615,3 @@ const handleLimitedEdit = (listing) => {
   setLimitedEditId(listing.id);
   fetchLimitedItemPreview(); // Optional: show auto-fetch again on edit
 };
-
-// === Export ===
-export default Admin;
