@@ -139,7 +139,7 @@ async function fetchLimitedItem() {
   <img src="${thumbnail}" alt="Item Thumbnail" style="max-width: 300px; border-radius: 10px;" />
   <p><span style="color: #000000; font-weight: bold;"><strong>Creator:</strong> ${details.Creator?.Name || "N/A"}</span></p>
   <p><span style="color: #000000; font-weight: bold;"><strong>Lowest Resale Price:</strong> ${formattedResale}</span></p>
-  <p><span style="color: #000000; font-weight: bold;"><strong>BlackMarket 150PHP/1000RBX:</strong> ${resaleInPHP}</span></p>
+  <p><span style="color: #000000; font-weight: bold;"><strong>BlackMarket:</strong> ${resaleInPHP}</span></p>
   <p><span style="color: #000000; font-weight: bold;"><strong>Type:</strong> ${getAssetTypeName(details.AssetTypeId)}</span></p>
   <p><span style="color: #000000; font-weight: bold;"><strong>Is Limited:</strong> ${details.IsLimited ? "✅" : "❌"}</span></p>
   <p><span style="color: #000000; font-weight: bold;"><strong>Is Limited Unique:</strong> ${details.IsLimitedUnique ? "✅" : "❌"}</span></p>
