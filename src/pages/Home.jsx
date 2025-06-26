@@ -289,17 +289,18 @@ async function fetchLimitedItem() {
     
     <div id="result" style={{
       marginTop: '30px',
-      padding: '20px',
+      padding: '25px',
       maxWidth: '500px',
       marginLeft: 'auto',
       marginRight: 'auto',
       borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.15)',
+      background: 'rgba(255, 255, 255, 0.85)',
       backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(4px)',
-      boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+      WebkitBackdropFilter: 'blur(8px)',
+      boxShadow: '0 12px 30px rgba(0, 0, 0, 0.08)',
       color: '#fff',
-      textAlign: 'left'
+      textAlign: 'left',
+      border: '1px solid #e0e0e0'
     }}></div>
     
   </div>
