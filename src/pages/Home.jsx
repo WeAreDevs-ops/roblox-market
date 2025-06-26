@@ -135,11 +135,11 @@ async function fetchLimitedItem() {
     const resaleInPHP = resalePrice ? `₱${(resalePrice * 0.15).toLocaleString()} PHP` : "N/A";
 
     resultDiv.innerHTML = `
-      <h2>${details.Name}</h2>
+      <h2 style={{ color: "black", fontWeight: "bold" }}>{details.Name}</h2>
       <img src="${thumbnail}" alt="Item Thumbnail" style="max-width: 300px; border-radius: 10px;" />
       <p><strong>Creator:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${details.Creator?.Name || "N/A"} </span></p>
-      <p><strong>Lowest Resale Price:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${formattedResale}</span></p>
-      <p><strong>BlackMarket 150PHP/1000RBX:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${resaleInPHP}</span></p>
+      <p><strong> style={{ color: "black", fontWeight: "bold" }}>Lowest Resale Price:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${formattedResale}</span></p>
+      <p><strong> style={{ color: "black", fontWeight: "bold" }}>BlackMarket 150PHP/1000RBX:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${resaleInPHP}</span></p>
       <p><strong>Type:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${getAssetTypeName(details.AssetTypeId)}</span></p>
       <p><strong>Is Limited:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${details.IsLimited ? "✅" : "❌"}</span></p>
       <p><strong>Is Limited Unique:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${details.IsLimitedUnique ? "✅" : "❌"}</span></p>
