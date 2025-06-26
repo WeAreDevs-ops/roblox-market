@@ -135,26 +135,37 @@ async function fetchLimitedItem() {
     const resaleInPHP = resalePrice ? `₱${(resalePrice * 0.15).toLocaleString()} PHP` : "N/A";
 
     resultDiv.innerHTML = `
-  <h2 style="color: #7DC387;">🔍 ${details.Name}</h2>
-  <img src="${thumbnail}" alt="Item Thumbnail" style="max-width: 300px; border-radius: 10px;" />
+  <div style="
+    margin-top: 20px;
+    padding: 20px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    color: #fff;
+    text-align: left;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  ">
+    <img src="${thumbnail}" alt="Item Thumbnail" style="width: 100%; border-radius: 12px; margin-bottom: 15px;" />
 
-  <p><strong>Creator:</strong> <span style="background-color: #FFD700; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${details.Creator?.Name || "N/A"}</span></p>
+    <p><strong>Creator:</strong> <span style="background-color: #FFD700; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${details.Creator?.Name || "N/A"}</span></p>
 
-  <p><strong>Lowest Resale Price:</strong> <span style="background-color: #7DC387; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${formattedResale}</span></p>
+    <p><strong>Lowest Resale Price:</strong> <span style="background-color: #7DC387; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${formattedResale}</span></p>
 
-  <p><strong>BlackMarket 150PHP/1000RBX:</strong> <span style="background-color: #FFC0CB; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${resaleInPHP}</span></p>
+    <p><strong>BlackMarket 150PHP/1000RBX:</strong> <span style="background-color: #FFC0CB; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${resaleInPHP}</span></p>
 
-  <p><strong>Type:</strong> <span style="background-color: #ADD8E6; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${getAssetTypeName(details.AssetTypeId)}</span></p>
+    <p><strong>Type:</strong> <span style="background-color: #ADD8E6; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${getAssetTypeName(details.AssetTypeId)}</span></p>
 
-  <p><strong>Is Limited:</strong> <span style="background-color: ${details.IsLimited ? '#7DC387' : '#F08080'}; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${details.IsLimited ? "✅" : "❌"}</span></p>
+    <p><strong>Is Limited:</strong> <span style="background-color: ${details.IsLimited ? '#7DC387' : '#F08080'}; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${details.IsLimited ? "✅ True" : "❌ False"}</span></p>
 
-  <p><strong>Is Limited Unique:</strong> <span style="background-color: ${details.IsLimitedUnique ? '#7DC387' : '#F08080'}; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${details.IsLimitedUnique ? "✅" : "❌"}</span></p>
+    <p><strong>Is Limited Unique:</strong> <span style="background-color: ${details.IsLimitedUnique ? '#7DC387' : '#F08080'}; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${details.IsLimitedUnique ? "✅ True" : "❌ False"}</span></p>
+  </div>
 `;
-  } catch (error) {
-    console.error(error);
-    resultDiv.innerHTML = "❌ Failed to fetch item. Make sure the Asset ID is valid.";
-  }
-}
 
 
   return (
