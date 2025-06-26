@@ -42,13 +42,20 @@ export default function Admin() {
   const [robuxEditId, setRobuxEditId] = useState(null);
   const [isRobuxSubmitting, setIsRobuxSubmitting] = useState(false);
 
+  // Limited listing state (NEW)
+  const [limitedAssetId, setLimitedAssetId] = useState('');
+  const [limitedContact, setLimitedContact] = useState('');
+  const [limitedResultHTML, setLimitedResultHTML] = useState('');
+
   const isSeller = !!seller;
 
+  // Load seller from localStorage on mount
   useEffect(() => {
     const storedSeller = localStorage.getItem('seller');
     if (storedSeller) setSeller(JSON.parse(storedSeller));
   }, []);
 
+  // Fetch accounts and robux listings on login state change
   useEffect(() => {
     if (isAuthorized || isSeller) {
       fetchAccounts();
@@ -56,6 +63,7 @@ export default function Admin() {
     }
   }, [isAuthorized, seller]);
 
+  // Fetch accounts API call
   const fetchAccounts = async () => {
     try {
       const res = await fetch('/api/accounts');
@@ -71,6 +79,7 @@ export default function Admin() {
     }
   };
 
+  // Fetch robux listings API call
   const fetchRobuxListings = async () => {
     try {
       const res = await fetch('/api/robux');
@@ -88,6 +97,7 @@ export default function Admin() {
     }
   };
 
+  // Admin login handler
   const handleAdminLogin = async () => {
     try {
       const response = await fetch('/api/login', {
@@ -108,6 +118,7 @@ export default function Admin() {
     }
   };
 
+  // Seller login handler
   const handleSellerLogin = async (e) => {
     e.preventDefault();
     const { username, password } = sellerLogin;
@@ -117,7 +128,7 @@ export default function Admin() {
       return;
     }
 
-    try {
+  try {
       const response = await fetch('/api/seller-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -138,8 +149,7 @@ export default function Admin() {
       console.error(err);
       Swal.fire('Error', 'Something went wrong', 'error');
     }
-  };
-
+  };// Logout handler
   const handleLogout = () => {
     localStorage.removeItem('seller');
     setSeller(null);
@@ -149,16 +159,19 @@ export default function Admin() {
     Swal.fire('Logged out', 'You have been logged out.', 'success');
   };
 
+  // Account form input change handler
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Account form submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
 
+    // Required fields check
     const requiredFields = [
       'username',
       'price',
@@ -222,7 +235,10 @@ export default function Admin() {
     } finally {
       setIsSubmitting(false);
     }
-  };const handleDelete = async (id) => {
+  };
+
+  // Account delete handler
+  const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this account?')) return;
 
     try {
@@ -242,6 +258,7 @@ export default function Admin() {
     }
   };
 
+  // Account edit handler
   const handleEdit = (account) => {
     setFormData({
       username: account.username || '',
@@ -261,11 +278,13 @@ export default function Admin() {
     setEditId(account.id);
   };
 
+  // Robux form input change handler
   const handleRobuxChange = (e) => {
     const { name, value } = e.target;
     setRobuxFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Robux form submit handler (Add or Update)
   const handleRobuxSubmit = async (e) => {
     e.preventDefault();
     if (isRobuxSubmitting) return;
@@ -273,6 +292,7 @@ export default function Admin() {
 
     const { amount, via, price, contact } = robuxFormData;
 
+    // Validate required fields
     if (!amount.trim() || !via.trim() || !price.trim() || !contact.trim()) {
       Swal.fire('Missing Fields', 'Please fill out all Robux listing fields.', 'warning');
       setIsRobuxSubmitting(false);
@@ -311,8 +331,7 @@ export default function Admin() {
     } finally {
       setIsRobuxSubmitting(false);
     }
-  };
-
+  };// Robux delete handler
   const handleRobuxDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this Robux listing?')) return;
 
@@ -333,6 +352,7 @@ export default function Admin() {
     }
   };
 
+  // Robux edit handler
   const handleRobuxEdit = (listing) => {
     setRobuxFormData({
       amount: listing.amount || '',
@@ -342,42 +362,7 @@ export default function Admin() {
     });
     setRobuxEditMode(true);
     setRobuxEditId(listing.id);
-  };if (!isAuthorized && !seller) {
-    return (
-      <div className="container" style={{ padding: '20px' }}>
-        <h2 style={{ color: 'white' }}>Admin Login</h2>
-        <input
-          type="password"
-          placeholder="Enter admin password"
-          value={adminPassword}
-          onChange={(e) => setAdminPassword(e.target.value)}
-        />
-        <button onClick={handleAdminLogin}>Login</button>
-
-        <hr style={{ margin: '30px 0' }} />
-        <h2 style={{ color: 'white' }}>Seller Login</h2>
-        <form onSubmit={handleSellerLogin}>
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={sellerLogin.username}
-            required
-            onChange={e => setSellerLogin({ ...sellerLogin, username: e.target.value })}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={sellerLogin.password}
-            required
-            onChange={e => setSellerLogin({ ...sellerLogin, password: e.target.value })}
-          />
-          <button type="submit">Login</button>
-        </form>
-      </div>
-    );
-  }
+  };
 
   return (
     <div className="container" style={{ padding: '20px' }}>
@@ -392,7 +377,13 @@ export default function Admin() {
       </h2>
 
       {/* FORM TOGGLE BUTTONS */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '20px',
+        marginBottom: '30px',
+        flexWrap: 'wrap'
+      }}>
         <button
           onClick={() => setFormType('account')}
           style={{
@@ -420,6 +411,18 @@ export default function Admin() {
           }}
         >
           ROBUX LISTING FORM
+        </button>
+        <button
+          onClick={() => setFormType('limited')}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: formType === 'limited' ? '#FFC107' : '#e0e0e0',
+            color: formType === 'limited' ? 'black' : 'black',
+            border: 'none',
+            borderRadius: '5px'
+          }}
+        >
+          LIMITED ITEM LISTING
         </button>
       </div>
 
@@ -470,9 +473,7 @@ export default function Admin() {
                 <option value="Public">Public</option>
                 <option value="Private">Private</option>
               </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
+            </div><div style={{ marginBottom: '10px' }}>
               <label style={{ color: 'white' }}>Account Type:</label>
               <select name="accountType" value={formData.accountType} onChange={handleChange}>
                 <option value="Global Account">GLOBAL</option>
@@ -502,7 +503,9 @@ export default function Admin() {
             >
               {isSubmitting ? 'Processing...' : editMode ? 'Update Account' : 'Add Account'}
             </button>
-          </form><hr style={{ margin: '30px 0' }} />
+          </form>
+
+          <hr style={{ margin: '30px 0' }} />
           <h3 style={{ color: 'white' }}>Account List</h3>
           <input
             type="text"
@@ -632,35 +635,35 @@ export default function Admin() {
         </>
       )}
 
-      {/* === LIMITED ITEM LISTING TOGGLE BUTTON (START IN NEXT PART) === */}
-      {/* === LIMITED ITEM LISTING FORM SECTION === */}
-      <div style={{ marginTop: '40px' }}>
-        <h2 style={{ color: 'white' }}>LIMITED ITEM LISTING</h2>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ color: 'white' }}>Asset ID:</label>
-          <input type="text" id="assetIdInput" style={{ marginLeft: '10px' }} />
-          <button
-            onClick={fetchLimitedItem}
-            style={{
-              marginLeft: '10px',
-              padding: '5px 15px',
-              backgroundColor: '#FFC107',
-              border: 'none',
-              color: 'black',
-              borderRadius: '5px',
-              fontWeight: 'bold'
-            }}
-          >
-            Fetch
-          </button>
-        </div>
-        <div id="result" style={{ color: 'white' }}></div>
-      </div>
+      {/* === LIMITED ITEM FORM SECTION === */}
+      {formType === 'limited' && (
+        <>
+          <div style={{ marginBottom: '20px' }}>
+            <h2 style={{ color: 'white' }}>Limited Item Listing</h2>
+            <label style={{ color: 'white' }}>Asset ID:</label>
+            <input type="text" id="assetIdInput" style={{ marginLeft: '10px' }} />
+            <button
+              onClick={fetchLimitedItem}
+              style={{
+                marginLeft: '10px',
+                padding: '5px 15px',
+                backgroundColor: '#FFC107',
+                border: 'none',
+                color: 'black',
+                borderRadius: '5px',
+                fontWeight: 'bold'
+              }}
+            >
+              Fetch
+            </button>
+          </div>
+          <div id="result" style={{ color: 'white' }}></div>
+        </>
+      )}
     </div>
-  );
-}
+  );}
 
-// === LIMITED ITEM HELPERS ===
+// === LIMITED ITEM HELPER FUNCTIONS ===
 function getAssetTypeName(typeId) {
   const types = {
     1: "Image", 2: "T-Shirt", 3: "Audio", 4: "Mesh", 8: "Hat", 11: "Shirt", 12: "Pants",
@@ -679,13 +682,16 @@ async function fetchLimitedItem() {
   resultDiv.innerHTML = "Fetching...";
 
   try {
+    // Fetch item details
     const detailsRes = await fetch(`https://economy.roproxy.com/v2/assets/${assetId}/details`);
     const details = await detailsRes.json();
 
+    // Fetch thumbnail
     const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/assets?assetIds=${assetId}&size=420x420&format=Png`);
     const thumbData = await thumbRes.json();
     const thumbnail = thumbData.data[0]?.imageUrl || "";
 
+    // Get resale price
     const resalePrice = details.CollectiblesItemDetails?.CollectibleLowestResalePrice;
     const formattedResale = resalePrice
       ? `${resalePrice.toLocaleString()} Robux`
@@ -695,18 +701,30 @@ async function fetchLimitedItem() {
       ? `₱${(resalePrice * 0.15).toLocaleString()} PHP`
       : "N/A";
 
+    // Seller name from localStorage or fallback
+    const seller = localStorage.getItem("seller");
+    const sellerName = seller ? JSON.parse(seller).username : "admin";
+
+    // Render result
     resultDiv.innerHTML = `
-      <h2>${details.Name}</h2>
-      <img src="${thumbnail}" alt="Item Thumbnail" style="max-width:200px; border-radius:10px;" />
-      <p><strong>Creator:</strong> ${details.Creator?.Name || "N/A"}</p>
-      <p><strong>Lowest Resale Price:</strong> ${formattedResale}</p>
-      <p><strong>BlackMarket 150PHP/1000RBX:</strong> ${resaleInPHP}</p>
-      <p><strong>Type:</strong> ${getAssetTypeName(details.AssetTypeId)}</p>
-      <p><strong>Is Limited:</strong> ${details.IsLimited ? "✅ True" : "❌ False"}</p>
-      <p><strong>Is Limited Unique:</strong> ${details.IsLimitedUnique ? "✅ True" : "❌ False"}</p>
-      <br/>
-      <label>Contact Link:</label> <input type="text" placeholder="Facebook link or other" style="width: 100%; margin: 5px 0;" /><br/>
-      <label>Seller:</label> <input type="text" value="${localStorage.getItem('seller') ? JSON.parse(localStorage.getItem('seller')).username : 'admin'}" readonly style="width: 100%; margin-bottom: 10px;" />
+      <div style="padding:10px; border:1px solid #ccc; border-radius:8px; max-width:400px;">
+        <h3>${details.Name}</h3>
+        <img src="${thumbnail}" alt="Item Thumbnail" style="width:100%; border-radius:10px;" />
+        <p><strong>Creator:</strong> ${details.Creator?.Name || "N/A"}</p>
+        <p><strong>Lowest Resale Price:</strong> ${formattedResale}</p>
+        <p><strong>BlackMarket (150PHP/1k RBX):</strong> ${resaleInPHP}</p>
+        <p><strong>Type:</strong> ${getAssetTypeName(details.AssetTypeId)}</p>
+        <p><strong>Is Limited:</strong> ${details.IsLimited ? "✅ True" : "❌ False"}</p>
+        <p><strong>Is Limited Unique:</strong> ${details.IsLimitedUnique ? "✅ True" : "❌ False"}</p>
+        <div style="margin-top:10px;">
+          <label><strong>Contact Link:</strong></label>
+          <input type="text" placeholder="Facebook or Discord" style="width:100%; margin:5px 0;" />
+        </div>
+        <div>
+          <label><strong>Seller:</strong></label>
+          <input type="text" value="${sellerName}" readonly style="width:100%; margin-top:5px;" />
+        </div>
+      </div>
     `;
   } catch (error) {
     console.error(error);
