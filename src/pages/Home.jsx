@@ -295,8 +295,8 @@ async function fetchLimitedItem() {
       marginRight: 'auto',
       borderRadius: '20px',
       background: 'rgba(255, 255, 255, 0.15)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(4px)',
       boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
       color: '#fff',
       textAlign: 'left'
