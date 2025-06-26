@@ -166,8 +166,7 @@ async function fetchLimitedItem() {
     <p><strong>Is Limited Unique:</strong> <span style="background-color: ${details.IsLimitedUnique ? '#7DC387' : '#F08080'}; padding: 4px 10px; border-radius: 12px; font-weight: bold;">${details.IsLimitedUnique ? "✅ True" : "❌ False"}</span></p>
   </div>
 `;
-
-
+  )}
   return (
     <div className="container" style={{ padding: "20px", minHeight: '100vh' }}>
       {/* Dashboard Summary */}
