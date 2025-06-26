@@ -265,7 +265,7 @@ async function fetchLimitedItem() {
           
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: "white" }}>Limited Item Checker</h2>
+    <h2 style={{ color: "#ffffff", zIndex: 1, position: "relative" }}>🔍 Limited Item Checker</h2>
     <input
       id="assetIdInput"
       type="text"
@@ -294,9 +294,9 @@ async function fetchLimitedItem() {
       marginLeft: 'auto',
       marginRight: 'auto',
       borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.85)',
+      background: 'rgba(255, 255, 255, 0.96)',
       backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(6px)',
       boxShadow: '0 12px 30px rgba(0, 0, 0, 0.08)',
       color: '#fff',
       textAlign: 'left',
