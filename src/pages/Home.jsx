@@ -574,4 +574,4 @@ async function fetchLimitedItem() {
       )}
     </div>
   );
-    }
+}
