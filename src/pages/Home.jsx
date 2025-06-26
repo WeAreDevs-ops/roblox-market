@@ -135,15 +135,15 @@ async function fetchLimitedItem() {
     const resaleInPHP = resalePrice ? `₱${(resalePrice * 0.15).toLocaleString()} PHP` : "N/A";
 
     resultDiv.innerHTML = `
-      <h2 style={{ color: "black", fontWeight: "bold" }}>{details.Name}</h2>
-      <img src="${thumbnail}" alt="Item Thumbnail" style="max-width: 300px; border-radius: 10px;" />
-      <p><strong>Creator:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${details.Creator?.Name || "N/A"} </span></p>
-      <p><strong> style={{ color: "black", fontWeight: "bold" }}>Lowest Resale Price:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${formattedResale}</span></p>
-      <p><strong> style={{ color: "black", fontWeight: "bold" }}>BlackMarket 150PHP/1000RBX:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${resaleInPHP}</span></p>
-      <p><strong>Type:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${getAssetTypeName(details.AssetTypeId)}</span></p>
-      <p><strong>Is Limited:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${details.IsLimited ? "✅" : "❌"}</span></p>
-      <p><strong>Is Limited Unique:</strong><span style="color: ${details.IsLimited ? '#000000' : '#000000'}; font-weight: bold;"> ${details.IsLimitedUnique ? "✅" : "❌"}</span></p>
-    `;
+  <h2 style="color: black; font-weight: bold;">${details.Name}</h2>
+  <img src="${thumbnail}" alt="Item Thumbnail" style="max-width: 300px; border-radius: 10px;" />
+  <p><span style="color: #000000; font-weight: bold;"><strong>Creator:</strong> ${details.Creator?.Name || "N/A"}</span></p>
+  <p><span style="color: #000000; font-weight: bold;"><strong>Lowest Resale Price:</strong> ${formattedResale}</span></p>
+  <p><span style="color: #000000; font-weight: bold;"><strong>BlackMarket 150PHP/1000RBX:</strong> ${resaleInPHP}</span></p>
+  <p><span style="color: #000000; font-weight: bold;"><strong>Type:</strong> ${getAssetTypeName(details.AssetTypeId)}</span></p>
+  <p><span style="color: #000000; font-weight: bold;"><strong>Is Limited:</strong> ${details.IsLimited ? "✅" : "❌"}</span></p>
+  <p><span style="color: #000000; font-weight: bold;"><strong>Is Limited Unique:</strong> ${details.IsLimitedUnique ? "✅" : "❌"}</span></p>
+`;
   } catch (error) {
     console.error(error);
     resultDiv.innerHTML = "❌ Failed to fetch item. Make sure the Asset ID is valid.";
