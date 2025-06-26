@@ -42,10 +42,10 @@ export default function Admin() {
   const [robuxEditId, setRobuxEditId] = useState(null);
   const [isRobuxSubmitting, setIsRobuxSubmitting] = useState(false);
 
-  // Limited item listing state
-  const [limitedAssetId, setLimitedAssetId] = useState('');
-  const [limitedContactLink, setLimitedContactLink] = useState('');
-  const [limitedResult, setLimitedResult] = useState(null);
+  // Limited listing state
+  const [limitedListings, setLimitedListings] = useState([]);
+  const [limitedItem, setLimitedItem] = useState(null);
+  const [contactLink, setContactLink] = useState('');
 
   const isSeller = !!seller;
 
@@ -58,6 +58,7 @@ export default function Admin() {
     if (isAuthorized || isSeller) {
       fetchAccounts();
       fetchRobuxListings();
+      fetchLimitedListings();
     }
   }, [isAuthorized, seller]);
 
@@ -93,256 +94,120 @@ export default function Admin() {
     }
   };
 
-  const handleAdminLogin = async () => {
+  const fetchLimitedListings = async () => {
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: adminPassword }),
-      });
-
-      if (response.ok) {
-        setIsAuthorized(true);
-        Swal.fire('Access Granted', 'Welcome admin!', 'success');
-      } else {
-        Swal.fire('Access Denied', 'Invalid admin password!', 'error');
+      const res = await fetch('/api/limited');
+      const data = await res.json();
+      if (res.ok) {
+        if (isSeller) {
+          const username = seller?.username;
+          setLimitedListings(data.limitedList.filter(item => item.seller === username));
+        } else {
+          setLimitedListings(data.limitedList);
+        }
       }
     } catch (error) {
-      console.error(error);
-      Swal.fire('Error', 'Failed to login!', 'error');
+      console.error('Failed to fetch limited listings:', error);
     }
   };
 
-  const handleSellerLogin = async (e) => {
-    e.preventDefault();
-    const { username, password } = sellerLogin;
+  const getAssetTypeName = (typeId) => {
+    const types = {
+      1: "Image", 2: "T-Shirt", 3: "Audio", 4: "Mesh", 8: "Hat", 11: "Shirt", 12: "Pants",
+      18: "Face", 19: "Gear", 32: "Package", 41: "Hair Accessory", 42: "Face Accessory",
+      43: "Neck Accessory", 44: "Shoulder Accessory", 45: "Front Accessory",
+      46: "Back Accessory", 47: "Waist Accessory"
+    };
+    return types[typeId] || "Unknown";
+  };
 
-    if (!username || !password) {
-      Swal.fire('Missing Fields', 'Please enter both username and password.', 'warning');
-      return;
+  const fetchLimitedItemDetails = async () => {
+    const assetId = document.getElementById("assetIdInput").value;
+    if (!assetId) return Swal.fire('Missing Field', 'Please enter an Asset ID', 'warning');
+
+    try {
+      const detailsRes = await fetch(`https://economy.roproxy.com/v2/assets/${assetId}/details`);
+      const details = await detailsRes.json();
+
+      const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/assets?assetIds=${assetId}&size=420x420&format=Png`);
+      const thumbData = await thumbRes.json();
+      const thumbnail = thumbData.data[0]?.imageUrl || "";
+
+      const resalePrice = details.CollectiblesItemDetails?.CollectibleLowestResalePrice;
+      const resaleFormatted = resalePrice ? `${resalePrice.toLocaleString()} Robux` : "Offsale";
+      const resalePHP = resalePrice ? `₱${(resalePrice * 0.15).toLocaleString()}` : "N/A";
+
+      const item = {
+        assetId,
+        name: details.Name,
+        image: thumbnail,
+        creator: details.Creator?.Name || "N/A",
+        type: getAssetTypeName(details.AssetTypeId),
+        resalePrice: resaleFormatted,
+        resalePricePHP: resalePHP,
+        isLimited: details.IsLimited || false,
+        isLimitedUnique: details.IsLimitedUnique || false
+      };
+
+      setLimitedItem(item);
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'Failed to fetch item. Make sure the Asset ID is valid.', 'error');
+    }
+  };const handleSaveLimitedItem = async () => {
+    if (!limitedItem || !contactLink) {
+      return Swal.fire('Missing Fields', 'Please fetch item and enter contact link.', 'warning');
     }
 
     try {
-      const response = await fetch('/api/seller-login', {
+      const res = await fetch('/api/limited', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          ...limitedItem,
+          contact: contactLink,
+          seller: seller?.username || 'admin'
+        })
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        Swal.fire('Welcome!', 'Seller login successful', 'success');
-        const sellerData = { username: username.trim() };
-        localStorage.setItem('seller', JSON.stringify(sellerData));
-        setSeller(sellerData);
+      if (res.ok) {
+        Swal.fire('Success', 'Limited item listing saved!', 'success');
+        setLimitedItem(null);
+        setContactLink('');
+        fetchLimitedListings();
       } else {
-        Swal.fire('Login Failed', data.error || 'Invalid login', 'error');
+        Swal.fire('Error', 'Failed to save limited item listing.', 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'Something went wrong while saving.', 'error');
+    }
+  };
+
+  const handleDeleteLimited = async (id) => {
+    if (!window.confirm('Delete this limited item listing?')) return;
+
+    try {
+      const res = await fetch('/api/limited', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+
+      if (res.ok) {
+        Swal.fire('Deleted!', 'Listing removed.', 'success');
+        fetchLimitedListings();
+      } else {
+        Swal.fire('Error', 'Failed to delete listing.', 'error');
       }
     } catch (err) {
       console.error(err);
-      Swal.fire('Error', 'Something went wrong', 'error');
+      Swal.fire('Error', 'Unexpected error deleting listing.', 'error');
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('seller');
-    setSeller(null);
-    setIsAuthorized(false);
-    setAccounts([]);
-    setRobuxListings([]);
-    Swal.fire('Logged out', 'You have been logged out.', 'success');
-  };const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-
-    const requiredFields = [
-      'username', 'price', 'robuxBalance', 'limitedItems', 'gamepass', 'facebookLink'
-    ];
-
-    for (const field of requiredFields) {
-      if (!formData[field] || formData[field].trim() === '') {
-        Swal.fire('Missing Field', `Please fill out the "${field}" field.`, 'warning');
-        setIsSubmitting(false);
-        return;
-      }
-    }
-
-    const payload = {
-      ...(editMode ? { id: editId } : {}),
-      ...formData,
-      ...(isSeller ? { seller: seller.username } : {}),
-    };
-
-    try {
-      const response = await fetch('/api/accounts', {
-        method: editMode ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(isSeller && { Authorization: seller.username })
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        Swal.fire('Success', editMode ? 'Account updated!' : 'Account added!', 'success');
-        setFormData({
-          username: '',
-          totalSummary: '',
-          email: 'Verified',
-          price: '',
-          mop: 'Gcash',
-          robuxBalance: '',
-          limitedItems: '',
-          inventory: 'Public',
-          gamepass: '',
-          accountType: 'Global Account',
-          premium: 'False',
-          facebookLink: ''
-        });
-        setEditMode(false);
-        setEditId(null);
-        fetchAccounts();
-      } else if (response.status === 409) {
-        Swal.fire('Error', 'Username already exists', 'error');
-      } else {
-        Swal.fire('Error', 'Failed to save account', 'error');
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire('Error', 'An unexpected error occurred', 'error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this account?')) return;
-
-    try {
-      const res = await fetch('/api/accounts', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-
-      if (res.ok) {
-        Swal.fire('Deleted!', 'Account deleted successfully.', 'success');
-        fetchAccounts();
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire('Error', 'Failed to delete account', 'error');
-    }
-  };
-
-  const handleEdit = (account) => {
-    setFormData({
-      username: account.username || '',
-      totalSummary: account.totalSummary || '',
-      email: account.email || 'Verified',
-      price: account.price || '',
-      mop: account.mop || 'Gcash',
-      robuxBalance: account.robuxBalance || '',
-      limitedItems: account.limitedItems || '',
-      inventory: account.inventory || 'Public',
-      gamepass: account.gamepass || '',
-      accountType: account.accountType || 'Global Account',
-      premium: account.premium || 'False',
-      facebookLink: account.facebookLink || ''
-    });
-    setEditMode(true);
-    setEditId(account.id);
-  };
-
-  const handleRobuxChange = (e) => {
-    const { name, value } = e.target;
-    setRobuxFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleRobuxSubmit = async (e) => {
-    e.preventDefault();
-    if (isRobuxSubmitting) return;
-    setIsRobuxSubmitting(true);
-
-    const { amount, via, price, contact } = robuxFormData;
-
-    if (!amount.trim() || !via.trim() || !price.trim() || !contact.trim()) {
-      Swal.fire('Missing Fields', 'Please fill out all Robux listing fields.', 'warning');
-      setIsRobuxSubmitting(false);
-      return;
-    }
-
-    const payload = {
-      ...(robuxEditMode ? { id: robuxEditId } : {}),
-      amount,
-      via,
-      price,
-      contact,
-      seller: seller?.username || 'admin'
-    };
-
-    try {
-      const method = robuxEditMode ? 'PUT' : 'POST';
-      const res = await fetch('/api/robux', {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (res.ok) {
-        Swal.fire('Success', robuxEditMode ? 'Robux listing updated!' : 'Robux listing added!', 'success');
-        setRobuxFormData({ amount: '', via: '', price: '', contact: '' });
-        setRobuxEditMode(false);
-        setRobuxEditId(null);
-        fetchRobuxListings();
-      } else {
-        Swal.fire('Error', 'Failed to save Robux listing.', 'error');
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire('Error', 'An unexpected error occurred.', 'error');
-    } finally {
-      setIsRobuxSubmitting(false);
-    }
-  };
-
-  const handleRobuxDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this Robux listing?')) return;
-
-    try {
-      const res = await fetch('/api/robux', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-
-      if (res.ok) {
-        Swal.fire('Deleted', 'Robux listing deleted.', 'success');
-        fetchRobuxListings();
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire('Error', 'Failed to delete Robux listing.', 'error');
-    }
-  };
-
-  const handleRobuxEdit = (listing) => {
-    setRobuxFormData({
-      amount: listing.amount || '',
-      via: listing.via || '',
-      price: listing.price || '',
-      contact: listing.contact || ''
-    });
-    setRobuxEditMode(true);
-    setRobuxEditId(listing.id);
-  };if (!isAuthorized && !seller) {
+  // UI RETURN STARTS
+  if (!isAuthorized && !seller) {
     return (
       <div className="container" style={{ padding: '20px' }}>
         <h2 style={{ color: 'white' }}>Admin Login</h2>
@@ -391,16 +256,8 @@ export default function Admin() {
         </button>
       </h2>
 
-      {/* === FORM TOGGLE BUTTONS === */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '15px',
-          marginBottom: '30px',
-          flexWrap: 'wrap'
-        }}
-      >
+      {/* FORM NAVIGATION BUTTONS */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
         <button
           onClick={() => setFormType('account')}
           style={{
@@ -417,7 +274,6 @@ export default function Admin() {
         >
           ACCOUNT LISTING FORM
         </button>
-
         <button
           onClick={() => setFormType('robux')}
           style={{
@@ -430,7 +286,6 @@ export default function Admin() {
         >
           ROBUX LISTING FORM
         </button>
-
         <button
           onClick={() => setFormType('limited')}
           style={{
@@ -441,236 +296,24 @@ export default function Admin() {
             borderRadius: '5px'
           }}
         >
-          LIMITED ITEM LISTING
+          LIMITED LISTING FORM
         </button>
       </div>
 
-      {/* === ACCOUNT FORM SECTION === */}
-      {formType === 'account' && (
-        <>
-          <form onSubmit={handleSubmit}>
-            {[
-              ['Username', 'username'],
-              ['Total Summary', 'totalSummary'],
-              ['Price', 'price'],
-              ['Robux Balance', 'robuxBalance'],
-              ['Limited Items', 'limitedItems'],
-              ['Game with Gamepass', 'gamepass'],
-            ].map(([label, name]) => (
-              <div key={name} style={{ marginBottom: '10px' }}>
-                <label style={{ color: 'white' }}>{label}:</label>
-                <input type="text" name={name} value={formData[name]} onChange={handleChange} />
-              </div>
-            ))}
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Contact Link -FB-:</label>
-              <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Email:</label>
-              <select name="email" value={formData.email} onChange={handleChange}>
-                <option value="Verified">Verified</option>
-                <option value="Unverified">Unverified</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>MOP:</label>
-              <select name="mop" value={formData.mop} onChange={handleChange}>
-                <option value="Gcash">Gcash</option>
-                <option value="Paymaya">Paymaya</option>
-                <option value="Paypal">Paypal</option>
-                <option value="Others">Others</option>
-              </select>
-            </div><div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Inventory:</label>
-              <select name="inventory" value={formData.inventory} onChange={handleChange}>
-                <option value="Public">Public</option>
-                <option value="Private">Private</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Account Type:</label>
-              <select name="accountType" value={formData.accountType} onChange={handleChange}>
-                <option value="Global Account">GLOBAL</option>
-                <option value="Vietnam">VIETNAM</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Premium Status:</label>
-              <select name="premium" value={formData.premium} onChange={handleChange}>
-                <option value="True">True</option>
-                <option value="False">False</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                backgroundColor: '#FF0000',
-                color: 'white',
-                padding: '10px 15px',
-                border: 'none',
-                borderRadius: '5px'
-              }}
-            >
-              {isSubmitting ? 'Processing...' : editMode ? 'Update Account' : 'Add Account'}
-            </button>
-          </form>
-
-          <hr style={{ margin: '30px 0' }} />
-          <h3 style={{ color: 'white' }}>Account List</h3>
-          <input
-            type="text"
-            placeholder="Search Username"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ marginBottom: '10px' }}
-          />
-
-          {accounts
-            .filter(acc => acc.username.toLowerCase().includes(search.toLowerCase()))
-            .map(acc => (
-              <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', color: 'white' }}>
-                <strong>{acc.username}</strong> - ₱{acc.price}
-                <div>Account Age: {acc.age || 'N/A'} days</div>
-                <div style={{ marginTop: '5px' }}>
-                  <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>
-                    Edit
-                  </button>
-                  <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-        </>
-      )}
-
-      {/* === ROBUX FORM SECTION === */}
-      {formType === 'robux' && (
-        <>
-          <form onSubmit={handleRobuxSubmit} style={{ marginBottom: '20px' }}>
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Robux Amount:</label>
-              <input
-                type="number"
-                name="amount"
-                value={robuxFormData.amount}
-                onChange={handleRobuxChange}
-                required
-              />
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Method (e.g., Group Payout):</label>
-              <input
-                type="text"
-                name="via"
-                value={robuxFormData.via}
-                onChange={handleRobuxChange}
-                required
-              />
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Price (₱):</label>
-              <input
-                type="number"
-                name="price"
-                value={robuxFormData.price}
-                onChange={handleRobuxChange}
-                required
-                step="any"
-                min="0"
-              />
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Contact Link (Facebook, etc.):</label>
-              <input
-                type="url"
-                name="contact"
-                value={robuxFormData.contact}
-                onChange={handleRobuxChange}
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isRobuxSubmitting}
-              style={{
-                backgroundColor: '#2196F3',
-                color: 'white',
-                padding: '10px 15px',
-                border: 'none',
-                borderRadius: '5px'
-              }}
-            >
-              {isRobuxSubmitting ? 'Processing...' : robuxEditMode ? 'Update Robux Listing' : 'Add Robux Listing'}
-            </button>
-          </form>
-
-          <h3 style={{ color: 'white' }}>Robux Listings</h3>
-          {robuxListings.length === 0 && (
-            <p style={{ color: 'gray' }}>No robux listings found.</p>
-          )}
-
-          {robuxListings.map(listing => (
-            <div key={listing.id} style={{
-              border: '1px solid #ccc',
-              padding: '10px',
-              marginBottom: '10px',
-              color: 'white'
-            }}>
-              <strong>Robux:</strong> {listing.amount} <br />
-              <strong>Via:</strong> {listing.via} <br />
-              <strong>Price:</strong> ₱{listing.price} <br />
-              <strong>Contact:</strong> <a href={listing.contact} target="_blank" rel="noopener noreferrer" style={{ color: '#00c3ff' }}>{listing.contact}</a> <br />
-              <strong>Seller:</strong> {listing.seller}
-              <div style={{ marginTop: '5px' }}>
-                <button
-                  onClick={() => handleRobuxEdit(listing)}
-                  style={{ background: 'orange', color: 'white', marginRight: '10px' }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleRobuxDelete(listing.id)}
-                  style={{ background: 'red', color: 'white' }}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </>
-      )}
-
       {/* === LIMITED ITEM FORM SECTION === */}
       {formType === 'limited' && (
-        <div style={{ marginTop: '30px' }}>
-          <h2 style={{ color: 'white' }}>Limited Item Listing</h2>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ color: 'white' }}>Asset ID:</label>
-            <input type="text" id="assetIdInput" style={{ marginLeft: '10px' }} />
-          </div>
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ color: 'white' }}>Contact Link:</label>
-            <input type="text" id="contactLinkInput" style={{ marginLeft: '10px' }} placeholder="Facebook, Discord, etc." />
-          </div>
+        <div style={{ color: 'white', marginBottom: '40px' }}>
+          <h3 style={{ marginBottom: '15px' }}>Fetch Limited Item by Asset ID</h3>
+          <input
+            type="text"
+            id="assetIdInput"
+            placeholder="Enter Asset ID"
+            style={{ marginRight: '10px' }}
+          />
           <button
-            onClick={fetchLimitedItem}
+            onClick={fetchLimitedItemDetails}
             style={{
-              marginLeft: '0',
-              padding: '8px 20px',
+              padding: '5px 15px',
               backgroundColor: '#FFC107',
               border: 'none',
               color: 'black',
@@ -678,11 +321,133 @@ export default function Admin() {
               fontWeight: 'bold'
             }}
           >
-            Fetch Item Info
+            Fetch
           </button>
-          <div id="result" style={{ marginTop: '20px', color: 'white' }}></div>
+
+          {limitedItem && (
+            <div style={{
+              marginTop: '20px',
+              padding: '15px',
+              border: '1px solid #ccc',
+              borderRadius: '10px',
+              backgroundColor: '#1c1c1c'
+            }}>
+              <h3>{limitedItem.name}</h3>
+              <img src={limitedItem.image} alt="Item" style={{ maxWidth: '200px', borderRadius: '10px' }} />
+              <p><strong>Creator:</strong> {limitedItem.creator}</p>
+              <p><strong>Type:</strong> {limitedItem.type}</p>
+              <p><strong>Lowest Resale Price:</strong> {limitedItem.resalePrice}</p>
+              <p><strong>BM 150PHP/1000RBX:</strong> {limitedItem.resalePricePHP}</p>
+              <p><strong>Is Limited:</strong> {limitedItem.isLimited ? '✅ True' : '❌ False'}</p>
+              <p><strong>Is Limited Unique:</strong> {limitedItem.isLimitedUnique ? '✅ True' : '❌ False'}</p>
+
+              <div style={{ marginTop: '15px' }}>
+                <label>Contact Link:</label>
+                <input
+                  type="text"
+                  value={contactLink}
+                  onChange={e => setContactLink(e.target.value)}
+                  placeholder="Facebook, Discord etc."
+                  style={{ width: '100%', marginBottom: '10px' }}
+                />
+              </div>
+
+              <button
+                onClick={handleSaveLimitedItem}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  fontWeight: 'bold'
+                }}
+              >
+                Save Listing
+              </button>
+            </div>
+          )}
         </div>
-      )}</div>
+      )}{/* === DISPLAY LIMITED ITEM LISTINGS === */}
+      {formType === 'limited' && (
+        <div style={{ marginTop: '40px' }}>
+          <h3 style={{ color: 'white' }}>Saved Limited Listings</h3>
+          {limitedListings.length === 0 && (
+            <p style={{ color: 'gray' }}>No limited item listings found.</p>
+          )}
+
+          {limitedListings.map(listing => (
+            <div
+              key={listing.id}
+              style={{
+                border: '1px solid #ccc',
+                padding: '15px',
+                marginBottom: '15px',
+                borderRadius: '10px',
+                backgroundColor: '#1c1c1c',
+                color: 'white'
+              }}
+            >
+              <h3>{listing.name}</h3>
+              <img
+                src={listing.image}
+                alt={listing.name}
+                style={{ maxWidth: '200px', borderRadius: '10px', marginBottom: '10px' }}
+              />
+              <p><strong>Creator:</strong> {listing.creator}</p>
+              <p><strong>Type:</strong> {listing.type}</p>
+              <p><strong>Resale Price:</strong> {listing.resalePrice}</p>
+              <p><strong>Resale PHP:</strong> {listing.resalePricePHP}</p>
+              <p><strong>Is Limited:</strong> {listing.isLimited ? '✅ True' : '❌ False'}</p>
+              <p><strong>Is Limited Unique:</strong> {listing.isLimitedUnique ? '✅ True' : '❌ False'}</p>
+              <p><strong>Contact:</strong> <a href={listing.contact} target="_blank" rel="noreferrer" style={{ color: '#00c3ff' }}>{listing.contact}</a></p>
+              <p><strong>Seller:</strong> {listing.seller}</p>
+
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  onClick={() => {
+                    setLimitedItem({
+                      name: listing.name,
+                      creator: listing.creator,
+                      type: listing.type,
+                      resalePrice: listing.resalePrice,
+                      resalePricePHP: listing.resalePricePHP,
+                      isLimited: listing.isLimited,
+                      isLimitedUnique: listing.isLimitedUnique,
+                      image: listing.image
+                    });
+                    setContactLink(listing.contact);
+                    setEditId(listing.id);
+                  }}
+                  style={{
+                    background: 'orange',
+                    color: 'white',
+                    marginRight: '10px',
+                    border: 'none',
+                    padding: '8px 12px',
+                    borderRadius: '5px'
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteLimited(listing.id)}
+                  style={{
+                    background: 'red',
+                    color: 'white',
+                    border: 'none',
+                    padding: '8px 12px',
+                    borderRadius: '5px'
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -695,56 +460,141 @@ function getAssetTypeName(typeId) {
     46: "Back Accessory", 47: "Waist Accessory"
   };
   return types[typeId] || "Unknown";
-}
-
-async function fetchLimitedItem() {
-  const assetId = document.getElementById("assetIdInput").value;
-  const contactLink = document.getElementById("contactLinkInput").value;
-  const resultDiv = document.getElementById("result");
-
-  if (!assetId) {
-    resultDiv.innerHTML = `<p style="color: red;">Please enter an Asset ID</p>`;
+}// === FETCH LIMITED ITEM DETAILS FUNCTION ===
+const fetchLimitedItemDetails = async () => {
+  if (!assetIdInput.trim()) {
+    Swal.fire('Missing Field', 'Please enter an Asset ID.', 'warning');
     return;
   }
 
-  resultDiv.innerHTML = "Fetching...";
-
+  setFetchingItem(true);
   try {
-    const detailsRes = await fetch(`https://economy.roproxy.com/v2/assets/${assetId}/details`);
+    const detailsRes = await fetch(`https://economy.roproxy.com/v2/assets/${assetIdInput}/details`);
     const details = await detailsRes.json();
 
-    const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/assets?assetIds=${assetId}&size=420x420&format=Png`);
+    const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/assets?assetIds=${assetIdInput}&size=420x420&format=Png`);
     const thumbData = await thumbRes.json();
-    const thumbnail = thumbData.data[0]?.imageUrl || "";
+    const thumbnail = thumbData.data[0]?.imageUrl || '';
 
-    const resalePrice = details.CollectiblesItemDetails?.CollectibleLowestResalePrice;
-    const formattedResale = resalePrice
-      ? `${resalePrice.toLocaleString()} Robux`
-      : "Offsale";
+    const resale = details.CollectiblesItemDetails?.CollectibleLowestResalePrice || 0;
 
-    const resaleInPHP = resalePrice
-      ? `₱${(resalePrice * 0.15).toLocaleString()} PHP`
-      : "N/A";
+    setLimitedItem({
+      name: details.Name || 'Unknown',
+      creator: details.Creator?.Name || 'N/A',
+      type: getAssetTypeName(details.AssetTypeId),
+      resalePrice: resale ? `${resale.toLocaleString()} Robux` : 'Offsale',
+      resalePricePHP: resale ? `₱${(resale * 0.15).toLocaleString()} PHP` : 'N/A',
+      isLimited: details.IsLimited || false,
+      isLimitedUnique: details.IsLimitedUnique || false,
+      image: thumbnail
+    });
 
-    const sellerName = localStorage.getItem('seller')
-      ? JSON.parse(localStorage.getItem('seller')).username
-      : 'admin';
-
-    resultDiv.innerHTML = `
-      <h2>${details.Name}</h2>
-      <img src="${thumbnail}" alt="Item Thumbnail" style="max-width:200px; border-radius:10px;" />
-      <p><strong>Creator:</strong> ${details.Creator?.Name || "N/A"}</p>
-      <p><strong>Lowest Resale Price:</strong> ${formattedResale}</p>
-      <p><strong>BlackMarket 150PHP/1000RBX:</strong> ${resaleInPHP}</p>
-      <p><strong>Type:</strong> ${getAssetTypeName(details.AssetTypeId)}</p>
-      <p><strong>Is Limited:</strong> ${details.IsLimited ? "✅ True" : "❌ False"}</p>
-      <p><strong>Is Limited Unique:</strong> ${details.IsLimitedUnique ? "✅ True" : "❌ False"}</p>
-      <hr />
-      <p><strong>Contact Link:</strong> <a href="${contactLink}" target="_blank" rel="noopener noreferrer">${contactLink || "N/A"}</a></p>
-      <p><strong>Seller:</strong> ${sellerName}</p>
-    `;
+    Swal.fire('Item Fetched!', 'Limited item details have been loaded.', 'success');
   } catch (error) {
     console.error(error);
-    resultDiv.innerHTML = `<p style="color: red;">❌ Failed to fetch item. Make sure the Asset ID is valid.</p>`;
+    Swal.fire('Fetch Error', 'Failed to fetch item. Ensure the Asset ID is valid.', 'error');
+  } finally {
+    setFetchingItem(false);
   }
-}
+};
+
+// === DELETE HANDLER FOR LIMITED ITEM ===
+const handleDeleteLimited = async (id) => {
+  if (!window.confirm('Are you sure you want to delete this Limited Item listing?')) return;
+
+  try {
+    const res = await fetch('/api/limited', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+
+    if (res.ok) {
+      Swal.fire('Deleted', 'Limited item listing deleted.', 'success');
+      fetchLimitedListings();
+    } else {
+      Swal.fire('Error', 'Failed to delete listing.', 'error');
+    }
+  } catch (error) {
+    console.error(error);
+    Swal.fire('Error', 'An unexpected error occurred.', 'error');
+  }
+};
+
+// === GET SELLER USERNAME FROM LOCALSTORAGE ===
+const getSellerUsername = () => {
+  const data = localStorage.getItem('seller');
+  if (data) {
+    try {
+      const parsed = JSON.parse(data);
+      return parsed.username || 'admin';
+    } catch {
+      return 'admin';
+    }
+  }
+  return 'admin';
+};// === FETCH LIMITED LISTINGS ON LOAD ===
+useEffect(() => {
+  if (isAuthorized || isSeller) {
+    fetchLimitedListings();
+  }
+}, [isAuthorized, seller]);
+
+// === FETCH FROM API ===
+const fetchLimitedListings = async () => {
+  try {
+    const res = await fetch('/api/limited');
+    const data = await res.json();
+    if (res.ok) {
+      const user = seller?.username;
+      setLimitedListings(isSeller ? data.limitedList.filter(i => i.seller === user) : data.limitedList);
+    }
+  } catch (err) {
+    console.error('Fetch failed', err);
+  }
+};
+
+// === SUBMIT HANDLER FOR LIMITED ITEM FORM ===
+const handleLimitedSubmit = async (e) => {
+  e.preventDefault();
+  if (isLimitedSubmitting) return;
+  setIsLimitedSubmitting(true);
+
+  const payload = {
+    assetId: assetIdInput,
+    contact: limitedFormData.contact,
+    seller: getSellerUsername()
+  };
+
+  try {
+    const res = await fetch('/api/limited', {
+      method: limitedEditMode ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, ...(limitedEditMode && { id: limitedEditId }) })
+    });
+
+    if (res.ok) {
+      Swal.fire('Success', limitedEditMode ? 'Updated!' : 'Listing added!', 'success');
+      setAssetIdInput('');
+      setLimitedFormData({ contact: '' });
+      setLimitedEditMode(false);
+      setLimitedEditId(null);
+      fetchLimitedListings();
+    } else {
+      Swal.fire('Error', 'Failed to save listing.', 'error');
+    }
+  } catch (err) {
+    console.error(err);
+    Swal.fire('Error', 'Unexpected error', 'error');
+  } finally {
+    setIsLimitedSubmitting(false);
+  }
+};
+
+// === EDIT HANDLER FOR LIMITED ITEM ===
+const handleEditLimited = (item) => {
+  setAssetIdInput(item.assetId);
+  setLimitedFormData({ contact: item.contact });
+  setLimitedEditMode(true);
+  setLimitedEditId(item.id);
+};
