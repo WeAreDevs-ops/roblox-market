@@ -136,7 +136,7 @@ async function fetchLimitedItem() {
 
     resultDiv.innerHTML = `
   <h2 style="color: black; font-weight: bold;">${details.Name}</h2>
-  <img src="${thumbnail}" alt="Item Thumbnail" style="max-width: 300px; border-radius: 10px;" />
+  <img src="${thumbnail}" alt="Item Thumbnail" style="max-width: 300px; border-radius: 10px; display: block; margin: 0 auto;" />
   <p><span style="color: #000000; font-weight: bold;"><strong>Creator:</strong> ${details.Creator?.Name || "N/A"}</span></p>
   <p><span style="color: #000000; font-weight: bold;"><strong>Lowest Resale Price:</strong> ${formattedResale}</span></p>
   <p><span style="color: #000000; font-weight: bold;"><strong>BlackMarket:</strong> ${resaleInPHP}</span></p>
