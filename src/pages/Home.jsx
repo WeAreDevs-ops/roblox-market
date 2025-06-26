@@ -266,7 +266,7 @@ async function fetchLimitedItem() {
           
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2>🔍 Roblox Limited Item Checker</h2>
+    <h2 style={{ color: 'white' }}>Limited Item Checker</h2>
     <input
       id="assetIdInput"
       type="text"
@@ -295,7 +295,7 @@ async function fetchLimitedItem() {
       marginLeft: 'auto',
       marginRight: 'auto',
       borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.15)',
+      background: 'rgba(255, 255, 255, 0.85)',
       backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
       boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
@@ -375,7 +375,7 @@ async function fetchLimitedItem() {
                               
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: 'black' }}>Limited Item Checker</h2>
+    <h2 style={{ color: 'white' }}>Limited Item Checker</h2>
     <input
       id="assetIdInput"
       type="text"
@@ -405,8 +405,8 @@ async function fetchLimitedItem() {
       marginRight: 'auto',
       borderRadius: '20px',
       background: 'rgba(255, 255, 255, 0.85)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
       boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
       color: '#fff',
       textAlign: 'left'
@@ -440,7 +440,7 @@ async function fetchLimitedItem() {
       
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: 'black' }}>Limited Item Checker</h2>
+    <h2 style={{ color: 'white' }}>Limited Item Checker</h2>
     <input
       id="assetIdInput"
       type="text"
@@ -470,8 +470,8 @@ async function fetchLimitedItem() {
       marginRight: 'auto',
       borderRadius: '20px',
       background: 'rgba(255, 255, 255, 0.85)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
       boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
       color: '#fff',
       textAlign: 'left'
@@ -486,7 +486,7 @@ async function fetchLimitedItem() {
           
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: 'black' }}>Limited Item Checker</h2>
+    <h2 style={{ color: 'white' }}>Limited Item Checker</h2>
     <input
       id="assetIdInput"
       type="text"
@@ -516,8 +516,8 @@ async function fetchLimitedItem() {
       marginRight: 'auto',
       borderRadius: '20px',
       background: 'rgba(255, 255, 255, 0.85)',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
       boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
       color: '#fff',
       textAlign: 'left'
