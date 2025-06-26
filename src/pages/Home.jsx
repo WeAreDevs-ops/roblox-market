@@ -134,16 +134,17 @@ async function fetchLimitedItem() {
     const formattedResale = resalePrice ? `${resalePrice.toLocaleString()} Robux` : "Offsale";
     const resaleInPHP = resalePrice ? `₱${(resalePrice * 0.15).toLocaleString()} PHP` : "N/A";
 
-    resultDiv.innerHTML = `
-      <h2>${details.Name}</h2>
-      <img src="${thumbnail}" alt="Item Thumbnail" style="max-width: 300px; border-radius: 10px;" />
-      <p><strong>Creator:</strong> ${details.Creator?.Name || "N/A"}</p>
-      <p><strong>Lowest Resale Price:</strong> ${formattedResale}</p>
-      <p><strong>BlackMarket 150PHP/1000RBX:</strong> ${resaleInPHP}</p>
-      <p><strong>Type:</strong> ${getAssetTypeName(details.AssetTypeId)}</p>
-      <p><strong>Is Limited:</strong> ${details.IsLimited ? "✅ True" : "❌ False"}</p>
-      <p><strong>Is Limited Unique:</strong> ${details.IsLimitedUnique ? "✅ True" : "❌ False"}</p>
-    `;
+  resultDiv.innerHTML = `
+  <h2 style="color: black; font-weight: bold;">${details.Name}</h2>
+  <img src="${thumbnail}" alt="Item Thumbnail" style="max-width: 300px; border-radius: 10px;" />
+  <p><span style="color: #000000; font-weight: bold;"><strong>Creator:</strong> ${details.Creator?.Name || "N/A"}</span></p>
+  <p><span style="color: #000000; font-weight: bold;"><strong>Lowest Resale Price:</strong> ${formattedResale}</span></p>
+  <p><span style="color: #000000; font-weight: bold;"><strong>BlackMarket:</strong> ${resaleInPHP}</span></p>
+  <p><span style="color: #000000; font-weight: bold;"><strong>Type:</strong> ${getAssetTypeName(details.AssetTypeId)}</span></p>
+  <p><span style="color: #000000; font-weight: bold;"><strong>Is Limited:</strong> ${details.IsLimited ? "✅" : "❌"}</span></p>
+  <p><span style="color: #000000; font-weight: bold;"><strong>Is Limited Unique:</strong> ${details.IsLimitedUnique ? "✅" : "❌"}</span></p>
+`;
+    
   } catch (error) {
     console.error(error);
     resultDiv.innerHTML = "❌ Failed to fetch item. Make sure the Asset ID is valid.";
@@ -374,7 +375,7 @@ async function fetchLimitedItem() {
                               
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2>🔍 Roblox Limited Item Checker</h2>
+    <h2 style={{ color: 'black' }}>Limited Item Checker</h2>
     <input
       id="assetIdInput"
       type="text"
@@ -403,9 +404,9 @@ async function fetchLimitedItem() {
       marginLeft: 'auto',
       marginRight: 'auto',
       borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.15)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
+      background: 'rgba(255, 255, 255, 0.85)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
       boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
       color: '#fff',
       textAlign: 'left'
@@ -439,7 +440,7 @@ async function fetchLimitedItem() {
       
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2>🔍 Roblox Limited Item Checker</h2>
+    <h2 style={{ color: 'black' }}>Limited Item Checker</h2>
     <input
       id="assetIdInput"
       type="text"
@@ -468,9 +469,9 @@ async function fetchLimitedItem() {
       marginLeft: 'auto',
       marginRight: 'auto',
       borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.15)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
+      background: 'rgba(255, 255, 255, 0.85)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
       boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
       color: '#fff',
       textAlign: 'left'
@@ -485,7 +486,7 @@ async function fetchLimitedItem() {
           
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2>🔍 Roblox Limited Item Checker</h2>
+    <h2 style={{ color: 'black' }}>Limited Item Checker</h2>
     <input
       id="assetIdInput"
       type="text"
@@ -514,9 +515,9 @@ async function fetchLimitedItem() {
       marginLeft: 'auto',
       marginRight: 'auto',
       borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.15)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
+      background: 'rgba(255, 255, 255, 0.85)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
       boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
       color: '#fff',
       textAlign: 'left'
