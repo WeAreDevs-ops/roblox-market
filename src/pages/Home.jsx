@@ -266,7 +266,7 @@ async function fetchLimitedItem() {
           
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: 'white' }}>Limited Item Checker</h2>
+    <h2 style={{ color: 'white' }}>INPUT ASSET ID ONLY</h2>
     <input
       id="assetIdInput"
       type="text"
@@ -375,7 +375,7 @@ async function fetchLimitedItem() {
                               
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: 'white' }}>Limited Item Checker</h2>
+    <h2 style={{ color: 'white' }}>INPUT ASSET ID ONLY</h2>
     <input
       id="assetIdInput"
       type="text"
@@ -440,7 +440,7 @@ async function fetchLimitedItem() {
       
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: 'white' }}>Limited Item Checker</h2>
+    <h2 style={{ color: 'white' }}>INPUT ASSET ID ONLY</h2>
     <input
       id="assetIdInput"
       type="text"
@@ -486,7 +486,7 @@ async function fetchLimitedItem() {
           
 ) : viewType === 'limitedChecker' ? (
   <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: 'white' }}>Limited Item Checker</h2>
+    <h2 style={{ color: 'white' }}>INPUT ASSET ID ONLY</h2>
     <input
       id="assetIdInput"
       type="text"
