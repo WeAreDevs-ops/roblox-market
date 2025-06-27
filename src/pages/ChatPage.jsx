@@ -9,15 +9,6 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 
-// List of banned words/phrases (can be expanded)
-const BANNED_WORDS = [
-  'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'nigger', 
-  'whore', 'slut', 'dick', 'pussy', 'cock', 'fag', 'retard',
-  'sex', 'rape', 'porn', 'idiot', 'stupid', 'loser', 
-  'bastard', 'dumb', 'fool', 'jerk', 'scum', 'creep', 
-  'slut', 'tramp', 'skank', 'whore', 'pimp', 'freak'
-];
-
 export default function ChatPage() {
   const db = getFirestore();
   const messagesRef = collection(db, 'public_messages');
@@ -30,16 +21,6 @@ export default function ChatPage() {
   const [isUsernameLocked, setIsUsernameLocked] = useState(!!localStorage.getItem('chatUsername'));
   const bottomRef = useRef(null);
 
-  // Filter profanity in messages
-  const filterProfanity = (text) => {
-    return text.split(/\b/).map(word => {
-      const lowerWord = word.toLowerCase();
-      return BANNED_WORDS.some(badWord => lowerWord.includes(badWord))
-        ? '■'.repeat(word.length)
-        : word;
-    }).join('');
-  };
-
   // Initialize user
   useEffect(() => {
     if (!localStorage.getItem('guestId')) {
@@ -51,20 +32,15 @@ export default function ChatPage() {
     }
   }, []);
 
-  // Load messages with profanity filtering
+  // Load messages
   useEffect(() => {
     const q = query(messagesRef, orderBy('createdAt', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          text: filterProfanity(data.text),
-          displayName: filterProfanity(data.displayName),
-          isMe: data.userId === localStorage.getItem('guestId')
-        };
-      });
+      const msgs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        isMe: doc.data().userId === localStorage.getItem('guestId')
+      }));
       setMessages(msgs);
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 0);
     });
@@ -74,18 +50,14 @@ export default function ChatPage() {
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
-    
-    // Filter profanity before sending
-    const filteredMessage = filterProfanity(newMessage);
-    const filteredUsername = filterProfanity(username);
 
     try {
       await addDoc(messagesRef, {
-        text: filteredMessage,
+        text: newMessage,
         createdAt: serverTimestamp(),
-        displayName: filteredUsername,
+        displayName: username,
         userId: localStorage.getItem('guestId'),
-        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(filteredUsername)}&background=random&color=fff`
+        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`
       });
       setNewMessage('');
     } catch (error) {
@@ -99,11 +71,9 @@ export default function ChatPage() {
   };
 
   const saveUsername = () => {
-    const filteredUsername = filterProfanity(tempUsername.trim());
-    if (filteredUsername && !isUsernameLocked) {
-      setUsername(filteredUsername);
-      setTempUsername(filteredUsername);
-      localStorage.setItem('chatUsername', filteredUsername);
+    if (tempUsername.trim() && !isUsernameLocked) {
+      setUsername(tempUsername);
+      localStorage.setItem('chatUsername', tempUsername);
       setIsUsernameLocked(true);
     }
   };
@@ -123,10 +93,16 @@ export default function ChatPage() {
         textAlign: 'center',
         boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
       }}>
-        <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 'bold' }}>Marketplace Chat</h1>
-        <p style={{ margin: '5px 0 0', fontSize: '0.9rem', opacity: 0.9 }}>
-          Logged in as: <strong>{username}</strong>
-        </p>
+        <h1 style={{ 
+          margin: 0, 
+          fontSize: '1.4rem',
+          fontWeight: 'bold'
+        }}>Marketplace Chat</h1>
+        <p style={{ 
+          margin: '5px 0 0',
+          fontSize: '0.9rem',
+          opacity: 0.9
+        }}>Logged in as: <strong>{username}</strong></p>
       </div>
 
       {/* Messages Area */}
@@ -144,7 +120,7 @@ export default function ChatPage() {
             height: '100%',
             color: '#888'
           }}>
-            No messages yet. Say hello!
+            <p>No messages yet. Say hello!</p>
           </div>
         ) : (
           messages.map((msg) => (
@@ -182,9 +158,13 @@ export default function ChatPage() {
                   borderRadius: '15px',
                   boxShadow: msg.isMe ? 'none' : '0 1px 2px rgba(0,0,0,0.1)',
                   borderBottomRightRadius: msg.isMe ? '5px' : '15px',
-                  borderBottomLeftRadius: msg.isMe ? '15px' : '5px'
+                  borderBottomLeftRadius: msg.isMe ? '15px' : '5px',
+                  position: 'relative'
                 }}>
-                  <p style={{ margin: 0, fontSize: '0.95rem' }}>{msg.text}</p>
+                  <p style={{ 
+                    margin: 0,
+                    fontSize: '0.95rem'
+                  }}>{msg.text}</p>
                 </div>
               </div>
               
@@ -199,9 +179,10 @@ export default function ChatPage() {
                   color: msg.isMe ? '#7DC387' : '#666'
                 }}>
                   {!msg.isMe && (
-                    <span style={{ fontWeight: '600', marginRight: '5px' }}>
-                      {msg.displayName}
-                    </span>
+                    <span style={{ 
+                      fontWeight: '600',
+                      marginRight: '5px'
+                    }}>{msg.displayName}</span>
                   )}
                   {formatTime(msg.createdAt)}
                 </span>
@@ -229,7 +210,11 @@ export default function ChatPage() {
             color: '#555',
             whiteSpace: 'nowrap'
           }}>Your Name:</label>
-          <div style={{ display: 'flex', flex: 1, gap: '10px' }}>
+          <div style={{
+            display: 'flex',
+            flex: 1,
+            gap: '10px'
+          }}>
             <input
               type="text"
               value={isUsernameLocked ? username : tempUsername}
@@ -266,7 +251,10 @@ export default function ChatPage() {
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{
+          display: 'flex',
+          gap: '10px'
+        }}>
           <input
             type="text"
             value={newMessage}
@@ -291,7 +279,8 @@ export default function ChatPage() {
               border: 'none',
               borderRadius: '20px',
               fontWeight: '600',
-              cursor: isUsernameLocked ? 'pointer' : 'not-allowed'
+              cursor: isUsernameLocked ? 'pointer' : 'not-allowed',
+              transition: 'background 0.2s'
             }}
           >
             Send
@@ -300,5 +289,5 @@ export default function ChatPage() {
       </form>
     </div>
   );
-      }
-                
+              }
+            
