@@ -44,7 +44,7 @@
   color: '#333',
   textAlign: 'center',
   marginBottom: '20px'
-  }}>ðŸ“ Register as a Seller</h2>
+  }}>🧾Register as a Seller</h2>
   <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
   <input
   name="username"
