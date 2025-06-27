@@ -9,6 +9,15 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 
+// List of banned words/phrases (can be expanded)
+const BANNED_WORDS = [
+  'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'nigger', 
+  'whore', 'slut', 'dick', 'pussy', 'cock', 'fag', 'retard',
+  'sex', 'rape', 'porn', 'idiot', 'stupid', 'loser', 
+  'bastard', 'dumb', 'fool', 'jerk', 'scum', 'creep', 
+  'tramp', 'skank', 'pimp', 'freak'
+];
+
 export default function ChatPage() {
   const db = getFirestore();
   const messagesRef = collection(db, 'public_messages');
@@ -47,9 +56,19 @@ export default function ChatPage() {
     return () => unsubscribe();
   }, []);
 
+  const containsBannedWords = (text) => {
+    return BANNED_WORDS.some(badWord => text.toLowerCase().includes(badWord));
+  };
+
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
+
+    // Check for banned words
+    if (containsBannedWords(newMessage)) {
+      alert("Your message contains blocked words. Please revise your message.");
+      return;
+    }
 
     try {
       await addDoc(messagesRef, {
@@ -289,5 +308,5 @@ export default function ChatPage() {
       </form>
     </div>
   );
-              }
-            
+      }
+      
