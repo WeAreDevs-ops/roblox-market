@@ -19,7 +19,7 @@ export default function ChatPage() {
   );
   const bottomRef = useRef(null);
 
-  // Set guest ID and save username
+  // Initialize user
   useEffect(() => {
     if (!localStorage.getItem('guestId')) {
       localStorage.setItem('guestId', `guest_${Math.random().toString(36).substr(2, 9)}`);
@@ -27,7 +27,7 @@ export default function ChatPage() {
     localStorage.setItem('chatUsername', username);
   }, [username]);
 
-  // Real-time messages
+  // Load messages
   useEffect(() => {
     const q = query(messagesRef, orderBy('createdAt', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -52,7 +52,7 @@ export default function ChatPage() {
         createdAt: serverTimestamp(),
         displayName: username,
         userId: localStorage.getItem('guestId'),
-        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=7DC387&color=fff`
+        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`
       });
       setNewMessage('');
     } catch (error) {
@@ -66,57 +66,113 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header - Your exact previous design */}
-      <div className="bg-[#7DC387] text-white p-4 shadow-md">
-        <h1 className="text-xl font-bold">Marketplace Chat</h1>
-        <p className="text-sm opacity-90">
-          Logged in as <span className="font-semibold">{username}</span>
-        </p>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100vh',
+      backgroundColor: '#f5f7fa'
+    }}>
+      {/* Header */}
+      <div style={{
+        backgroundColor: '#7DC387',
+        color: 'white',
+        padding: '15px',
+        textAlign: 'center',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+      }}>
+        <h1 style={{ 
+          margin: 0, 
+          fontSize: '1.4rem',
+          fontWeight: 'bold'
+        }}>Marketplace Chat</h1>
+        <p style={{ 
+          margin: '5px 0 0',
+          fontSize: '0.9rem',
+          opacity: 0.9
+        }}>Logged in as: <strong>{username}</strong></p>
       </div>
 
-      {/* Messages Area - Your beautiful bubble design */}
-      <div className="flex-1 overflow-y-auto p-4" style={{ background: 'linear-gradient(180deg, #f5f7fa 0%, #eef2f5 100%)' }}>
+      {/* Messages Area */}
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '15px',
+        background: 'linear-gradient(180deg, #f5f7fa 0%, #eef2f5 100%)'
+      }}>
         {messages.length === 0 ? (
-          <div className="flex justify-center items-center h-full text-gray-500">
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+            color: '#888'
+          }}>
             No messages yet. Say hello!
           </div>
         ) : (
           messages.map((msg) => (
             <div 
               key={msg.id} 
-              className={`mb-4 flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}
+              style={{
+                marginBottom: '15px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: msg.isMe ? 'flex-end' : 'flex-start'
+              }}
             >
-              {/* User Avatar & Name */}
-              {!msg.isMe && (
-                <div className="mr-2 flex-shrink-0">
-                  <img 
-                    src={msg.photoURL} 
-                    alt={msg.displayName} 
-                    className="w-8 h-8 rounded-full" 
-                  />
-                </div>
-              )}
-              
-              {/* Message Bubble - Your original styling */}
-              <div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-end',
+                maxWidth: '80%'
+              }}>
                 {!msg.isMe && (
-                  <span className="text-xs font-semibold text-gray-600 block mb-1">
-                    {msg.displayName}
-                  </span>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    backgroundColor: '#ddd',
+                    backgroundImage: `url(${msg.photoURL})`,
+                    backgroundSize: 'cover',
+                    marginRight: '10px',
+                    flexShrink: 0
+                  }} />
                 )}
-                <div className={`relative max-w-xs mx-2 inline-block rounded-xl p-3 ${
-                  msg.isMe 
-                    ? 'bg-[#7DC387] text-white rounded-br-none' 
-                    : 'bg-white text-gray-800 rounded-bl-none shadow'
-                }`}>
-                  <p className="text-sm">{msg.text}</p>
-                  <span className={`absolute -bottom-4 text-xs ${
-                    msg.isMe ? 'text-[#7DC387] right-2' : 'text-gray-500 left-2'
-                  }`}>
-                    {formatTime(msg.createdAt)}
-                  </span>
+                
+                <div style={{
+                  backgroundColor: msg.isMe ? '#7DC387' : 'white',
+                  color: msg.isMe ? 'white' : '#333',
+                  padding: '10px 15px',
+                  borderRadius: '15px',
+                  boxShadow: msg.isMe ? 'none' : '0 1px 2px rgba(0,0,0,0.1)',
+                  borderBottomRightRadius: msg.isMe ? '5px' : '15px',
+                  borderBottomLeftRadius: msg.isMe ? '15px' : '5px',
+                  position: 'relative'
+                }}>
+                  <p style={{ 
+                    margin: 0,
+                    fontSize: '0.95rem'
+                  }}>{msg.text}</p>
                 </div>
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginTop: '5px',
+                marginLeft: msg.isMe ? '0' : '42px'
+              }}>
+                <span style={{
+                  fontSize: '0.75rem',
+                  color: msg.isMe ? '#7DC387' : '#666'
+                }}>
+                  {!msg.isMe && (
+                    <span style={{ 
+                      fontWeight: '600',
+                      marginRight: '5px'
+                    }}>{msg.displayName}</span>
+                  )}
+                  {formatTime(msg.createdAt)}
+                </span>
               </div>
             </div>
           ))
@@ -124,30 +180,68 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input Area - Your exact previous layout */}
-      <form onSubmit={sendMessage} className="bg-white border-t p-4">
-        <div className="flex items-center mb-2">
-          <span className="text-sm text-gray-600 mr-2">Name:</span>
+      {/* Input Area */}
+      <form onSubmit={sendMessage} style={{
+        backgroundColor: 'white',
+        borderTop: '1px solid #e1e4e8',
+        padding: '15px'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          marginBottom: '10px'
+        }}>
+          <label style={{
+            fontSize: '0.9rem',
+            color: '#555',
+            marginRight: '10px'
+          }}>Name:</label>
           <input
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="flex-1 border rounded px-3 py-1 text-sm"
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '20px',
+              fontSize: '0.9rem',
+              outline: 'none'
+            }}
             maxLength={20}
           />
         </div>
-        <div className="flex gap-2">
+        <div style={{
+          display: 'flex',
+          gap: '10px'
+        }}>
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type a message..."
-            className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#7DC387]"
+            style={{
+              flex: 1,
+              padding: '12px 15px',
+              border: '1px solid #ddd',
+              borderRadius: '20px',
+              fontSize: '1rem',
+              outline: 'none'
+            }}
           />
           <button
             type="submit"
             disabled={!newMessage.trim()}
-            className="bg-[#7DC387] text-white rounded-full px-4 py-2 disabled:opacity-50 hover:bg-[#6bb077] transition"
+            style={{
+              padding: '0 20px',
+              backgroundColor: '#7DC387',
+              color: 'white',
+              border: 'none',
+              borderRadius: '20px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'background 0.2s'
+            }}
           >
             Send
           </button>
@@ -155,4 +249,5 @@ export default function ChatPage() {
       </form>
     </div>
   );
-      }
+              }
+            
