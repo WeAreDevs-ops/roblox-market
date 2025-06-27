@@ -12,7 +12,10 @@ import {
 // List of banned words/phrases (can be expanded)
 const BANNED_WORDS = [
   'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'nigger', 
-  'whore', 'slut', 'dick', 'pussy', 'cock', 'fag', 'retard'
+  'whore', 'slut', 'dick', 'pussy', 'cock', 'fag', 'retard',
+  'sex', 'rape', 'porn', 'idiot', 'stupid', 'loser', 
+  'bastard', 'dumb', 'fool', 'jerk', 'scum', 'creep', 
+  'slut', 'tramp', 'skank', 'whore', 'pimp', 'freak'
 ];
 
 export default function ChatPage() {
@@ -297,5 +300,5 @@ export default function ChatPage() {
       </form>
     </div>
   );
-          }
-          
+      }
+                
