@@ -17,6 +17,7 @@ export default function ChatPage() {
   const [username, setUsername] = useState(
     localStorage.getItem('chatUsername') || `Guest${Math.floor(Math.random() * 1000)}`
   );
+  const [isUsernameLocked, setIsUsernameLocked] = useState(!!localStorage.getItem('chatUsername'));
   const bottomRef = useRef(null);
 
   // Initialize user
@@ -24,8 +25,11 @@ export default function ChatPage() {
     if (!localStorage.getItem('guestId')) {
       localStorage.setItem('guestId', `guest_${Math.random().toString(36).substr(2, 9)}`);
     }
-    localStorage.setItem('chatUsername', username);
-  }, [username]);
+    // Lock the username if it's already set
+    if (isUsernameLocked) {
+      localStorage.setItem('chatUsername', username);
+    }
+  }, [username, isUsernameLocked]);
 
   // Load messages
   useEffect(() => {
@@ -63,6 +67,19 @@ export default function ChatPage() {
   const formatTime = (timestamp) => {
     if (!timestamp?.toDate) return 'now';
     return timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const handleUsernameChange = (e) => {
+    if (!isUsernameLocked) {
+      setUsername(e.target.value);
+    }
+  };
+
+  const lockUsername = () => {
+    if (!isUsernameLocked) {
+      localStorage.setItem('chatUsername', username);
+      setIsUsernameLocked(true);
+    }
   };
 
   return (
@@ -199,7 +216,8 @@ export default function ChatPage() {
           <input
             type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={handleUsernameChange}
+            onBlur={lockUsername} // Lock username on blur
             style={{
               flex: 1,
               padding: '8px 12px',
@@ -209,6 +227,7 @@ export default function ChatPage() {
               outline: 'none'
             }}
             maxLength={20}
+            disabled={isUsernameLocked} // Disable input if locked
           />
         </div>
         <div style={{
@@ -249,5 +268,4 @@ export default function ChatPage() {
       </form>
     </div>
   );
-              }
-            
+          }
