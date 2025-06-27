@@ -14,9 +14,10 @@ export default function ChatPage() {
   const messagesRef = collection(db, 'public_messages');
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [username, setUsername] = useState(
+  const [tempUsername, setTempUsername] = useState(
     localStorage.getItem('chatUsername') || `Guest${Math.floor(Math.random() * 1000)}`
   );
+  const [username, setUsername] = useState(localStorage.getItem('chatUsername') || '');
   const [isUsernameLocked, setIsUsernameLocked] = useState(!!localStorage.getItem('chatUsername'));
   const bottomRef = useRef(null);
 
@@ -25,11 +26,11 @@ export default function ChatPage() {
     if (!localStorage.getItem('guestId')) {
       localStorage.setItem('guestId', `guest_${Math.random().toString(36).substr(2, 9)}`);
     }
-    // Lock the username if it's already set
-    if (isUsernameLocked) {
-      localStorage.setItem('chatUsername', username);
+    if (!localStorage.getItem('chatUsername')) {
+      setUsername(`Guest${Math.floor(Math.random() * 1000)}`);
+      setTempUsername(`Guest${Math.floor(Math.random() * 1000)}`);
     }
-  }, [username, isUsernameLocked]);
+  }, []);
 
   // Load messages
   useEffect(() => {
@@ -69,15 +70,10 @@ export default function ChatPage() {
     return timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const handleUsernameChange = (e) => {
-    if (!isUsernameLocked) {
-      setUsername(e.target.value);
-    }
-  };
-
-  const lockUsername = () => {
-    if (!isUsernameLocked) {
-      localStorage.setItem('chatUsername', username);
+  const saveUsername = () => {
+    if (tempUsername.trim() && !isUsernameLocked) {
+      setUsername(tempUsername);
+      localStorage.setItem('chatUsername', tempUsername);
       setIsUsernameLocked(true);
     }
   };
@@ -124,7 +120,7 @@ export default function ChatPage() {
             height: '100%',
             color: '#888'
           }}>
-            No messages yet. Say hello!
+            <p>No messages yet. Say hello!</p>
           </div>
         ) : (
           messages.map((msg) => (
@@ -206,29 +202,54 @@ export default function ChatPage() {
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          marginBottom: '10px'
+          marginBottom: '10px',
+          gap: '10px'
         }}>
           <label style={{
             fontSize: '0.9rem',
             color: '#555',
-            marginRight: '10px'
-          }}>Name:</label>
-          <input
-            type="text"
-            value={username}
-            onChange={handleUsernameChange}
-            onBlur={lockUsername} // Lock username on blur
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              border: '1px solid #ddd',
-              borderRadius: '20px',
-              fontSize: '0.9rem',
-              outline: 'none'
-            }}
-            maxLength={20}
-            disabled={isUsernameLocked} // Disable input if locked
-          />
+            whiteSpace: 'nowrap'
+          }}>Your Name:</label>
+          <div style={{
+            display: 'flex',
+            flex: 1,
+            gap: '10px'
+          }}>
+            <input
+              type="text"
+              value={isUsernameLocked ? username : tempUsername}
+              onChange={(e) => !isUsernameLocked && setTempUsername(e.target.value)}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                border: '1px solid #ddd',
+                borderRadius: '20px',
+                fontSize: '0.9rem',
+                outline: 'none',
+                backgroundColor: isUsernameLocked ? '#f5f5f5' : 'white'
+              }}
+              maxLength={20}
+              disabled={isUsernameLocked}
+            />
+            {!isUsernameLocked && (
+              <button
+                type="button"
+                onClick={saveUsername}
+                style={{
+                  padding: '0 15px',
+                  backgroundColor: '#7DC387',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '20px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Save
+              </button>
+            )}
+          </div>
         </div>
         <div style={{
           display: 'flex',
@@ -250,15 +271,15 @@ export default function ChatPage() {
           />
           <button
             type="submit"
-            disabled={!newMessage.trim()}
+            disabled={!newMessage.trim() || !isUsernameLocked}
             style={{
               padding: '0 20px',
-              backgroundColor: '#7DC387',
+              backgroundColor: isUsernameLocked ? '#7DC387' : '#cccccc',
               color: 'white',
               border: 'none',
               borderRadius: '20px',
               fontWeight: '600',
-              cursor: 'pointer',
+              cursor: isUsernameLocked ? 'pointer' : 'not-allowed',
               transition: 'background 0.2s'
             }}
           >
@@ -268,4 +289,5 @@ export default function ChatPage() {
       </form>
     </div>
   );
-          }
+              }
+            
