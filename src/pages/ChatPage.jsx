@@ -15,7 +15,10 @@ const BANNED_WORDS = [
   'whore', 'slut', 'dick', 'pussy', 'cock', 'fag', 'retard',
   'sex', 'rape', 'porn', 'idiot', 'stupid', 'loser', 
   'bastard', 'dumb', 'fool', 'jerk', 'scum', 'creep', 
-  'tramp', 'skank', 'pimp', 'freak'
+  'tramp', 'skank', 'pimp', 'freak', 'iyot', 'bobo', 'bbo', 'fuckyou',
+  'fuck you', 'bold', 'putangina', 'puta', 'pota', 'p0ta', 'tangina', 'tanginamo',
+  'wtf', 'what the fuck', 'yw', 'yawa', 'nudes', 'vcs', 'tanga', 'tsnga', 't4nga',
+   
 ];
 
 export default function ChatPage() {
