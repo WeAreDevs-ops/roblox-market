@@ -8,35 +8,33 @@ import {
   onSnapshot,
   serverTimestamp 
 } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
 
 export default function ChatPage() {
-  // Firebase Refs
   const db = getFirestore();
-  const auth = getAuth();
-  const messagesRef = collection(db, 'messages');
-  
-  // State
+  const messagesRef = collection(db, 'public_messages'); // Changed collection name
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState('Guest'); // Default username
   const bottomRef = useRef(null);
+
+  // Auto-generate a random guest ID if not set
+  useEffect(() => {
+    if (!localStorage.getItem('guestId')) {
+      localStorage.setItem('guestId', `guest_${Math.random().toString(36).substr(2, 9)}`);
+    }
+  }, []);
 
   // Fetch messages in real-time
   useEffect(() => {
-    setLoading(true);
     const q = query(messagesRef, orderBy('createdAt', 'asc'));
-    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
       setMessages(msgs);
-      setLoading(false);
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -45,45 +43,45 @@ export default function ChatPage() {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
-    const { uid, displayName, photoURL, email } = auth.currentUser;
-    
     try {
       await addDoc(messagesRef, {
         text: newMessage,
         createdAt: serverTimestamp(),
-        uid,
-        displayName: displayName || email?.split('@')[0] || 'Anonymous',
-        photoURL: photoURL || ''
+        displayName: username || 'Guest',
+        userId: localStorage.getItem('guestId') || 'unknown'
       });
       setNewMessage('');
     } catch (error) {
-      console.error("Error sending message: ", error);
+      console.error("Error sending message:", error);
     }
-  };
-
-  // Format timestamp
-  const formatTime = (timestamp) => {
-    if (!timestamp?.toDate) return '';
-    return timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-indigo-600 p-4 text-white">
-        <h1 className="text-xl font-bold">Marketplace Chat</h1>
-        <p className="text-sm opacity-80">
-          {auth.currentUser?.displayName || auth.currentUser?.email}
+      <div className="bg-blue-600 p-4 text-white">
+        <h1 className="text-xl font-bold">Public Marketplace Chat</h1>
+        <p className="text-sm opacity-90">
+          Everyone can chat - no login required
         </p>
+      </div>
+
+      {/* Username Input */}
+      <div className="bg-white p-3 border-b">
+        <label className="block text-sm font-medium mb-1">
+          Display Name:
+        </label>
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full p-2 border rounded"
+          maxLength={20}
+        />
       </div>
 
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {loading ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="animate-pulse text-gray-500">Loading messages...</div>
-          </div>
-        ) : messages.length === 0 ? (
+        {messages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             No messages yet. Start the conversation!
           </div>
@@ -91,21 +89,25 @@ export default function ChatPage() {
           messages.map((msg) => (
             <div 
               key={msg.id} 
-              className={`flex ${msg.uid === auth.currentUser?.uid ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${msg.userId === localStorage.getItem('guestId') ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-xs lg:max-w-md rounded-lg p-3 ${msg.uid === auth.currentUser?.uid 
-                ? 'bg-indigo-500 text-white rounded-tr-none' 
-                : 'bg-white text-gray-800 rounded-tl-none shadow'
-                }`}
-              >
-                {msg.uid !== auth.currentUser?.uid && (
+              <div className={`max-w-xs rounded-lg p-3 ${
+                msg.userId === localStorage.getItem('guestId') 
+                  ? 'bg-blue-500 text-white rounded-br-none' 
+                  : 'bg-white text-gray-800 rounded-bl-none shadow'
+              }`}>
+                {msg.userId !== localStorage.getItem('guestId') && (
                   <div className="font-bold text-xs mb-1">
-                    {msg.displayName}
+                    {msg.displayName || 'Guest'}
                   </div>
                 )}
-                <div className="text-sm">{msg.text}</div>
-                <div className={`text-xs mt-1 ${msg.uid === auth.currentUser?.uid ? 'text-indigo-100' : 'text-gray-500'}`}>
-                  {formatTime(msg.createdAt)}
+                <p>{msg.text}</p>
+                <div className={`text-xs mt-1 ${
+                  msg.userId === localStorage.getItem('guestId') 
+                    ? 'text-blue-100' 
+                    : 'text-gray-500'
+                }`}>
+                  {msg.createdAt?.toDate?.().toLocaleTimeString() || 'now'}
                 </div>
               </div>
             </div>
@@ -116,18 +118,19 @@ export default function ChatPage() {
 
       {/* Message Input */}
       <form onSubmit={handleSubmit} className="p-4 border-t bg-white">
-        <div className="flex space-x-2">
+        <div className="flex gap-2">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            maxLength={200}
           />
           <button
             type="submit"
             disabled={!newMessage.trim()}
-            className="bg-indigo-600 text-white rounded-full px-4 py-2 disabled:opacity-50 hover:bg-indigo-700 transition"
+            className="bg-blue-600 text-white rounded-full px-4 py-2 disabled:opacity-50 hover:bg-blue-700 transition"
           >
             Send
           </button>
@@ -135,5 +138,4 @@ export default function ChatPage() {
       </form>
     </div>
   );
-    }
-            
+}
