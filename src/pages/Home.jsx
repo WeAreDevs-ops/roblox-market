@@ -130,8 +130,8 @@ export default function Home() {
       const thumbnail = thumbData.data[0]?.imageUrl || "";
 
       const resalePrice = details.CollectiblesItemDetails?.CollectibleLowestResalePrice;
-      const formattedResale = resalePrice ? `🤑 ${resalePrice.toLocaleString()} Robux` : "🔴 Offsale";
-      const resaleInPHP = resalePrice ? `💰 ₱${(resalePrice * 0.15).toLocaleString()} PHP` : "N/A";
+      const formattedResale = resalePrice ? ` ${resalePrice.toLocaleString()} Robux` : "🔴 Offsale";
+      const resaleInPHP = resalePrice ? ` ₱${(resalePrice * 0.15).toLocaleString()} PHP` : "N/A";
 
       resultDiv.innerHTML = `
       <div class="card" style="padding: 20px; text-align: left;">
