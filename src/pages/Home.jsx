@@ -104,53 +104,81 @@ export default function Home() {
     filteredRobux = filteredRobux.sort((a, b) => b.price - a.price);
   }
 
-  
-function getAssetTypeName(typeId) {
-  const types = {
-    1: "Image", 2: "T-Shirt", 3: "Audio", 4: "Mesh", 8: "Hat", 11: "Shirt", 12: "Pants",
-    18: "Face", 19: "Gear", 32: "Package", 41: "Hair Accessory", 42: "Face Accessory",
-    43: "Neck Accessory", 44: "Shoulder Accessory", 45: "Front Accessory",
-    46: "Back Accessory", 47: "Waist Accessory"
-  };
-  return types[typeId] || "Unknown";
-}
-
-async function fetchLimitedItem() {
-  const assetId = document.getElementById("assetIdInput").value;
-  if (!assetId) return alert("Please enter an Asset ID");
-
-  const resultDiv = document.getElementById("result");
-  resultDiv.innerHTML = "Fetching...";
-
-  try {
-    const detailsRes = await fetch(`https://economy.roproxy.com/v2/assets/${assetId}/details`);
-    const details = await detailsRes.json();
-
-    const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/assets?assetIds=${assetId}&size=420x420&format=Png`);
-    const thumbData = await thumbRes.json();
-    const thumbnail = thumbData.data[0]?.imageUrl || "";
-
-    const resalePrice = details.CollectiblesItemDetails?.CollectibleLowestResalePrice;
-    const formattedResale = resalePrice ? `${resalePrice.toLocaleString()} Robux` : "Offsale";
-    const resaleInPHP = resalePrice ? `₱${(resalePrice * 0.15).toLocaleString()} PHP` : "N/A";
-
-  resultDiv.innerHTML = `
-  <h2 style="color: black; font-weight: bold;">${details.Name}</h2>
-  <img src="${thumbnail}" alt="Item Thumbnail" style="max-width: 300px; border-radius: 10px;" />
-  <p><span style="color: #000000; font-weight: bold;"><strong>Creator:</strong> ${details.Creator?.Name || "N/A"}</span></p>
-  <p><span style="color: #000000; font-weight: bold;"><strong>Lowest Resale Price:</strong> ${formattedResale}</span></p>
-  <p><span style="color: #000000; font-weight: bold;"><strong>BlackMarket:</strong> ${resaleInPHP}</span></p>
-  <p><span style="color: #000000; font-weight: bold;"><strong>Type:</strong> ${getAssetTypeName(details.AssetTypeId)}</span></p>
-  <p><span style="color: #000000; font-weight: bold;"><strong>Is Limited:</strong> ${details.IsLimited ? "✅" : "❌"}</span></p>
-  <p><span style="color: #000000; font-weight: bold;"><strong>Is Limited Unique:</strong> ${details.IsLimitedUnique ? "✅" : "❌"}</span></p>
-`;
-    
-  } catch (error) {
-    console.error(error);
-    resultDiv.innerHTML = "❌ Failed to fetch item. Make sure the Asset ID is valid.";
+  function getAssetTypeName(typeId) {
+    const types = {
+      1: "Image", 2: "T-Shirt", 3: "Audio", 4: "Mesh", 8: "Hat", 11: "Shirt", 12: "Pants",
+      18: "Face", 19: "Gear", 32: "Package", 41: "Hair Accessory", 42: "Face Accessory",
+      43: "Neck Accessory", 44: "Shoulder Accessory", 45: "Front Accessory",
+      46: "Back Accessory", 47: "Waist Accessory"
+    };
+    return types[typeId] || "Unknown";
   }
-}
 
+  async function fetchLimitedItem() {
+    const assetId = document.getElementById("assetIdInput").value;
+    if (!assetId) return alert("Please enter an Asset ID");
+
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = "<div style='padding: 20px;text-align: center;'><span class='loader'></span> Loading item details...</div>";
+
+    try {
+      const detailsRes = await fetch(`https://economy.roproxy.com/v2/assets/${assetId}/details`);
+      const details = await detailsRes.json();
+
+      const thumbRes = await fetch(`https://thumbnails.roproxy.com/v1/assets?assetIds=${assetId}&size=420x420&format=Png`);
+      const thumbData = await thumbRes.json();
+      const thumbnail = thumbData.data[0]?.imageUrl || "";
+
+      const resalePrice = details.CollectiblesItemDetails?.CollectibleLowestResalePrice;
+      const formattedResale = resalePrice ? `🤑 ${resalePrice.toLocaleString()} Robux` : "🔴 Offsale";
+      const resaleInPHP = resalePrice ? `💰 ₱${(resalePrice * 0.15).toLocaleString()} PHP` : "N/A";
+
+      resultDiv.innerHTML = `
+      <div class="card" style="padding: 20px; text-align: left;">
+        <h2 style="margin-bottom: 10px; color: #333; font-weight: bold;">${details.Name}</h2>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+          <div style="flex: 1;">
+            <img src="${thumbnail}" alt="Item Thumbnail" style="width: 100%; max-width: 250px; border-radius: 10px; border: 1px solid #ddd;" />
+          </div>
+          <div style="flex: 2;">
+            <div style="margin-bottom: 8px;">
+              <strong>Creator:</strong> 
+              <span style="color: #555;">${details.Creator?.Name || "N/A"}</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <strong>Lowest Resale:</strong> 
+              <span style="color: #7DC387; font-weight: bold;">${formattedResale}</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <strong>BlackMarket Value:</strong> 
+              <span style="color: #555;">${resaleInPHP}</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <strong>Type:</strong> 
+              <span style="color: #555;">${getAssetTypeName(details.AssetTypeId)}</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <strong>Limited Status:</strong> 
+              ${details.IsLimited ? 
+                "<span style='background: #7DC387; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;'>✅ Limited</span>" : 
+                "<span style='background: #FF4C4C; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;'>❌ Not Limited</span>"}
+            </div>
+            <div>
+              <strong>Unique Status:</strong> 
+              ${details.IsLimitedUnique ? 
+                "<span style='background: #7DC387; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;'>🌟 Unique</span>" : 
+                "<span style='background: #555; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;'>Not Unique</span>"}
+            </div>
+          </div>
+        </div>
+      </div>
+      `;
+      
+    } catch (error) {
+      console.error(error);
+      resultDiv.innerHTML = "<div class='card' style='padding: 20px; color: #FF4C4C;'><strong>❌ Error:</strong> Failed to fetch item. Make sure the Asset ID is valid.</div>";
+    }
+  }
 
   return (
     <div className="container" style={{ padding: "20px", minHeight: '100vh' }}>
@@ -235,305 +263,98 @@ async function fetchLimitedItem() {
         >
           ROBUX LIST
         </button>
-  <button 
-    onClick={() => setViewType('limitedChecker')}
-    style={{
-      marginLeft: '10px',
-      padding: '8px 20px',
-      borderRadius: '8px',
-      backgroundColor: viewType === 'limitedChecker' ? '#7DC387' : '#ddd',
-      color: viewType === 'limitedChecker' ? 'white' : 'black',
-      border: 'none',
-      fontWeight: 'bold'
-    }}
-  >
-    LIMITED CHECKER
-  </button>
-
+        <button 
+          onClick={() => setViewType('limitedChecker')}
+          style={{
+            marginLeft: '10px',
+            padding: '8px 20px',
+            borderRadius: '8px',
+            backgroundColor: viewType === 'limitedChecker' ? '#7DC387' : '#ddd',
+            color: viewType === 'limitedChecker' ? 'white' : 'black',
+            border: 'none',
+            fontWeight: 'bold'
+          }}
+        >
+          LIMITED CHECKER
+        </button>
       </div>
 
       {/* Render Based on View */}
-      {viewType === 'accounts' ? (
-        <>
-          {filteredAccounts.length === 0 ? (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              No results found.
-            </motion.p>
-          
-) : viewType === 'limitedChecker' ? (
-  <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: 'white' }}>INPUT ASSET ID ONLY</h2>
-    <input
-      id="assetIdInput"
-      type="text"
-      placeholder="Enter Asset ID..."
-      style={{ padding: '10px', marginRight: '10px', width: '250px' }}
-    />
-    <button 
-      onClick={fetchLimitedItem}
-      style={{
-        padding: '10px 20px',
-        backgroundColor: '#7DC387',
-        border: 'none',
-        borderRadius: '5px',
-        color: 'white',
-        fontWeight: 'bold',
-        cursor: 'pointer'
-      }}
-    >
-      Check Item
-    </button>
-    
-    <div id="result" style={{
-      marginTop: '30px',
-      padding: '20px',
-      maxWidth: '500px',
-      marginLeft: 'auto',
-      marginRight: 'auto',
-      borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.85)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-      color: '#fff',
-      textAlign: 'left'
-    }}></div>
-    
-  </div>
-
-) : (
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-              gap: '20px' 
-            }}>
-              <AnimatePresence>
-                {filteredAccounts.map(acc => (
-                  <motion.div
-                    key={acc.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                    className="card"
-                  >
-                    {acc.avatar && (
-                      <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
-                    )}
-
-                    <h3>{acc.username}</h3>
-                    {acc.seller && (
-                      <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#444' }}>
-                        Seller: {acc.seller}
-                      </div>
-                    )}
-
-                    <div style={{ marginTop: '15px' }}>
-                      <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
-                      <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
-                      <DetailRow label="➤ Premium Status:" value={acc.premium === "True" ? "True" : "False"} />
-                    </div>
-
-                    <AnimatePresence>
-                      {expandedId === acc.id && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.3 }}
-                          style={{ overflow: 'hidden', marginTop: '15px' }}
-                        >
-                          <DetailRow label="➤ Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
-                          <DetailRow label="➤ Email:" value={acc.email} />
-                          <DetailRow label="➤ Robux Balance:" value={acc.robuxBalance} />
-                          <DetailRow label="➤ Limited item:" value={acc.limitedItems} />
-                          <DetailRow label="➤ Inventory:" value={acc.inventory} />
-                          <DetailRow label="🌍 Type:" value={acc.accountType} />
-                          <DetailRow label="💳 MOP:" value={acc.mop} />
-                          <div style={{ marginTop: "10px" }}>
-                            <strong>🎮 Games with Gamepasses:</strong>
-                            <div style={{ 
-                              marginTop: '8px', 
-                              display: 'flex', 
-                              flexDirection: 'column', 
-                              gap: '5px', 
-                              maxHeight: '150px', 
-                              overflowY: 'auto', 
-                              paddingRight: '5px',
-                              border: '1px solid #ccc',
-                              borderRadius: '8px'
-                            }}>
-                              {acc.gamepass && acc.gamepass.trim() !== "" ? (
-                                acc.gamepass.split(",").map((game, index) => (
-                                  <Tag key={index} text={game.trim()} color="#7DC387" />
-                                ))
-                              
-) : viewType === 'limitedChecker' ? (
-  <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: 'white' }}>INPUT ASSET ID ONLY</h2>
-    <input
-      id="assetIdInput"
-      type="text"
-      placeholder="Enter Asset ID..."
-      style={{ padding: '10px', marginRight: '10px', width: '250px' }}
-    />
-    <button 
-      onClick={fetchLimitedItem}
-      style={{
-        padding: '10px 20px',
-        backgroundColor: '#7DC387',
-        border: 'none',
-        borderRadius: '5px',
-        color: 'white',
-        fontWeight: 'bold',
-        cursor: 'pointer'
-      }}
-    >
-      Check Item
-    </button>
-    
-    <div id="result" style={{
-      marginTop: '30px',
-      padding: '20px',
-      maxWidth: '500px',
-      marginLeft: 'auto',
-      marginRight: 'auto',
-      borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.85)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-      color: '#fff',
-      textAlign: 'left'
-    }}></div>
-    
-  </div>
-
-) : (
-                                <Tag text="No Gamepass Found" color="#999" />
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <div className="buttons" style={{ marginTop: "10px" }}>
-                      <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} className="buy">
-                        {expandedId === acc.id ? 'Hide Details' : 'View Details'}
-                      </button>
-                      <button onClick={() => showContact(acc)} className="delete" style={{ marginLeft: '10px' }}>
-                        Contact Me
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+      {viewType === 'limitedChecker' ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          style={{ maxWidth: '600px', margin: '0 auto' }}
+        >
+          <div style={{ 
+            backgroundColor: '#fff',
+            borderRadius: '10px',
+            padding: '20px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            marginBottom: '20px'
+          }}>
+            <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333' }}>Limited Item Checker</h2>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+              <input
+                id="assetIdInput"
+                type="text"
+                placeholder="Enter Roblox Asset ID..."
+                style={{ 
+                  flex: 1, 
+                  padding: '10px', 
+                  borderRadius: '5px',
+                  border: '1px solid #ddd'
+                }}
+              />
+              <button 
+                onClick={fetchLimitedItem}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#7DC387',
+                  border: 'none',
+                  borderRadius: '5px',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                Check Item
+              </button>
             </div>
-          )}
-        </>
-      
-) : viewType === 'limitedChecker' ? (
-  <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: 'white' }}>INPUT ASSET ID ONLY</h2>
-    <input
-      id="assetIdInput"
-      type="text"
-      placeholder="Enter Asset ID..."
-      style={{ padding: '10px', marginRight: '10px', width: '250px' }}
-    />
-    <button 
-      onClick={fetchLimitedItem}
-      style={{
-        padding: '10px 20px',
-        backgroundColor: '#7DC387',
-        border: 'none',
-        borderRadius: '5px',
-        color: 'white',
-        fontWeight: 'bold',
-        cursor: 'pointer'
-      }}
-    >
-      Check Item
-    </button>
-    
-    <div id="result" style={{
-      marginTop: '30px',
-      padding: '20px',
-      maxWidth: '500px',
-      marginLeft: 'auto',
-      marginRight: 'auto',
-      borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.85)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-      color: '#fff',
-      textAlign: 'left'
-    }}></div>
-    
-  </div>
-
-) : (
-        <>
-          {filteredRobux.length === 0 ? (
-            <p>No Robux listings found.</p>
-          
-) : viewType === 'limitedChecker' ? (
-  <div style={{ textAlign: 'center', marginTop: '30px' }}>
-    <h2 style={{ color: 'white' }}>INPUT ASSET ID ONLY</h2>
-    <input
-      id="assetIdInput"
-      type="text"
-      placeholder="Enter Asset ID..."
-      style={{ padding: '10px', marginRight: '10px', width: '250px' }}
-    />
-    <button 
-      onClick={fetchLimitedItem}
-      style={{
-        padding: '10px 20px',
-        backgroundColor: '#7DC387',
-        border: 'none',
-        borderRadius: '5px',
-        color: 'white',
-        fontWeight: 'bold',
-        cursor: 'pointer'
-      }}
-    >
-      Check Item
-    </button>
-    
-    <div id="result" style={{
-      marginTop: '30px',
-      padding: '20px',
-      maxWidth: '500px',
-      marginLeft: 'auto',
-      marginRight: 'auto',
-      borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.85)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-      color: '#fff',
-      textAlign: 'left'
-    }}></div>
-    
-  </div>
-
-) : (
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-              gap: '20px' 
-            }}>
-              {filteredRobux.map((item) => (
+            <div 
+              id="result"
+              style={{
+                minHeight: '200px',
+                border: '1px dashed #ddd',
+                borderRadius: '10px',
+                padding: '20px',
+                backgroundColor: '#f9f9f9'
+              }}
+            >
+              <p style={{ textAlign: 'center', color: '#888' }}>Results will appear here</p>
+            </div>
+          </div>
+        </motion.div>
+      ) : viewType === 'accounts' ? (
+        filteredAccounts.length === 0 ? (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            No results found.
+          </motion.p>
+        ) : (
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+            gap: '20px' 
+          }}>
+            <AnimatePresence>
+              {filteredAccounts.map(acc => (
                 <motion.div
-                  key={item.id}
+                  key={acc.id}
                   layout
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -541,21 +362,112 @@ async function fetchLimitedItem() {
                   transition={{ duration: 0.3 }}
                   className="card"
                 >
-                  <h3>Robux: {item.amount}</h3>
-                  <DetailRow label="➤ Via:" value={item.via} />
-                  <DetailRow label="➤ Price:" value={`₱${item.price}`} />
-                  <DetailRow label="➤ Seller:" value={item.seller} />
+                  {acc.avatar && (
+                    <img src={acc.avatar} alt={`${acc.username} avatar`} style={{ width: "150px", borderRadius: "10px" }} />
+                  )}
+
+                  <h3>{acc.username}</h3>
+                  {acc.seller && (
+                    <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#444' }}>
+                      Seller: {acc.seller}
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: '15px' }}>
+                    <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
+                    <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
+                    <DetailRow label="➤ Premium Status:" value={acc.premium === "True" ? "True" : "False"} />
+                  </div>
+
+                  <AnimatePresence>
+                    {expandedId === acc.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ overflow: 'hidden', marginTop: '15px' }}
+                      >
+                        <DetailRow label="➤ Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
+                        <DetailRow label="➤ Email:" value={acc.email} />
+                        <DetailRow label="➤ Robux Balance:" value={acc.robuxBalance} />
+                        <DetailRow label="➤ Limited item:" value={acc.limitedItems} />
+                        <DetailRow label="➤ Inventory:" value={acc.inventory} />
+                        <DetailRow label="🌍 Type:" value={acc.accountType} />
+                        <DetailRow label="💳 MOP:" value={acc.mop} />
+                        <div style={{ marginTop: "10px" }}>
+                          <strong>🎮 Games with Gamepasses:</strong>
+                          <div style={{ 
+                            marginTop: '8px', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            gap: '5px', 
+                            maxHeight: '150px', 
+                            overflowY: 'auto', 
+                            paddingRight: '5px',
+                            border: '1px solid #ccc',
+                            borderRadius: '8px'
+                          }}>
+                            {acc.gamepass && acc.gamepass.trim() !== "" ? (
+                              acc.gamepass.split(",").map((game, index) => (
+                                <Tag key={index} text={game.trim()} color="#7DC387" />
+                              ))
+                            ) : (
+                              <Tag text="No Gamepass Found" color="#999" />
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <div className="buttons" style={{ marginTop: "10px" }}>
-                    <button onClick={() => showContact(item)} className="delete">
+                    <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} className="buy">
+                      {expandedId === acc.id ? 'Hide Details' : 'View Details'}
+                    </button>
+                    <button onClick={() => showContact(acc)} className="delete" style={{ marginLeft: '10px' }}>
                       Contact Me
                     </button>
                   </div>
                 </motion.div>
               ))}
-            </div>
-          )}
-        </>
+            </AnimatePresence>
+          </div>
+        )
+      ) : (
+        filteredRobux.length === 0 ? (
+          <p>No Robux listings found.</p>
+        ) : (
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+            gap: '20px' 
+          }}>
+            {filteredRobux.map((item) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="card"
+              >
+                <h3>Robux: {item.amount}</h3>
+                <DetailRow label="➤ Via:" value={item.via} />
+                <DetailRow label="➤ Price:" value={`₱${item.price}`} />
+                <DetailRow label="➤ Seller:" value={item.seller} />
+                <div className="buttons" style={{ marginTop: "10px" }}>
+                  <button onClick={() => showContact(item)} className="delete">
+                    Contact Me
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )
       )}
     </div>
   );
-    }
+        }
+        
