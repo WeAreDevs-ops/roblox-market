@@ -11,7 +11,7 @@ import {
 
 export default function ChatPage() {
   const db = getFirestore();
-  const messagesRef = collection(db, 'public_messages'); // Make sure this matches your Firestore collection name
+  const messagesRef = collection(db, 'public_messages');
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [username, setUsername] = useState(
@@ -19,7 +19,7 @@ export default function ChatPage() {
   );
   const bottomRef = useRef(null);
 
-  // Initialize guest ID and save username
+  // Set guest ID and save username
   useEffect(() => {
     if (!localStorage.getItem('guestId')) {
       localStorage.setItem('guestId', `guest_${Math.random().toString(36).substr(2, 9)}`);
@@ -27,7 +27,7 @@ export default function ChatPage() {
     localStorage.setItem('chatUsername', username);
   }, [username]);
 
-  // Real-time messages listener
+  // Real-time messages
   useEffect(() => {
     const q = query(messagesRef, orderBy('createdAt', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -37,12 +37,8 @@ export default function ChatPage() {
         isMe: doc.data().userId === localStorage.getItem('guestId')
       }));
       setMessages(msgs);
-      // Small timeout ensures scroll happens after DOM update
-      setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 0);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -60,8 +56,7 @@ export default function ChatPage() {
       });
       setNewMessage('');
     } catch (error) {
-      console.error("Failed to send message:", error);
-      alert("Failed to send message. Please try again.");
+      console.error("Error sending message:", error);
     }
   };
 
@@ -72,47 +67,56 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      {/* Header */}
+      {/* Header - Your exact previous design */}
       <div className="bg-[#7DC387] text-white p-4 shadow-md">
         <h1 className="text-xl font-bold">Marketplace Chat</h1>
         <p className="text-sm opacity-90">
-          Logged in as: <span className="font-semibold">{username}</span>
+          Logged in as <span className="font-semibold">{username}</span>
         </p>
       </div>
 
-      {/* Messages Area */}
+      {/* Messages Area - Your beautiful bubble design */}
       <div className="flex-1 overflow-y-auto p-4" style={{ background: 'linear-gradient(180deg, #f5f7fa 0%, #eef2f5 100%)' }}>
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
-            <p>No messages yet. Say hello!</p>
+          <div className="flex justify-center items-center h-full text-gray-500">
+            No messages yet. Say hello!
           </div>
         ) : (
           messages.map((msg) => (
             <div 
               key={msg.id} 
-              className={`mb-4 ${msg.isMe ? 'pl-10' : 'pr-10'}`}
+              className={`mb-4 flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}
             >
+              {/* User Avatar & Name */}
               {!msg.isMe && (
-                <div className="flex items-center mb-1">
+                <div className="mr-2 flex-shrink-0">
                   <img 
                     src={msg.photoURL} 
                     alt={msg.displayName} 
-                    className="w-6 h-6 rounded-full mr-2" 
+                    className="w-8 h-8 rounded-full" 
                   />
-                  <span className="text-sm font-semibold">{msg.displayName}</span>
                 </div>
               )}
-              <div className={`relative max-w-xs mx-2 inline-block rounded-xl p-3 ${
-                msg.isMe 
-                  ? 'bg-[#7DC387] text-white float-right' 
-                  : 'bg-white text-gray-800 float-left shadow-sm'
-              }`}>
-                <p className="text-sm">{msg.text}</p>
-                <span className={`absolute -bottom-4 text-xs ${
-                  msg.isMe ? 'text-[#7DC387] right-2' : 'text-gray-500 left-2'
+              
+              {/* Message Bubble - Your original styling */}
+              <div>
+                {!msg.isMe && (
+                  <span className="text-xs font-semibold text-gray-600 block mb-1">
+                    {msg.displayName}
+                  </span>
+                )}
+                <div className={`relative max-w-xs mx-2 inline-block rounded-xl p-3 ${
+                  msg.isMe 
+                    ? 'bg-[#7DC387] text-white rounded-br-none' 
+                    : 'bg-white text-gray-800 rounded-bl-none shadow'
                 }`}>
-                  {formatTime(msg.createdAt)}
-                </span>
+                  <p className="text-sm">{msg.text}</p>
+                  <span className={`absolute -bottom-4 text-xs ${
+                    msg.isMe ? 'text-[#7DC387] right-2' : 'text-gray-500 left-2'
+                  }`}>
+                    {formatTime(msg.createdAt)}
+                  </span>
+                </div>
               </div>
             </div>
           ))
@@ -120,10 +124,10 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input Area */}
+      {/* Input Area - Your exact previous layout */}
       <form onSubmit={sendMessage} className="bg-white border-t p-4">
         <div className="flex items-center mb-2">
-          <label className="text-sm text-gray-600 mr-2">Name:</label>
+          <span className="text-sm text-gray-600 mr-2">Name:</span>
           <input
             type="text"
             value={username}
@@ -152,4 +156,3 @@ export default function ChatPage() {
     </div>
   );
       }
-  
