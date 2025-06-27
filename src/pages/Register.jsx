@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
-import { createUser WithEmailAndPassword } from 'firebase/auth';
+import { createUser WithEmailAndPassword } from 'firebase/auth'; // Corrected import
 import { auth } from '../../firebase'; // Firebase client SDK
 
 export default function Register() {
