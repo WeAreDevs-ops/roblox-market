@@ -8,16 +8,10 @@ import {
   onSnapshot,
   serverTimestamp 
 } from 'firebase/firestore';
+import Swal from 'sweetalert2';
 
-// List of banned words/phrases (can be expanded)
 const BANNED_WORDS = [
-  'fuck', 'shit', 'asshole', 'bitch', 'cunt', 
-  'whore', 'slut', 'dick', 'pussy', 'cock', 'fag', 'retard',
-  'sex', 'rape', 'porn', 'idiot', 'stupid', 'loser', 
-  'bastard', 'dumb', 'fool', 'jerk', 'scum', 'creep', 
-  'tramp', 'skank', 'pimp', 'freak', 'iyot', 'bobo', 'bbo', 'fuckyou',
-  'fuck you', 'bold', 'putangina', 'puta', 'pota', 'p0ta', 'tangina', 'tanginamo',
-  'wtf', 'what the fuck', 'yw', 'yawa', 'nudes', 'vcs', 'tanga', 'tsnga', 't4nga',
+  // ... (keep your existing banned words array)
 ];
 
 export default function ChatPage() {
@@ -30,11 +24,15 @@ export default function ChatPage() {
   );
   const [username, setUsername] = useState(localStorage.getItem('chatUsername') || '');
   const [isUsernameLocked, setIsUsernameLocked] = useState(!!localStorage.getItem('chatUsername'));
-  const [replyToMessageId, setReplyToMessageId] = useState(null); // State to track the message being replied to
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const bottomRef = useRef(null);
 
-  // Initialize user
+  // Initialize user and check screen size
   useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    
     if (!localStorage.getItem('guestId')) {
       localStorage.setItem('guestId', `guest_${Math.random().toString(36).substr(2, 9)}`);
     }
@@ -42,6 +40,8 @@ export default function ChatPage() {
       setUsername(`Guest${Math.floor(Math.random() * 1000)}`);
       setTempUsername(`Guest${Math.floor(Math.random() * 1000)}`);
     }
+    
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Load messages
@@ -60,16 +60,15 @@ export default function ChatPage() {
   }, []);
 
   const containsBannedWords = (text) => {
-    return BANNED_WORDS.some(badWord => text.toLowerCase().includes(badWord));
+    return BANNED_WORDS.some(badWord => text.toLowerCase().includes(badWord.toLowerCase()));
   };
 
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
-    // Check for banned words
     if (containsBannedWords(newMessage)) {
-      alert("Your message contains blocked words. Please revise your message.");
+      Swal.fire('Blocked Content', 'Your message contains inappropriate words', 'warning');
       return;
     }
 
@@ -80,12 +79,17 @@ export default function ChatPage() {
         displayName: username,
         userId: localStorage.getItem('guestId'),
         photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`,
-        replyTo: replyToMessageId // Include the ID of the message being replied to
+        ...(replyingTo && { 
+          replyToId: replyingTo.id,
+          replyText: replyingTo.text.substring(0, 50),
+          replyUser: replyingTo.displayName 
+        })
       });
       setNewMessage('');
-      setReplyToMessageId(null); // Reset reply state after sending
+      setReplyingTo(null);
     } catch (error) {
       console.error("Error sending message:", error);
+      Swal.fire('Error', 'Failed to send message', 'error');
     }
   };
 
@@ -102,135 +106,134 @@ export default function ChatPage() {
     }
   };
 
-  const handleLongPress = (msgId) => {
-    setReplyToMessageId(msgId); // Set the message ID to reply to
+  const handleReplyClick = (msg) => {
+    if (!msg.isMe) {
+      setReplyingTo(msg);
+    }
   };
 
-  return (
-    <div style={{
+  const cancelReply = () => {
+    setReplyingTo(null);
+  };
+
+  // Styles
+  const styles = {
+    container: {
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
-      backgroundColor: '#f5f7fa'
-    }}>
+      backgroundColor: '#f0f2f5'
+    },
+    header: {
+      backgroundColor: '#0084ff',
+      color: 'white',
+      padding: '12px 16px',
+      textAlign: 'center',
+      position: 'sticky',
+      top: 0,
+      zIndex: 100,
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    },
+    messagesContainer: {
+      flex: 1,
+      padding: '8px',
+      overflowY: 'auto',
+      background: 'linear-gradient(180deg, #f5f7fa 0%, #eef2f5 100%)'
+    },
+    messageBubble: (msg) => ({
+      maxWidth: '80%',
+      padding: '8px 12px',
+      marginBottom: '4px',
+      borderRadius: '18px',
+      backgroundColor: msg.isMe ? '#0084ff' : '#e4e6eb',
+      color: msg.isMe ? 'white' : 'black',
+      cursor: 'pointer',
+      alignSelf: msg.isMe ? 'flex-end' : 'flex-start',
+      wordBreak: 'break-word',
+      position: 'relative'
+    }),
+    replyPreview: {
+      fontSize: '0.8rem',
+      color: '#65676b',
+      padding: '4px 8px',
+      marginBottom: '4px',
+      backgroundColor: 'rgba(0,0,0,0.05)',
+      borderRadius: '8px',
+      borderLeft: '3px solid #0084ff',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis'
+    },
+    inputArea: {
+      padding: '10px',
+      backgroundColor: 'white',
+      borderTop: '1px solid #e1e4e8',
+      position: 'sticky',
+      bottom: 0
+    }
+  };
+
+  return (
+    <div style={styles.container}>
       {/* Header */}
-      <div style={{
-        backgroundColor: '#7DC387',
-        color: 'white',
-        padding: '15px',
-        textAlign: 'center',
-        boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-      }}>
-        <h1 style={{ 
-          margin: 0, 
-          fontSize: '1.4rem',
-          fontWeight: 'bold'
-        }}>Marketplace Chat</h1>
-        <p style={{ 
-          margin: '5px 0 0',
-          fontSize: '0.9rem',
-          opacity: 0.9
-        }}>Logged in as: <strong>{username}</strong></p>
+      <div style={styles.header}>
+        <h1 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 500 }}>Marketplace Chat</h1>
       </div>
 
+      {/* Active Reply Preview */}
+      {replyingTo && (
+        <div style={{ 
+          padding: '8px 12px',
+          backgroundColor: '#f0f2f5',
+          borderBottom: '1px solid #e4e6eb',
+          display: 'flex',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ fontSize: '0.8rem', color: '#65676b' }}>
+            Replying to <strong>{replyingTo.displayName}</strong>: {replyingTo.text.substring(0, 50)}...
+          </div>
+          <button 
+            onClick={cancelReply}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              color: '#65676b', 
+              cursor: 'pointer',
+              fontSize: '0.9rem'
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Messages Area */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '15px',
-        background: 'linear-gradient(180deg, #f5f7fa 0%, #eef2f5 100%)'
-      }}>
+      <div style={styles.messagesContainer}>
         {messages.length === 0 ? (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100%',
-            color: '#888'
-          }}>
-            <p>No messages yet. Say hello!</p>
+          <div style={{ textAlign: 'center', padding: '20px', color: '#65676b' }}>
+            No messages yet. Say hello!
           </div>
         ) : (
           messages.map((msg) => (
             <div 
               key={msg.id} 
-              style={{
-                marginBottom: '15px',
+              style={{ 
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: msg.isMe ? 'flex-end' : 'flex-start'
-              }}
-              onContextMenu={(e) => {
-                e.preventDefault(); // Prevent the default context menu
-                handleLongPress(msg.id); // Handle long press to reply
+                justifyContent: msg.isMe ? 'flex-end' : 'flex-start',
+                marginBottom: '4px',
+                position: 'relative'
               }}
             >
-              <div style={{
-                display: 'flex',
-                alignItems: 'flex-end',
-                maxWidth: '80%'
-              }}>
-                {!msg.isMe && (
-                  <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    backgroundColor: '#ddd',
-                    backgroundImage: `url(${msg.photoURL})`,
-                    backgroundSize: 'cover',
-                    marginRight: '10px',
-                    flexShrink: 0
-                  }} />
+              <div 
+                onClick={() => handleReplyClick(msg)}
+                style={styles.messageBubble(msg)}
+              >
+                {msg.replyToId && (
+                  <div style={styles.replyPreview}>
+                    Replying to {msg.replyUser}: {msg.replyText}
+                  </div>
                 )}
-                
-                <div style={{
-                  backgroundColor: msg.isMe ? '#7DC387' : 'white',
-                  color: msg.isMe ? 'white' : '#333',
-                  padding: '10px 15px',
-                  borderRadius: '15px',
-                  boxShadow: msg.isMe ? 'none' : '0 1px 2px rgba(0,0,0,0.1)',
-                  borderBottomRightRadius: msg.isMe ? '5px' : '15px',
-                  borderBottomLeftRadius: msg.isMe ? '15px' : '5px',
-                  position: 'relative'
-                }}>
-                  <p style={{ 
-                    margin: 0,
-                    fontSize: '0.95rem'
-                  }}>{msg.text}</p>
-                  {replyToMessageId === msg.id && (
-                    <button style={{
-                      marginTop: '5px',
-                      backgroundColor: '#7DC387',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '5px',
-                      padding: '5px 10px',
-                      cursor: 'pointer'
-                    }}>
-                      Reply
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                marginTop: '5px',
-                marginLeft: msg.isMe ? '0' : '42px'
-              }}>
-                <span style={{
-                  fontSize: '0.75rem',
-                  color: msg.isMe ? '#7DC387' : '#666'
-                }}>
-                  {!msg.isMe && (
-                    <span style={{ 
-                      fontWeight: '600',
-                      marginRight: '5px'
-                    }}>{msg.displayName}</span>
-                  )}
-                  {formatTime(msg.createdAt)}
-                </span>
+                {msg.text}
               </div>
             </div>
           ))
@@ -239,26 +242,25 @@ export default function ChatPage() {
       </div>
 
       {/* Input Area */}
-      <form onSubmit={sendMessage} style={{
-        backgroundColor: 'white',
-        borderTop: '1px solid #e1e4e8',
-        padding: '15px'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          marginBottom: '10px',
-          gap: '10px'
+      <form onSubmit={sendMessage} style={styles.inputArea}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          marginBottom: '8px',
+          gap: '8px'
         }}>
           <label style={{
-            fontSize: '0.9rem',
-            color: '#555',
-            whiteSpace: 'nowrap'
-          }}>Your Name:</label>
-          <div style={{
-            display: 'flex',
+            fontSize: '0.8rem',
+            color: '#65676b',
+            whiteSpace: 'nowrap',
+            display: isUsernameLocked ? 'none' : 'block'
+          }}>
+            Your Name:
+          </label>
+          <div style={{ 
+            display: 'flex', 
             flex: 1,
-            gap: '10px'
+            gap: '8px'
           }}>
             <input
               type="text"
@@ -268,27 +270,25 @@ export default function ChatPage() {
                 flex: 1,
                 padding: '8px 12px',
                 border: '1px solid #ddd',
-                borderRadius: '20px',
+                borderRadius: '18px',
                 fontSize: '0.9rem',
                 outline: 'none',
-                backgroundColor: isUsernameLocked ? '#f5f5f5' : 'white'
+                display: !isUsernameLocked ? 'block' : 'none'
               }}
               maxLength={20}
-              disabled={isUsernameLocked}
             />
             {!isUsernameLocked && (
               <button
                 type="button"
                 onClick={saveUsername}
                 style={{
-                  padding: '0 15px',
+                  padding: '0 12px',
                   backgroundColor: '#7DC387',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '20px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap'
+                  borderRadius: '18px',
+                  fontWeight: 500,
+                  cursor: 'pointer'
                 }}
               >
                 Save
@@ -296,36 +296,32 @@ export default function ChatPage() {
             )}
           </div>
         </div>
-        <div style={{
-          display: 'flex',
-          gap: '10px'
-        }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
+            placeholder={`Message ${isMobile ? '' : 'in Marketplace Chat'}`}
             style={{
               flex: 1,
-              padding: '12px 15px',
-              border: '1px solid #ddd',
-              borderRadius: '20px',
-              fontSize: '1rem',
-              outline: 'none'
+              padding: '10px 16px',
+              border: 'none',
+              borderRadius: '18px',
+              backgroundColor: '#f0f2f5',
+              fontSize: '1rem'
             }}
           />
           <button
             type="submit"
             disabled={!newMessage.trim() || !isUsernameLocked}
             style={{
-              padding: '0 20px',
-              backgroundColor: isUsernameLocked ? '#7DC387' : '#cccccc',
-              color: 'white',
+              padding: '0 16px',
+              backgroundColor: isUsernameLocked ? '#0084ff' : '#e4e6eb',
+              color: isUsernameLocked ? 'white' : '#bcc0c4',
               border: 'none',
-              borderRadius: '20px',
-              fontWeight: '600',
-              cursor: isUsernameLocked ? 'pointer' : 'not-allowed',
-              transition: 'background 0.2s'
+              borderRadius: '18px',
+              fontWeight: 500,
+              cursor: isUsernameLocked ? 'pointer' : 'not-allowed'
             }}
           >
             Send
@@ -334,5 +330,5 @@ export default function ChatPage() {
       </form>
     </div>
   );
-              }
+            }
         
