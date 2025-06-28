@@ -191,13 +191,6 @@ export default function ChatPage() {
       </p>
     </div>
 
-    {/* Typing Indicator */}
-    {typingUsers.length > 0 && (
-      <div style={{ padding: '8px 15px', fontStyle: 'italic', color: '#666', backgroundColor: '#f0f0f0' }}>
-        {typingUsers.join(', ')} {typingUsers.length > 1 ? 'are' : 'is'} typing...
-      </div>
-    )}
-
     {/* Message List */}
     <div style={{ flex: 1, overflowY: 'auto', padding: '15px', background: 'linear-gradient(180deg, #f5f7fa 0%, #eef2f5 100%)' }}>
       {messages.map((msg) => {
@@ -216,7 +209,7 @@ export default function ChatPage() {
           >
             {msg.replyTo && originalMessage && (
               <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '5px' }}>
-               ╭⌯⌲replied to <strong>{originalMessage.displayName}</strong>
+                ╭⌯⌲replied to <strong>{originalMessage.displayName}</strong>
               </div>
             )}
 
@@ -308,6 +301,13 @@ export default function ChatPage() {
         >
           Cancel
         </button>
+      </div>
+    )}
+
+    {/* ✅ Typing Indicator moved here, above input */}
+    {typingUsers.length > 0 && (
+      <div style={{ padding: '8px 15px', fontStyle: 'italic', color: '#666', backgroundColor: '#f0f0f0' }}>
+        {typingUsers.join(', ')} {typingUsers.length > 1 ? 'are' : 'is'} typing...
       </div>
     )}
 
