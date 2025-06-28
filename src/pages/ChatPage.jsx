@@ -94,7 +94,7 @@ export default function ChatPage() {
         userId: localStorage.getItem('guestId'),
         photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`,
         replyTo: replyingTo ? replyingTo.id : null,
-        replyingTo:User  replyingTo ? replyingTo.displayName : null, // Corrected line
+        replyingTo:User  replyingTo ? replyingTo.displayName : null,
         replyingToText: replyingTo ? replyingTo.text : null
       });
       setNewMessage('');
