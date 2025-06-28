@@ -9,7 +9,6 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 
-// List of banned words/phrases (can be expanded)
 const BANNED_WORDS = [
   'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'nigger', 
   'whore', 'slut', 'dick', 'pussy', 'cock', 'fag', 'retard',
@@ -30,10 +29,9 @@ export default function ChatPage() {
   );
   const [username, setUsername] = useState(localStorage.getItem('chatUsername') || '');
   const [isUsernameLocked, setIsUsernameLocked] = useState(!!localStorage.getItem('chatUsername'));
-  const [replyingTo, setReplyingTo] = useState(null); // State to track the message being replied to
+  const [replyingTo, setReplyingTo] = useState(null);
   const bottomRef = useRef(null);
 
-  // Initialize user
   useEffect(() => {
     if (!localStorage.getItem('guestId')) {
       localStorage.setItem('guestId', `guest_${Math.random().toString(36).substr(2, 9)}`);
@@ -44,7 +42,6 @@ export default function ChatPage() {
     }
   }, []);
 
-  // Load messages
   useEffect(() => {
     const q = query(messagesRef, orderBy('createdAt', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -67,7 +64,6 @@ export default function ChatPage() {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
-    // Check for banned words
     if (containsBannedWords(newMessage)) {
       alert("Your message contains blocked words. Please revise your message.");
       return;
@@ -80,10 +76,12 @@ export default function ChatPage() {
         displayName: username,
         userId: localStorage.getItem('guestId'),
         photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`,
-        replyTo: replyingTo ? replyingTo.id : null // Include the ID of the message being replied to
+        replyTo: replyingTo ? replyingTo.id : null,
+        replyingToUser: replyingTo ? replyingTo.displayName : null,
+        replyingToText: replyingTo ? replyingTo.text : null
       });
       setNewMessage('');
-      setReplyingTo(null); // Reset reply state after sending
+      setReplyingTo(null);
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -104,12 +102,16 @@ export default function ChatPage() {
 
   const handleReplyClick = (msg) => {
     if (!msg.isMe) {
-      setReplyingTo(msg); // Set the message to reply to
+      setReplyingTo(msg);
     }
   };
 
   const cancelReply = () => {
-    setReplyingTo(null); // Clear the reply state
+    setReplyingTo(null);
+  };
+
+  const getOriginalMessage = (replyToId) => {
+    return messages.find(msg => msg.id === replyToId);
   };
 
   return (
@@ -148,7 +150,7 @@ export default function ChatPage() {
           textAlign: 'center'
         }}>
           <span style={{ fontWeight: 'bold' }}>
-            You're replying to {replyingTo.displayName}: "{replyingTo.text}"
+            Replying to {replyingTo.displayName}: "{replyingTo.text}"
           </span>
           <button onClick={cancelReply} style={{
             marginLeft: '10px',
@@ -180,84 +182,109 @@ export default function ChatPage() {
             <p>No messages yet. Say hello!</p>
           </div>
         ) : (
-          messages.map((msg) => (
-            <div 
-              key={msg.id} 
-              style={{
-                marginBottom: '15px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: msg.isMe ? 'flex-end' : 'flex-start'
-              }}
-              onClick={() => handleReplyClick(msg)} // Click to reply
-            >
-              <div style={{
-                display: 'flex',
-                alignItems: 'flex-end',
-                maxWidth: '80%'
-              }}>
-                {!msg.isMe && (
+          messages.map((msg) => {
+            const originalMessage = msg.replyTo ? getOriginalMessage(msg.replyTo) : null;
+            
+            return (
+              <div 
+                key={msg.id} 
+                style={{
+                  marginBottom: '15px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: msg.isMe ? 'flex-end' : 'flex-start'
+                }}
+                onClick={() => handleReplyClick(msg)}
+              >
+                {msg.replyTo && originalMessage && (
                   <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    backgroundColor: '#ddd',
-                    backgroundImage: `url(${msg.photoURL})`,
-                    backgroundSize: 'cover',
-                    marginRight: '10px',
-                    flexShrink: 0
-                  }} />
+                    width: '100%',
+                    marginBottom: '5px',
+                    padding: '8px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
+                    borderLeft: '3px solid #7DC387',
+                    maxWidth: '80%',
+                    marginLeft: msg.isMe ? '0' : '42px',
+                    opacity: 0.8
+                  }}>
+                    <div style={{ fontWeight: 'bold' }}>
+                      {originalMessage.displayName}: 
+                    </div>
+                    <div style={{ whiteSpace: 'pre-wrap' }}>
+                      {originalMessage.text}
+                    </div>
+                  </div>
                 )}
                 
                 <div style={{
-                  backgroundColor: msg.isMe ? '#7DC387' : 'white',
-                  color: msg.isMe ? 'white' : '#333',
-                  padding: '10px 15px',
-                  borderRadius: '15px',
-                  boxShadow: msg.isMe ? 'none' : '0 1px 2px rgba(0,0,0,0.1)',
-                  borderBottomRightRadius: msg.isMe ? '5px' : '15px',
-                  borderBottomLeftRadius: msg.isMe ? '15px' : '5px',
-                  position: 'relative'
-                }}>
-                  {msg.replyTo && (
-                    <div style={{
-                      borderLeft: '2px solid #ccc',
-                      paddingLeft: '8px',
-                      marginBottom: '4px',
-                      fontSize: '0.8rem',
-                      color: '#666'
-                    }}>
-                      Replying to {msg.replyUser }: "{msg.replyText}"
-                    </div>
-                  )}
-                  <p style={{ 
-                    margin: 0,
-                    fontSize: '0.95rem'
-                  }}>{msg.text}</p>
-                </div>
-              </div>
-              
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                marginTop: '5px',
-                marginLeft: msg.isMe ? '0' : '42px'
-              }}>
-                <span style={{
-                  fontSize: '0.75rem',
-                  color: msg.isMe ? '#7DC387' : '#666'
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  maxWidth: '80%'
                 }}>
                   {!msg.isMe && (
-                    <span style={{ 
-                      fontWeight: '600',
-                      marginRight: '5px'
-                    }}>{msg.displayName}</span>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      backgroundColor: '#ddd',
+                      backgroundImage: `url(${msg.photoURL})`,
+                      backgroundSize: 'cover',
+                      marginRight: '10px',
+                      flexShrink: 0
+                    }} />
                   )}
-                  {formatTime(msg.createdAt)}
-                </span>
+                  
+                  <div style={{
+                    backgroundColor: msg.isMe ? '#7DC387' : 'white',
+                    color: msg.isMe ? 'white' : '#333',
+                    padding: '10px 15px',
+                    borderRadius: '15px',
+                    boxShadow: msg.isMe ? 'none' : '0 1px 2px rgba(0,0,0,0.1)',
+                    borderBottomRightRadius: msg.isMe ? '5px' : '15px',
+                    borderBottomLeftRadius: msg.isMe ? '15px' : '5px'
+                  }}>
+                    {msg.replyTo && !originalMessage && (
+                      <div style={{
+                        fontStyle: 'italic',
+                        fontSize: '0.85rem',
+                        marginBottom: '5px',
+                        opacity: 0.7
+                      }}>
+                        (Original message not found)
+                      </div>
+                    )}
+                    <p style={{ 
+                      margin: 0,
+                      fontSize: '0.95rem',
+                      whiteSpace: 'pre-wrap'
+                    }}>{msg.text}</p>
+                  </div>
+                </div>
+                
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginTop: '5px',
+                  marginLeft: msg.isMe ? '0' : '42px'
+                }}>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    color: msg.isMe ? '#7DC387' : '#666'
+                  }}>
+                    {!msg.isMe && (
+                      <span style={{ 
+                        fontWeight: '600',
+                        marginRight: '5px'
+                      }}>{msg.displayName}</span>
+                    )}
+                    {formatTime(msg.createdAt)}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={bottomRef} />
       </div>
@@ -359,4 +386,4 @@ export default function ChatPage() {
     </div>
   );
         }
-        
+                    
