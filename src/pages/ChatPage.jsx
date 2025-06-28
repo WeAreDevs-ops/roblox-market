@@ -51,7 +51,6 @@ export default function ChatPage() {
       setTempUsername(chatUser);
     }
 
-    // Set online status
     const userDoc = doc(onlineRef, guestId);
     setDoc(userDoc, {
       userId: guestId,
@@ -65,11 +64,11 @@ export default function ChatPage() {
         displayName: chatUser,
         lastSeen: Date.now()
       });
-    }, 10000); // update every 10 seconds
+    }, 10000);
 
     return () => {
       clearInterval(interval);
-      deleteDoc(userDoc); // mark offline on unmount
+      deleteDoc(userDoc);
     };
   }, []);
 
@@ -107,7 +106,7 @@ export default function ChatPage() {
       const now = Date.now();
       snapshot.forEach(doc => {
         const data = doc.data();
-        if (now - data.lastSeen < 20000) { // considered online
+        if (now - data.lastSeen < 20000) {
           if (data.userId !== localStorage.getItem('guestId')) {
             users.push(data.displayName);
           }
@@ -127,7 +126,7 @@ export default function ChatPage() {
     if (!newMessage.trim()) return;
 
     if (containsBannedWords(newMessage)) {
-      alert("Your message contains blocked words. Please revise your message.");
+      alert("Your message contains blocked words.");
       return;
     }
 
@@ -144,15 +143,14 @@ export default function ChatPage() {
       });
       setNewMessage('');
       setReplyingTo(null);
-      await deleteDoc(doc(typingRef, localStorage.getItem('guestId'))); // stop typing
+      await deleteDoc(doc(typingRef, localStorage.getItem('guestId')));
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Send failed:", error);
     }
   };
 
   const handleInputChange = async (e) => {
     setNewMessage(e.target.value);
-
     const guestId = localStorage.getItem('guestId');
     const typingDoc = doc(typingRef, guestId);
     await setDoc(typingDoc, {
@@ -180,23 +178,11 @@ export default function ChatPage() {
     }
   };
 
-  const handleReplyClick = (msg) => {
-    if (!msg.isMe) {
-      setReplyingTo(msg);
-    }
-  };
-
-  const cancelReply = () => {
-    setReplyingTo(null);
-  };
-
-  const getOriginalMessage = (replyToId) => {
-    return messages.find(msg => msg.id === replyToId);
-  };
+  const cancelReply = () => setReplyingTo(null);
+  const getOriginalMessage = (replyToId) => messages.find(msg => msg.id === replyToId);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#f5f7fa' }}>
-      {/* Header */}
       <div style={{ backgroundColor: '#7DC387', color: 'white', padding: '15px', textAlign: 'center' }}>
         <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 'bold' }}>Marketplace Chat</h1>
         <p style={{ margin: '5px 0 0', fontSize: '0.9rem', opacity: 0.9 }}>
@@ -204,7 +190,6 @@ export default function ChatPage() {
         </p>
       </div>
 
-      {/* Reply Banner */}
       {replyingTo && (
         <div style={{ padding: '10px', backgroundColor: '#e4f0e4', borderBottom: '1px solid #ccc', textAlign: 'center' }}>
           <span style={{ fontWeight: 'bold' }}>
@@ -216,14 +201,12 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* Typing Indicator */}
       {typingUsers.length > 0 && (
         <div style={{ padding: '8px 15px', fontStyle: 'italic', color: '#666', backgroundColor: '#f0f0f0' }}>
           {typingUsers.join(', ')} {typingUsers.length > 1 ? 'are' : 'is'} typing...
         </div>
       )}
 
-      {/* Messages Area */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '15px', background: 'linear-gradient(180deg, #f5f7fa 0%, #eef2f5 100%)' }}>
         {messages.map((msg) => {
           const originalMessage = msg.replyTo ? getOriginalMessage(msg.replyTo) : null;
@@ -232,39 +215,16 @@ export default function ChatPage() {
               key={msg.id}
               ref={el => messageRefs.current[msg.id] = el}
               style={{
-                marginBottom: '15px',
+                marginBottom: '20px',
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: msg.isMe ? 'flex-end' : 'flex-start'
+                alignItems: msg.isMe ? 'flex-end' : 'flex-start',
+                position: 'relative'
               }}
-              onClick={() => handleReplyClick(msg)}
             >
               {msg.replyTo && originalMessage && (
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const target = messageRefs.current[msg.replyTo];
-                    if (target) {
-                      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      target.style.backgroundColor = '#ffffcc';
-                      setTimeout(() => {
-                        target.style.backgroundColor = '';
-                      }, 1000);
-                    }
-                  }}
-                  style={{
-                    marginBottom: '5px',
-                    padding: '8px',
-                    backgroundColor: '#f8f9fa',
-                    borderLeft: '3px solid #7DC387',
-                    borderRadius: '8px',
-                    fontSize: '0.85rem',
-                    maxWidth: '80%',
-                    opacity: 0.8
-                  }}
-                >
-                  <div style={{ fontWeight: 'bold' }}>{originalMessage.displayName}:</div>
-                  <div>{originalMessage.text}</div>
+                <div style={{ marginBottom: '6px', fontSize: '0.8rem', color: '#555', alignSelf: msg.isMe ? 'flex-end' : 'flex-start' }}>
+                  ↪ You replied to <strong>{originalMessage.displayName}</strong>
                 </div>
               )}
 
@@ -285,16 +245,52 @@ export default function ChatPage() {
                   padding: '10px 15px',
                   borderRadius: '15px',
                   borderBottomRightRadius: msg.isMe ? '5px' : '15px',
-                  borderBottomLeftRadius: msg.isMe ? '15px' : '5px'
+                  borderBottomLeftRadius: msg.isMe ? '15px' : '5px',
+                  position: 'relative'
                 }}>
+                  {msg.replyTo && originalMessage && (
+                    <div
+                      onClick={() => {
+                        const target = messageRefs.current[msg.replyTo];
+                        if (target) {
+                          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          target.style.backgroundColor = '#ffffcc';
+                          setTimeout(() => { target.style.backgroundColor = ''; }, 1000);
+                        }
+                      }}
+                      style={{
+                        backgroundColor: '#f2f2f2',
+                        borderLeft: '3px solid #7DC387',
+                        padding: '6px 8px',
+                        marginBottom: '8px',
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        color: '#333',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <strong>{originalMessage.displayName}:</strong> {originalMessage.text}
+                    </div>
+                  )}
                   <p style={{ margin: 0, fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>{msg.text}</p>
                 </div>
               </div>
 
-              <div style={{ marginTop: '5px', marginLeft: msg.isMe ? '0' : '42px' }}>
-                <span style={{ fontSize: '0.75rem', color: msg.isMe ? '#7DC387' : '#666' }}>
-                  {!msg.isMe && <strong>{msg.displayName}</strong>} {formatTime(msg.createdAt)}
-                </span>
+              <div style={{ marginTop: '5px', marginLeft: msg.isMe ? '0' : '42px', fontSize: '0.75rem', color: msg.isMe ? '#7DC387' : '#666' }}>
+                {!msg.isMe && <strong>{msg.displayName}</strong>} {formatTime(msg.createdAt)} &nbsp;|&nbsp;
+                <button
+                  onClick={() => setReplyingTo(msg)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#888',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    padding: 0
+                  }}
+                >
+                  Reply
+                </button>
               </div>
             </div>
           );
@@ -302,7 +298,6 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input Area */}
       <form onSubmit={sendMessage} style={{ backgroundColor: 'white', borderTop: '1px solid #e1e4e8', padding: '15px' }}>
         <div style={{ display: 'flex', gap: '10px' }}>
           <input
@@ -337,4 +332,4 @@ export default function ChatPage() {
       </form>
     </div>
   );
-          }
+              }
