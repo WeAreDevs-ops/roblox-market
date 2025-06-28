@@ -18,7 +18,6 @@ const BANNED_WORDS = [
   'tramp', 'skank', 'pimp', 'freak', 'iyot', 'bobo', 'bbo', 'fuckyou',
   'fuck you', 'bold', 'putangina', 'puta', 'pota', 'p0ta', 'tangina', 'tanginamo',
   'wtf', 'what the fuck', 'yw', 'yawa', 'nudes', 'vcs', 'tanga', 'tsnga', 't4nga',
-   
 ];
 
 export default function ChatPage() {
@@ -31,6 +30,7 @@ export default function ChatPage() {
   );
   const [username, setUsername] = useState(localStorage.getItem('chatUsername') || '');
   const [isUsernameLocked, setIsUsernameLocked] = useState(!!localStorage.getItem('chatUsername'));
+  const [replyToMessageId, setReplyToMessageId] = useState(null); // State to track the message being replied to
   const bottomRef = useRef(null);
 
   // Initialize user
@@ -79,9 +79,11 @@ export default function ChatPage() {
         createdAt: serverTimestamp(),
         displayName: username,
         userId: localStorage.getItem('guestId'),
-        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`
+        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`,
+        replyTo: replyToMessageId // Include the ID of the message being replied to
       });
       setNewMessage('');
+      setReplyToMessageId(null); // Reset reply state after sending
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -98,6 +100,10 @@ export default function ChatPage() {
       localStorage.setItem('chatUsername', tempUsername);
       setIsUsernameLocked(true);
     }
+  };
+
+  const handleLongPress = (msgId) => {
+    setReplyToMessageId(msgId); // Set the message ID to reply to
   };
 
   return (
@@ -154,6 +160,10 @@ export default function ChatPage() {
                 flexDirection: 'column',
                 alignItems: msg.isMe ? 'flex-end' : 'flex-start'
               }}
+              onContextMenu={(e) => {
+                e.preventDefault(); // Prevent the default context menu
+                handleLongPress(msg.id); // Handle long press to reply
+              }}
             >
               <div style={{
                 display: 'flex',
@@ -187,6 +197,19 @@ export default function ChatPage() {
                     margin: 0,
                     fontSize: '0.95rem'
                   }}>{msg.text}</p>
+                  {replyToMessageId === msg.id && (
+                    <button style={{
+                      marginTop: '5px',
+                      backgroundColor: '#7DC387',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '5px',
+                      padding: '5px 10px',
+                      cursor: 'pointer'
+                    }}>
+                      Reply
+                    </button>
+                  )}
                 </div>
               </div>
               
@@ -311,5 +334,5 @@ export default function ChatPage() {
       </form>
     </div>
   );
-      }
-      
+              }
+        
