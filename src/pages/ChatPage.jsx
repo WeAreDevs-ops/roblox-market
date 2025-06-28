@@ -18,7 +18,6 @@ const BANNED_WORDS = [
   'tramp', 'skank', 'pimp', 'freak', 'iyot', 'bobo', 'bbo', 'fuckyou',
   'fuck you', 'bold', 'putangina', 'puta', 'pota', 'p0ta', 'tangina', 'tanginamo',
   'wtf', 'what the fuck', 'yw', 'yawa', 'nudes', 'vcs', 'tanga', 'tsnga', 't4nga',
-   
 ];
 
 export default function ChatPage() {
@@ -31,6 +30,7 @@ export default function ChatPage() {
   );
   const [username, setUsername] = useState(localStorage.getItem('chatUsername') || '');
   const [isUsernameLocked, setIsUsernameLocked] = useState(!!localStorage.getItem('chatUsername'));
+  const [replyingTo, setReplyingTo] = useState(null); // State to track the message being replied to
   const bottomRef = useRef(null);
 
   // Initialize user
@@ -79,9 +79,11 @@ export default function ChatPage() {
         createdAt: serverTimestamp(),
         displayName: username,
         userId: localStorage.getItem('guestId'),
-        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`
+        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`,
+        replyTo: replyingTo ? replyingTo.id : null // Include the ID of the message being replied to
       });
       setNewMessage('');
+      setReplyingTo(null); // Reset reply state after sending
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -98,6 +100,16 @@ export default function ChatPage() {
       localStorage.setItem('chatUsername', tempUsername);
       setIsUsernameLocked(true);
     }
+  };
+
+  const handleReplyClick = (msg) => {
+    if (!msg.isMe) {
+      setReplyingTo(msg); // Set the message to reply to
+    }
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null); // Clear the reply state
   };
 
   return (
@@ -127,6 +139,29 @@ export default function ChatPage() {
         }}>Logged in as: <strong>{username}</strong></p>
       </div>
 
+      {/* Replying to Message */}
+      {replyingTo && (
+        <div style={{
+          padding: '10px',
+          backgroundColor: '#e4f0e4',
+          borderBottom: '1px solid #ccc',
+          textAlign: 'center'
+        }}>
+          <span style={{ fontWeight: 'bold' }}>
+            You're replying to {replyingTo.displayName}
+          </span>
+          <button onClick={cancelReply} style={{
+            marginLeft: '10px',
+            backgroundColor: 'transparent',
+            border: 'none',
+            color: '#7DC387',
+            cursor: 'pointer'
+          }}>
+            Cancel
+          </button>
+        </div>
+      )}
+
       {/* Messages Area */}
       <div style={{
         flex: 1,
@@ -154,6 +189,7 @@ export default function ChatPage() {
                 flexDirection: 'column',
                 alignItems: msg.isMe ? 'flex-end' : 'flex-start'
               }}
+              onClick={() => handleReplyClick(msg)} // Click to reply
             >
               <div style={{
                 display: 'flex',
@@ -311,5 +347,5 @@ export default function ChatPage() {
       </form>
     </div>
   );
-      }
-      
+          }
+        
