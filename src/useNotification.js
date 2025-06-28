@@ -1,4 +1,4 @@
-// useNotification.js
+// src/useNotification.js
 export function useNotification() {
   const requestPermission = async () => {
     if ('Notification' in window) {
