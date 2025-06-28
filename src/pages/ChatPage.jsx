@@ -11,7 +11,6 @@ import {
   setDoc,
   deleteDoc
 } from 'firebase/firestore';
-import Picker from 'emoji-picker-react'; // Emoji picker library (install it if needed)
 
 const BANNED_WORDS = [
   //... (Same as before)
