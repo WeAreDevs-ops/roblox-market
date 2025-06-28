@@ -10,7 +10,7 @@ import {
   doc,
   updateDoc
 } from 'firebase/firestore';
-import { useNotification } from './useNotification'; // Custom hook for notifications
+import { useNotification } from '../useNotification'; // Updated import path for notifications
 
 const BANNED_WORDS = [
   // ... existing banned words ...
@@ -255,7 +255,7 @@ export default function ChatPage() {
                   '&:hover': { textDecoration: 'underline' }
                 }}
               >
-                Replying to: {msg.replyingToUser} - {msg.replyingToText}
+                Replying to: {msg.replyingToUser } - {msg.replyingToText}
               </div>
             )}
 
@@ -427,5 +427,5 @@ export function useNotification() {
   };
 
   return { requestPermission, showNotification };
-        }
-      
+    }
+    
