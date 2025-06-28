@@ -148,7 +148,7 @@ export default function ChatPage() {
           textAlign: 'center'
         }}>
           <span style={{ fontWeight: 'bold' }}>
-            You're replying to {replyingTo.displayName}
+            You're replying to {replyingTo.displayName}: "{replyingTo.text}"
           </span>
           <button onClick={cancelReply} style={{
             marginLeft: '10px',
@@ -219,6 +219,17 @@ export default function ChatPage() {
                   borderBottomLeftRadius: msg.isMe ? '15px' : '5px',
                   position: 'relative'
                 }}>
+                  {msg.replyTo && (
+                    <div style={{
+                      borderLeft: '2px solid #ccc',
+                      paddingLeft: '8px',
+                      marginBottom: '4px',
+                      fontSize: '0.8rem',
+                      color: '#666'
+                    }}>
+                      Replying to {msg.replyUser }: "{msg.replyText}"
+                    </div>
+                  )}
                   <p style={{ 
                     margin: 0,
                     fontSize: '0.95rem'
@@ -348,4 +359,4 @@ export default function ChatPage() {
     </div>
   );
           }
-        
+                
