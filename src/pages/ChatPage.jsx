@@ -1,17 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  query,
-  orderBy,
-  onSnapshot,
-  serverTimestamp,
-  doc,
-  setDoc,
-  deleteDoc
-} from 'firebase/firestore';
-import { Send, Reply, X, Users, MessageCircle, Smile, Image, Paperclip } from 'lucide-react';
+import { Send, Reply, X, Users, MessageCircle, Smile } from 'lucide-react';
 
 const BANNED_WORDS = [
   'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'nigger',
@@ -26,117 +14,98 @@ const BANNED_WORDS = [
 const EMOJI_LIST = ['😀', '😂', '😍', '🥰', '😎', '🤔', '😢', '😡', '👍', '👎', '❤️', '🔥', '💯', '🎉', '👏', '🙏'];
 
 export default function ChatPage() {
-  const db = getFirestore();
-  const messagesRef = collection(db, 'public_messages');
-  const typingRef = collection(db, 'typing_indicators');
-  const onlineRef = collection(db, 'online_users');
-
-  const [messages, setMessages] = useState([]);
+  // Mock data and state management
+  const [messages, setMessages] = useState([
+    {
+      id: '1',
+      text: 'Welcome to the enhanced chat system! 🎉',
+      createdAt: new Date(),
+      displayName: 'System',
+      userId: 'system',
+      photoURL: 'https://ui-avatars.com/api/?name=System&background=6366f1&color=fff',
+      isMe: false
+    },
+    {
+      id: '2',
+      text: 'This is a demo with all the new features working!',
+      createdAt: new Date(Date.now() - 30000),
+      displayName: 'Demo User',
+      userId: 'demo',
+      photoURL: 'https://ui-avatars.com/api/?name=Demo%20User&background=random&color=fff',
+      isMe: false
+    }
+  ]);
+  
   const [newMessage, setNewMessage] = useState('');
   const [tempUsername, setTempUsername] = useState(
-    localStorage.getItem('chatUsername') || `Guest${Math.floor(Math.random() * 1000)}`
+    `Guest${Math.floor(Math.random() * 1000)}`
   );
-  const [username, setUsername] = useState(localStorage.getItem('chatUsername') || '');
-  const [isUsernameLocked, setIsUsernameLocked] = useState(!!localStorage.getItem('chatUsername'));
+  const [username, setUsername] = useState('');
+  const [isUsernameLocked, setIsUsernameLocked] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
-  const [typingUsers, setTypingUsers] = useState([]);
-  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [typingUsers, setTypingUsers] = useState(['Demo User']);
+  const [onlineUsers, setOnlineUsers] = useState(['Demo User', 'System Bot', 'Chat Helper']);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showOnlineUsers, setShowOnlineUsers] = useState(false);
-  const [messageCount, setMessageCount] = useState(0);
+  const [messageCount, setMessageCount] = useState(2);
   const [isScrolledUp, setIsScrolledUp] = useState(false);
   const [newMessageAlert, setNewMessageAlert] = useState(false);
+  const [currentUserId] = useState(`user_${Math.random().toString(36).substr(2, 9)}`);
   
   const bottomRef = useRef(null);
-  const typingTimeoutRef = useRef(null);
   const messageRefs = useRef({});
   const chatContainerRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Simulate typing indicator clearing
   useEffect(() => {
-    const guestId = localStorage.getItem('guestId') || `guest_${Math.random().toString(36).substr(2, 9)}`;
-    localStorage.setItem('guestId', guestId);
-    const chatUser = localStorage.getItem('chatUsername') || `Guest${Math.floor(Math.random() * 1000)}`;
-    if (!localStorage.getItem('chatUsername')) {
-      setUsername(chatUser);
-      setTempUsername(chatUser);
-    }
+    const timer = setTimeout(() => {
+      setTypingUsers([]);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
-    const userDoc = doc(onlineRef, guestId);
-    setDoc(userDoc, {
-      userId: guestId,
-      displayName: chatUser,
-      lastSeen: Date.now()
-    });
-
+  // Simulate new messages arriving
+  useEffect(() => {
     const interval = setInterval(() => {
-      setDoc(userDoc, {
-        userId: guestId,
-        displayName: chatUser,
-        lastSeen: Date.now()
-      });
-    }, 10000);
-
-    return () => {
-      clearInterval(interval);
-      deleteDoc(userDoc);
-    };
-  }, []);
-
-  useEffect(() => {
-    const q = query(messagesRef, orderBy('createdAt', 'asc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        isMe: doc.data().userId === localStorage.getItem('guestId')
-      }));
-      
-      // Check if new message arrived while scrolled up
-      if (msgs.length > messageCount && isScrolledUp) {
-        setNewMessageAlert(true);
-      }
-      
-      setMessages(msgs);
-      setMessageCount(msgs.length);
-      
-      if (!isScrolledUp) {
-        setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 0);
-      }
-    });
-    return () => unsubscribe();
-  }, [messageCount, isScrolledUp]);
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(typingRef, (snapshot) => {
-      const typingData = {};
-      snapshot.forEach(doc => {
-        typingData[doc.id] = doc.data();
-      });
-      const users = Object.values(typingData)
-        .filter(user => user.userId !== localStorage.getItem('guestId'))
-        .map(user => user.displayName);
-      setTypingUsers(users);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(onlineRef, (snapshot) => {
-      const users = [];
-      const now = Date.now();
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        if (now - data.lastSeen < 20000) {
-          if (data.userId !== localStorage.getItem('guestId')) {
-            users.push(data.displayName);
-          }
+      if (Math.random() < 0.3) { // 30% chance every 10 seconds
+        const demoMessages = [
+          'Hey everyone! How is everyone doing?',
+          'This chat system looks amazing! 🔥',
+          'Love the new emoji picker feature!',
+          'The UI is so clean and modern 💯',
+          'Great work on the enhancements!'
+        ];
+        
+        const randomMessage = demoMessages[Math.floor(Math.random() * demoMessages.length)];
+        const newMsg = {
+          id: `demo_${Date.now()}`,
+          text: randomMessage,
+          createdAt: new Date(),
+          displayName: 'Demo User',
+          userId: 'demo',
+          photoURL: 'https://ui-avatars.com/api/?name=Demo%20User&background=random&color=fff',
+          isMe: false
+        };
+        
+        setMessages(prev => [...prev, newMsg]);
+        setMessageCount(prev => prev + 1);
+        
+        if (isScrolledUp) {
+          setNewMessageAlert(true);
         }
-      });
-      setOnlineUsers(users);
-    });
-    return () => unsubscribe();
-  }, []);
+      }
+    }, 10000);
+    
+    return () => clearInterval(interval);
+  }, [isScrolledUp]);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (!isScrolledUp) {
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    }
+  }, [messages, isScrolledUp]);
 
   // Scroll detection
   useEffect(() => {
@@ -163,8 +132,7 @@ export default function ChatPage() {
     return BANNED_WORDS.some(badWord => text.toLowerCase().includes(badWord));
   };
 
-  const sendMessage = async (e) => {
-    e.preventDefault();
+  const sendMessage = async () => {
     if (!newMessage.trim()) return;
 
     if (containsBannedWords(newMessage)) {
@@ -172,46 +140,44 @@ export default function ChatPage() {
       return;
     }
 
-    try {
-      await addDoc(messagesRef, {
-        text: newMessage,
-        createdAt: serverTimestamp(),
-        displayName: username,
-        userId: localStorage.getItem('guestId'),
-        photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`,
-        replyTo: replyingTo ? replyingTo.id : null,
-        replyingTo: replyingTo ? replyingTo.displayName : null,
-        replyingToText: replyingTo ? replyingTo.text : null
-      });
-      setNewMessage('');
-      setReplyingTo(null);
-      setShowEmojiPicker(false);
-      await deleteDoc(doc(typingRef, localStorage.getItem('guestId')));
-      inputRef.current?.focus();
-    } catch (error) {
-      console.error("Send failed:", error);
+    const newMsg = {
+      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      text: newMessage,
+      createdAt: new Date(),
+      displayName: username,
+      userId: currentUserId,
+      photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`,
+      replyTo: replyingTo ? replyingTo.id : null,
+      replyingTo: replyingTo ? replyingTo.displayName : null,
+      replyingToText: replyingTo ? replyingTo.text : null,
+      isMe: true
+    };
+
+    setMessages(prev => [...prev, newMsg]);
+    setNewMessage('');
+    setReplyingTo(null);
+    setShowEmojiPicker(false);
+    setTypingUsers([]);
+    inputRef.current?.focus();
+  };
+
+  const handleInputChange = (e) => {
+    setNewMessage(e.target.value);
+    
+    // Simulate typing indicator
+    if (e.target.value && !typingUsers.includes(username)) {
+      setTypingUsers(prev => [...prev, username]);
+      
+      // Clear typing after 3 seconds of no typing
+      setTimeout(() => {
+        setTypingUsers(prev => prev.filter(user => user !== username));
+      }, 3000);
     }
   };
 
-  const handleInputChange = async (e) => {
-    setNewMessage(e.target.value);
-    const guestId = localStorage.getItem('guestId');
-    const typingDoc = doc(typingRef, guestId);
-    await setDoc(typingDoc, {
-      userId: guestId,
-      displayName: username,
-      timestamp: Date.now()
-    });
-
-    clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      deleteDoc(typingDoc);
-    }, 3000);
-  };
-
   const formatTime = (timestamp) => {
-    if (!timestamp?.toDate) return 'now';
-    return timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (!timestamp) return 'now';
+    return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   const saveUsername = () => {
@@ -488,4 +454,4 @@ export default function ChatPage() {
       </div>
     </div>
   );
-      }
+                                           }
