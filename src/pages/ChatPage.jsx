@@ -227,7 +227,7 @@ export default function ChatPage() {
                       fontSize: '0.8rem',
                       color: '#666'
                     }}>
-                      {msg.replyUser }: "{msg.replyText}"
+                      Replying to {msg.replyUser }: "{msg.replyText}"
                     </div>
                   )}
                   <p style={{ 
@@ -358,5 +358,5 @@ export default function ChatPage() {
       </form>
     </div>
   );
-          }
-                
+        }
+        
