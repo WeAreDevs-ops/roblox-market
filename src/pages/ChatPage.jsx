@@ -11,7 +11,7 @@ import {
 
 // List of banned words/phrases (can be expanded)
 const BANNED_WORDS = [
-  'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'nigger', 
+  'fuck', 'shit', 'asshole', 'bitch', 'cunt', 
   'whore', 'slut', 'dick', 'pussy', 'cock', 'fag', 'retard',
   'sex', 'rape', 'porn', 'idiot', 'stupid', 'loser', 
   'bastard', 'dumb', 'fool', 'jerk', 'scum', 'creep', 
