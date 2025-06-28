@@ -6,7 +6,9 @@ import {
   query, 
   orderBy, 
   onSnapshot,
-  serverTimestamp 
+  serverTimestamp,
+  doc,
+  updateDoc
 } from 'firebase/firestore';
 
 const BANNED_WORDS = [
@@ -30,7 +32,9 @@ export default function ChatPage() {
   const [username, setUsername] = useState(localStorage.getItem('chatUsername') || '');
   const [isUsernameLocked, setIsUsernameLocked] = useState(!!localStorage.getItem('chatUsername'));
   const [replyingTo, setReplyingTo] = useState(null);
+  const [typingUsers, setTypingUsers] = useState([]);
   const bottomRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (!localStorage.getItem('guestId')) {
@@ -56,6 +60,21 @@ export default function ChatPage() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const typingRef = collection(db, 'typing_indicators');
+    const unsubscribe = onSnapshot(typingRef, (snapshot) => {
+      const typingData = {};
+      snapshot.forEach(doc => {
+        typingData[doc.id] = doc.data();
+      });
+      const users = Object.values(typingData)
+        .filter(user => user.userId !== localStorage.getItem('guestId'))
+        .map(user => user.displayName);
+      setTypingUsers(users);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const containsBannedWords = (text) => {
     return BANNED_WORDS.some(badWord => text.toLowerCase().includes(badWord));
   };
@@ -77,7 +96,7 @@ export default function ChatPage() {
         userId: localStorage.getItem('guestId'),
         photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff`,
         replyTo: replyingTo ? replyingTo.id : null,
-        replyingToUser: replyingTo ? replyingTo.displayName : null,
+        replyingTo:User  replyingTo ? replyingTo.displayName : null,
         replyingToText: replyingTo ? replyingTo.text : null
       });
       setNewMessage('');
@@ -161,6 +180,19 @@ export default function ChatPage() {
           }}>
             Cancel
           </button>
+        </div>
+      )}
+
+      {/* Typing Indicator */}
+      {typingUsers.length > 0 && (
+        <div style={{
+          padding: '8px 15px',
+          fontStyle: 'italic',
+          color: '#666',
+          backgroundColor: '#f0f0f0',
+          borderBottom: '1px solid #ddd'
+        }}>
+          {typingUsers.join(', ')} {typingUsers.length > 1 ? 'are' : 'is'} typing...
         </div>
       )}
 
@@ -297,58 +329,6 @@ export default function ChatPage() {
       }}>
         <div style={{
           display: 'flex',
-          alignItems: 'center',
-          marginBottom: '10px',
-          gap: '10px'
-        }}>
-          <label style={{
-            fontSize: '0.9rem',
-            color: '#555',
-            whiteSpace: 'nowrap'
-          }}>Your Name:</label>
-          <div style={{
-            display: 'flex',
-            flex: 1,
-            gap: '10px'
-          }}>
-            <input
-              type="text"
-              value={isUsernameLocked ? username : tempUsername}
-              onChange={(e) => !isUsernameLocked && setTempUsername(e.target.value)}
-              style={{
-                flex: 1,
-                padding: '8px 12px',
-                border: '1px solid #ddd',
-                borderRadius: '20px',
-                fontSize: '0.9rem',
-                outline: 'none',
-                backgroundColor: isUsernameLocked ? '#f5f5f5' : 'white'
-              }}
-              maxLength={20}
-              disabled={isUsernameLocked}
-            />
-            {!isUsernameLocked && (
-              <button
-                type="button"
-                onClick={saveUsername}
-                style={{
-                  padding: '0 15px',
-                  backgroundColor: '#7DC387',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '20px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                Save
-              </button>
-            )}
-          </div>
-        </div>
-        <div style={{
-          display: 'flex',
           gap: '10px'
         }}>
           <input
@@ -385,5 +365,5 @@ export default function ChatPage() {
       </form>
     </div>
   );
-        }
-                    
+                                                      }
+        
