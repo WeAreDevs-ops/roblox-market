@@ -18,7 +18,7 @@
     "@vercel/speed-insights": "^1.0.0",
     "@vercel/analytics": "^1.0.0",
     "framer-motion": "^10.16.1",
-    "lucide-react": "^0.379.0"
+    "lucide-react": "^0.379.0",
     "emoji-picker-react": "^4.4.7"
   },
   "devDependencies": {
