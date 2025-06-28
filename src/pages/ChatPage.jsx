@@ -200,7 +200,7 @@ export default function ChatPage() {
       <div style={{ backgroundColor: '#7DC387', color: 'white', padding: '15px', textAlign: 'center' }}>
         <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 'bold' }}>Marketplace Chat</h1>
         <p style={{ margin: '5px 0 0', fontSize: '0.9rem', opacity: 0.9 }}>
-          Logged in as: <strong>{username}</strong> | Online: {onlineUsers.join(', ') || 'Nobody'}
+          Logged in as: <strong>{username}</strong> | Online: {onlineUsers.length} {onlineUsers.length === 1 ? 'user' : 'users'}
         </p>
       </div>
 
