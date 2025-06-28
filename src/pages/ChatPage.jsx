@@ -224,7 +224,7 @@ export default function ChatPage() {
             >
               {msg.replyTo && originalMessage && (
                 <div style={{ marginBottom: '6px', fontSize: '0.8rem', color: '#555', alignSelf: msg.isMe ? 'flex-end' : 'flex-start' }}>
-                  ↪ You replied to <strong>{originalMessage.displayName}</strong>
+                  ↪ replied to <strong>{originalMessage.displayName}</strong>
                 </div>
               )}
 
