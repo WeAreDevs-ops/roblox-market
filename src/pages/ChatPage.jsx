@@ -10,7 +10,6 @@ import {
   doc,
   updateDoc
 } from 'firebase/firestore';
-import { useNotification } from '../useNotification'; // Correct import path for notifications
 
 const BANNED_WORDS = [
   // ... existing banned words ...
@@ -36,12 +35,6 @@ export default function ChatPage() {
   const bottomRef = useRef(null);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
-  const { requestPermission, showNotification } = useNotification();
-
-  // Notification setup
-  useEffect(() => {
-    requestPermission();
-  }, []);
 
   // Listen for typing indicators
   useEffect(() => {
@@ -113,21 +106,6 @@ export default function ChatPage() {
       }));
       
       setMessages(msgs);
-      
-      // Show notification for new messages not from current user
-      const newMessages = msgs.filter(msg => 
-        !msg.isMe && 
-        (!messages.some(m => m.id === msg.id))
-      );
-      
-      if (newMessages.length > 0) {
-        showNotification({
-          title: `${newMessages[0].displayName}`,
-          body: newMessages[0].text,
-          icon: newMessages[0].photoURL
-        });
-      }
-
       scrollToBottom();
     });
     
@@ -255,7 +233,7 @@ export default function ChatPage() {
                   '&:hover': { textDecoration: 'underline' }
                 }}
               >
-                Replying to: {msg.replyingToUser } - {msg.replyingToText}
+                Replying to: {msg.replyingToUser  } - {msg.replyingToText}
               </div>
             )}
 
@@ -404,4 +382,4 @@ export default function ChatPage() {
     </div>
   );
       }
-          
+        
