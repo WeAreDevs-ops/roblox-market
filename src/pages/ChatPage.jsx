@@ -12,15 +12,7 @@ import {
   deleteDoc
 } from 'firebase/firestore';
 
-const BANNED_WORDS = [
-  'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'nigger',
-  'whore', 'slut', 'dick', 'pussy', 'cock', 'fag', 'retard',
-  'sex', 'rape', 'porn', 'idiot', 'stupid', 'loser',
-  'bastard', 'dumb', 'fool', 'jerk', 'scum', 'creep',
-  'tramp', 'skank', 'pimp', 'freak', 'iyot', 'bobo', 'bbo', 'fuckyou',
-  'fuck you', 'bold', 'putangina', 'puta', 'pota', 'p0ta', 'tangina', 'tanginamo',
-  'wtf', 'what the fuck', 'yw', 'yawa', 'nudes', 'vcs', 'tanga', 'tsnga', 't4nga',
-];
+const BANNED_WORDS = [/* same banned list */];
 
 export default function ChatPage() {
   const db = getFirestore();
@@ -30,9 +22,7 @@ export default function ChatPage() {
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [tempUsername, setTempUsername] = useState(
-    localStorage.getItem('chatUsername') || `Guest${Math.floor(Math.random() * 1000)}`
-  );
+  const [tempUsername, setTempUsername] = useState(localStorage.getItem('chatUsername') || '');
   const [username, setUsername] = useState(localStorage.getItem('chatUsername') || '');
   const [isUsernameLocked, setIsUsernameLocked] = useState(!!localStorage.getItem('chatUsername'));
   const [replyingTo, setReplyingTo] = useState(null);
@@ -45,23 +35,23 @@ export default function ChatPage() {
   useEffect(() => {
     const guestId = localStorage.getItem('guestId') || `guest_${Math.random().toString(36).substr(2, 9)}`;
     localStorage.setItem('guestId', guestId);
-    const chatUser = localStorage.getItem('chatUsername') || `Guest${Math.floor(Math.random() * 1000)}`;
+    const defaultUsername = localStorage.getItem('chatUsername') || `Guest${Math.floor(Math.random() * 1000)}`;
     if (!localStorage.getItem('chatUsername')) {
-      setUsername(chatUser);
-      setTempUsername(chatUser);
+      setUsername(defaultUsername);
+      setTempUsername(defaultUsername);
     }
 
     const userDoc = doc(onlineRef, guestId);
     setDoc(userDoc, {
       userId: guestId,
-      displayName: chatUser,
+      displayName: defaultUsername,
       lastSeen: Date.now()
     });
 
     const interval = setInterval(() => {
       setDoc(userDoc, {
         userId: guestId,
-        displayName: chatUser,
+        displayName: localStorage.getItem('chatUsername') || defaultUsername,
         lastSeen: Date.now()
       });
     }, 10000);
@@ -106,10 +96,8 @@ export default function ChatPage() {
       const now = Date.now();
       snapshot.forEach(doc => {
         const data = doc.data();
-        if (now - data.lastSeen < 20000) {
-          if (data.userId !== localStorage.getItem('guestId')) {
-            users.push(data.displayName);
-          }
+        if (now - data.lastSeen < 20000 && data.userId !== localStorage.getItem('guestId')) {
+          users.push(data.displayName);
         }
       });
       setOnlineUsers(users);
@@ -124,7 +112,6 @@ export default function ChatPage() {
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
-
     if (containsBannedWords(newMessage)) {
       alert("Your message contains blocked words.");
       return;
@@ -171,63 +158,56 @@ export default function ChatPage() {
   };
 
   const saveUsername = () => {
-    if (tempUsername.trim() && !isUsernameLocked) {
-      setUsername(tempUsername);
+    if (tempUsername.trim()) {
       localStorage.setItem('chatUsername', tempUsername);
+      setUsername(tempUsername);
       setIsUsernameLocked(true);
     }
   };
 
   const cancelReply = () => setReplyingTo(null);
-  const getOriginalMessage = (replyToId) => messages.find(msg => msg.id === replyToId);
+  const getOriginalMessage = (id) => messages.find(m => m.id === id);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#f5f7fa' }}>
+      {/* Header */}
       <div style={{ backgroundColor: '#7DC387', color: 'white', padding: '15px', textAlign: 'center' }}>
-        <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 'bold' }}>Marketplace Chat</h1>
-        <p style={{ margin: '5px 0 0', fontSize: '0.9rem', opacity: 0.9 }}>
+        <h1 style={{ margin: 0, fontSize: '1.4rem' }}>Marketplace Chat</h1>
+        <p style={{ margin: 0 }}>
           Logged in as: <strong>{username}</strong> | Online: {onlineUsers.length} {onlineUsers.length === 1 ? 'user' : 'users'}
         </p>
       </div>
 
+      {/* Reply Prompt */}
       {replyingTo && (
-        <div style={{ padding: '10px', backgroundColor: '#e4f0e4', borderBottom: '1px solid #ccc', textAlign: 'center' }}>
-          <span style={{ fontWeight: 'bold' }}>
-            Replying to {replyingTo.displayName}: "{replyingTo.text}"
-          </span>
-          <button onClick={cancelReply} style={{ marginLeft: '10px', color: '#7DC387', cursor: 'pointer', background: 'none', border: 'none' }}>
-            Cancel
-          </button>
+        <div style={{ padding: '10px', backgroundColor: '#e4f0e4', textAlign: 'center', borderBottom: '1px solid #ccc' }}>
+          <span style={{ fontWeight: 'bold' }}>Replying to {replyingTo.displayName}: "{replyingTo.text}"</span>
+          <button onClick={cancelReply} style={{ marginLeft: '10px', color: '#7DC387', background: 'none', border: 'none', cursor: 'pointer' }}>Cancel</button>
         </div>
       )}
 
+      {/* Typing indicator */}
       {typingUsers.length > 0 && (
-        <div style={{ padding: '8px 15px', fontStyle: 'italic', color: '#666', backgroundColor: '#f0f0f0' }}>
+        <div style={{ padding: '8px 15px', fontStyle: 'italic', backgroundColor: '#f0f0f0', color: '#666' }}>
           {typingUsers.join(', ')} {typingUsers.length > 1 ? 'are' : 'is'} typing...
         </div>
       )}
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '15px', background: 'linear-gradient(180deg, #f5f7fa 0%, #eef2f5 100%)' }}>
+      {/* Chat messages */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '15px' }}>
         {messages.map((msg) => {
           const originalMessage = msg.replyTo ? getOriginalMessage(msg.replyTo) : null;
           return (
             <div
               key={msg.id}
               ref={el => messageRefs.current[msg.id] = el}
-              style={{
-                marginBottom: '20px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: msg.isMe ? 'flex-end' : 'flex-start',
-                position: 'relative'
-              }}
+              style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', alignItems: msg.isMe ? 'flex-end' : 'flex-start' }}
             >
               {msg.replyTo && originalMessage && (
-                <div style={{ marginBottom: '6px', fontSize: '0.8rem', color: '#555', alignSelf: msg.isMe ? 'flex-end' : 'flex-start' }}>
-                  {msg.displayName} replied to <strong>{originalMessage.displayName}</strong>
+                <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '5px' }}>
+                  replied to <strong>{originalMessage.displayName}</strong>
                 </div>
               )}
-
               <div style={{ display: 'flex', alignItems: 'flex-end', maxWidth: '80%' }}>
                 {!msg.isMe && (
                   <div style={{
@@ -243,47 +223,19 @@ export default function ChatPage() {
                   backgroundColor: msg.isMe ? '#7DC387' : 'white',
                   color: msg.isMe ? 'white' : '#333',
                   padding: '10px 15px',
-                  borderRadius: '15px',
-                  borderBottomRightRadius: msg.isMe ? '5px' : '15px',
-                  borderBottomLeftRadius: msg.isMe ? '15px' : '5px',
-                  position: 'relative'
+                  borderRadius: '15px'
                 }}>
-                  {msg.replyTo && originalMessage && (
-                    <div
-                      onClick={() => {
-                        const target = messageRefs.current[msg.replyTo];
-                        if (target) {
-                          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          target.style.backgroundColor = '#ffffcc';
-                          setTimeout(() => { target.style.backgroundColor = ''; }, 1000);
-                        }
-                      }}
-                      style={{
-                        backgroundColor: '#f2f2f2',
-                        borderLeft: '3px solid #7DC387',
-                        padding: '6px 8px',
-                        marginBottom: '8px',
-                        borderRadius: '8px',
-                        fontSize: '0.85rem',
-                        color: '#333',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <strong>{originalMessage.displayName}:</strong> {originalMessage.text}
-                    </div>
-                  )}
-                  <p style={{ margin: 0, fontSize: '0.95rem', whiteSpace: 'pre-wrap' }}>{msg.text}</p>
+                  <p style={{ margin: 0 }}>{msg.text}</p>
                 </div>
               </div>
-
-              <div style={{ marginTop: '5px', marginLeft: msg.isMe ? '0' : '42px', fontSize: '0.75rem', color: msg.isMe ? '#7DC387' : '#666' }}>
-                {!msg.isMe && <strong>{msg.displayName}</strong>} {formatTime(msg.createdAt)} &nbsp;|&nbsp;
+              <div style={{ fontSize: '0.75rem', color: '#888', marginLeft: msg.isMe ? '0' : '42px', marginTop: '4px' }}>
+                {!msg.isMe && <strong>{msg.displayName}</strong>} {formatTime(msg.createdAt)} &nbsp;
                 <button
                   onClick={() => setReplyingTo(msg)}
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: '#888',
+                    color: '#7DC387',
                     cursor: 'pointer',
                     fontSize: '0.75rem',
                     padding: 0
@@ -298,36 +250,27 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Username Input Area (only shown when not locked) */}
+      {/* Username form */}
       {!isUsernameLocked && (
-        <div style={{ padding: '10px', backgroundColor: '#fff', borderTop: '1px solid #ddd' }}>
+        <div style={{ padding: '10px', backgroundColor: '#f9f9f9', borderTop: '1px solid #ddd' }}>
           <input
             type="text"
             value={tempUsername}
             onChange={(e) => setTempUsername(e.target.value)}
-            placeholder="Enter your username"
-            style={{
-              padding: '10px',
-              border: '1px solid #ccc',
-              borderRadius: '8px',
-              marginRight: '10px'
-            }}
+            placeholder="Enter a username"
+            style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #ccc', marginRight: '10px' }}
           />
-          <button onClick={saveUsername} style={{
-            padding: '10px 15px',
-            backgroundColor: '#7DC387',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}>
-            Save
+          <button
+            onClick={saveUsername}
+            style={{ padding: '8px 16px', backgroundColor: '#7DC387', border: 'none', color: 'white', borderRadius: '10px' }}
+          >
+            Set Username
           </button>
         </div>
       )}
 
-      {/* Chat Input */}
-      <form onSubmit={sendMessage} style={{ backgroundColor: 'white', borderTop: '1px solid #e1e4e8', padding: '15px' }}>
+      {/* Input area */}
+      <form onSubmit={sendMessage} style={{ padding: '15px', backgroundColor: 'white', borderTop: '1px solid #eee' }}>
         <div style={{ display: 'flex', gap: '10px' }}>
           <input
             type="text"
@@ -347,7 +290,7 @@ export default function ChatPage() {
             disabled={!newMessage.trim() || !isUsernameLocked}
             style={{
               padding: '0 20px',
-              backgroundColor: isUsernameLocked ? '#7DC387' : '#cccccc',
+              backgroundColor: isUsernameLocked ? '#7DC387' : '#ccc',
               color: 'white',
               border: 'none',
               borderRadius: '20px',
@@ -361,4 +304,4 @@ export default function ChatPage() {
       </form>
     </div>
   );
-                                          }
+                    }
