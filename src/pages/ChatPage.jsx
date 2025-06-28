@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  query, 
-  orderBy, 
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  orderBy,
   onSnapshot,
   serverTimestamp,
   doc,
@@ -13,10 +13,10 @@ import {
 } from 'firebase/firestore';
 
 const BANNED_WORDS = [
-  'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'nigger', 
+  'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'nigger',
   'whore', 'slut', 'dick', 'pussy', 'cock', 'fag', 'retard',
-  'sex', 'rape', 'porn', 'idiot', 'stupid', 'loser', 
-  'bastard', 'dumb', 'fool', 'jerk', 'scum', 'creep', 
+  'sex', 'rape', 'porn', 'idiot', 'stupid', 'loser',
+  'bastard', 'dumb', 'fool', 'jerk', 'scum', 'creep',
   'tramp', 'skank', 'pimp', 'freak', 'iyot', 'bobo', 'bbo', 'fuckyou',
   'fuck you', 'bold', 'putangina', 'puta', 'pota', 'p0ta', 'tangina', 'tanginamo',
   'wtf', 'what the fuck', 'yw', 'yawa', 'nudes', 'vcs', 'tanga', 'tsnga', 't4nga',
@@ -224,7 +224,7 @@ export default function ChatPage() {
             >
               {msg.replyTo && originalMessage && (
                 <div style={{ marginBottom: '6px', fontSize: '0.8rem', color: '#555', alignSelf: msg.isMe ? 'flex-end' : 'flex-start' }}>
-                  â†ª replied to <strong>{originalMessage.displayName}</strong>
+                  {msg.displayName} replied to <strong>{originalMessage.displayName}</strong>
                 </div>
               )}
 
@@ -298,6 +298,35 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </div>
 
+      {/* Username Input Area (only shown when not locked) */}
+      {!isUsernameLocked && (
+        <div style={{ padding: '10px', backgroundColor: '#fff', borderTop: '1px solid #ddd' }}>
+          <input
+            type="text"
+            value={tempUsername}
+            onChange={(e) => setTempUsername(e.target.value)}
+            placeholder="Enter your username"
+            style={{
+              padding: '10px',
+              border: '1px solid #ccc',
+              borderRadius: '8px',
+              marginRight: '10px'
+            }}
+          />
+          <button onClick={saveUsername} style={{
+            padding: '10px 15px',
+            backgroundColor: '#7DC387',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer'
+          }}>
+            Save
+          </button>
+        </div>
+      )}
+
+      {/* Chat Input */}
       <form onSubmit={sendMessage} style={{ backgroundColor: 'white', borderTop: '1px solid #e1e4e8', padding: '15px' }}>
         <div style={{ display: 'flex', gap: '10px' }}>
           <input
@@ -332,4 +361,4 @@ export default function ChatPage() {
       </form>
     </div>
   );
-    }
+                                          }
