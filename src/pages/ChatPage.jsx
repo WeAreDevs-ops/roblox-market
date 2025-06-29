@@ -209,7 +209,7 @@ export default function ChatPage() {
           >
             {msg.replyTo && originalMessage && (
               <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '5px' }}>
-                ╭⌯⌲replied to <strong>{originalMessage.displayName}</strong>
+                ╭⌲replied to <strong>{originalMessage.displayName}</strong>
               </div>
             )}
 
