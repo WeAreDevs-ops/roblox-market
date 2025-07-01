@@ -4,12 +4,12 @@ import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Register from './pages/Register';
 import ChatPage from './pages/ChatPage';
-import HeaderNavbar from './components/HeaderNavbar'; // ✅ Import the navbar
+import HeaderNavbar from './components/HeaderNavbar';
 
 export default function App() {
   return (
     <BrowserRouter>
-      <HeaderNavbar /> {/* ✅ Animated navbar replaces <header> */}
+      <HeaderNavbar />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/admin" element={<Admin />} />
