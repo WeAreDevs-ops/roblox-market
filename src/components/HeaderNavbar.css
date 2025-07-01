@@ -1,0 +1,48 @@
+.navbar-header {
+  background-color: #7dc387;
+  color: white;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.navbar-nav {
+  display: flex;
+  gap: 24px;
+  position: relative;
+}
+
+.navbar-link-wrapper {
+  position: relative;
+}
+
+.navbar-link {
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.navbar-link:hover {
+  color: #dbe9ea;
+}
+
+.navbar-link.active {
+  color: #dbe9ea;
+}
+
+.underline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background-color: white;
+}
