@@ -14,73 +14,74 @@ export default function HeaderNavbar() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  return (
-    <header className="navbar-header">
-      <h1 className="navbar-title">𝗔𝗰𝗰𝗼𝘂𝗻𝘁 𝗠𝗮𝗿𝗸𝗲𝘁𝗽𝗹𝗮𝗰𝗲</h1>
+  const closeMenu = () => setMenuOpen(false);
 
-      {/* Desktop Navigation */}
-      <nav className="navbar-nav desktop">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <motion.div
-              key={item.name}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="navbar-link-wrapper"
-            >
+  return (
+    <>
+      <header className="navbar-header">
+        {/* Hamburger icon on the left */}
+        <div className="hamburger-icon" onClick={() => setMenuOpen(!menuOpen)}>
+          ☰
+        </div>
+
+        <h1 className="navbar-title">𝗔𝗰𝗰𝗼𝘂𝗻𝘁 𝗠𝗮𝗿𝗸𝗲𝘁𝗽𝗹𝗮𝗰𝗲</h1>
+
+        {/* Desktop nav */}
+        <nav className="navbar-nav desktop">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
               <Link
+                key={item.name}
                 to={item.path}
                 className={`navbar-link ${isActive ? "active" : ""}`}
               >
                 {item.name}
               </Link>
-              {isActive && (
-                <motion.div
-                  layoutId="underline"
-                  className="underline"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
-            </motion.div>
-          );
-        })}
-      </nav>
+            );
+          })}
+        </nav>
+      </header>
 
-      {/* Hamburger Icon */}
-      <div
-        className="hamburger-icon"
-        onClick={() => setMenuOpen(!menuOpen)}
-      >
-        ☰
-      </div>
-
-      {/* Mobile Navigation Menu */}
+      {/* Mobile sliding menu */}
       <AnimatePresence>
         {menuOpen && (
-          <motion.nav
-            className="navbar-nav mobile"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className={`navbar-link mobile-link ${isActive ? "active" : ""}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              );
-            })}
-          </motion.nav>
+          <>
+            {/* Overlay */}
+            <motion.div
+              className="mobile-overlay"
+              onClick={closeMenu}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            />
+
+            {/* Slide-in sidebar */}
+            <motion.nav
+              className="mobile-sidebar"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.3 }}
+            >
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    onClick={closeMenu}
+                    className={`mobile-link ${isActive ? "active" : ""}`}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </motion.nav>
+          </>
         )}
       </AnimatePresence>
-    </header>
+    </>
   );
 }
