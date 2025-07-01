@@ -23,7 +23,7 @@ export default function HeaderNavbar() {
           <div className="hamburger-icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
             ☰
           </div>
-          <h1 className="navbar-title">Account Marketplace</h1>
+          <h1 className="navbar-title">𝗔𝗖𝗖𝗢𝗨𝗡𝗧𝗦 𝗠𝗔𝗥𝗞𝗘𝗧𝗣𝗟𝗔𝗖𝗘</h1>
         </div>
       </header>
 
