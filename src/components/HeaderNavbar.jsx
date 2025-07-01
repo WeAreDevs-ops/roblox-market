@@ -12,54 +12,35 @@ const navItems = [
 
 export default function HeaderNavbar() {
   const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const closeMenu = () => setMenuOpen(false);
+  const closeSidebar = () => setSidebarOpen(false);
 
   return (
     <>
-      <header className="navbar-header">
-        {/* Hamburger icon on the left */}
-        <div className="hamburger-icon" onClick={() => setMenuOpen(!menuOpen)}>
-          ☰
+      <header className="topbar">
+        <div className="topbar-left">
+          <div className="hamburger-icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            ☰
+          </div>
+          <h1 className="navbar-title">Account Marketplace</h1>
         </div>
-
-        <h1 className="navbar-title">𝗔𝗰𝗰𝗼𝘂𝗻𝘁 𝗠𝗮𝗿𝗸𝗲𝘁𝗽𝗹𝗮𝗰𝗲</h1>
-
-        {/* Desktop nav */}
-        <nav className="navbar-nav desktop">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={`navbar-link ${isActive ? "active" : ""}`}
-              >
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
       </header>
 
-      {/* Mobile sliding menu */}
       <AnimatePresence>
-        {menuOpen && (
+        {sidebarOpen && (
           <>
-            {/* Overlay */}
             <motion.div
-              className="mobile-overlay"
-              onClick={closeMenu}
+              className="sidebar-overlay"
+              onClick={closeSidebar}
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.5 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             />
 
-            {/* Slide-in sidebar */}
-            <motion.nav
-              className="mobile-sidebar"
+            <motion.aside
+              className="sidebar"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
@@ -71,14 +52,14 @@ export default function HeaderNavbar() {
                   <Link
                     key={item.name}
                     to={item.path}
-                    onClick={closeMenu}
-                    className={`mobile-link ${isActive ? "active" : ""}`}
+                    onClick={closeSidebar}
+                    className={`sidebar-link ${isActive ? "active" : ""}`}
                   >
                     {item.name}
                   </Link>
                 );
               })}
-            </motion.nav>
+            </motion.aside>
           </>
         )}
       </AnimatePresence>
