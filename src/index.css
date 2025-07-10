@@ -1,14 +1,31 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* Color Variables for Consistency */
+:root {
+  --primary-color: #4F46E5;
+  --primary-light: #6366F1;
+  --primary-dark: #3730A3;
+  --secondary-color: #F8FAFC;
+  --accent-color: #10B981;
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --background-light: #FFFFFF;
+  --background-overlay: rgba(255, 255, 255, 0.95);
+  --border-color: #E5E7EB;
+  --shadow-light: rgba(0, 0, 0, 0.05);
+  --shadow-medium: rgba(0, 0, 0, 0.1);
+  --shadow-heavy: rgba(0, 0, 0, 0.15);
+}
+
 /* Loading Spinner */
 .loader {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #7DC387;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-color);
+  border-top: 2px solid var(--primary-color);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
   display: inline-block;
   margin: 0 auto;
 }
@@ -18,11 +35,11 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Enhanced Animations */
+/* Optimized Animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -30,95 +47,47 @@
   }
 }
 
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 .animate-fade-in-up {
-  animation: fadeInUp 0.3s ease-out;
+  animation: fadeInUp 0.2s ease-out;
 }
 
-.animate-fade-in-scale {
-  animation: fadeInScale 0.3s ease-out;
+/* Reset and Base Styles */
+* {
+  box-sizing: border-box;
 }
-
-/* Glassmorphism effect */
-.glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
   min-height: 100vh;
-  color: #333;
-  line-height: 1.6;
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Optional dark overlay for readability */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.1);
-  z-index: -1;
-}
-
-header {
-  background: linear-gradient(90deg, #7DC387, #DBE9EA);
-  color: #000;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-}
-
-nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 10px;
-}
-
-nav a {
-  color: #000;
-  text-decoration: none;
-  font-weight: bold;
-}
-
+/* Container */
 .container {
-  width: 95%;
+  width: 100%;
   max-width: 1200px;
-  margin: 20px auto;
-  padding: 0 10px;
+  margin: 0 auto;
+  padding: 16px;
 }
 
+/* Card Component */
 .card {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 28px;
-  margin-bottom: 24px;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(12px);
+  background: var(--background-overlay);
+  padding: 20px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow-medium);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(8px);
   position: relative;
-  overflow: hidden;
+  will-change: transform;
 }
 
 .card::before {
@@ -127,178 +96,221 @@ nav a {
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #7DC387, #667eea);
+  height: 2px;
+  background: var(--primary-color);
+  border-radius: 12px 12px 0 0;
 }
 
 .card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--shadow-heavy);
 }
 
 .card h3 {
-  font-size: 22px;
-  margin-bottom: 15px;
-  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 12px;
+  font-weight: 600;
   text-align: center;
+  color: var(--text-primary);
 }
 
 .card img {
   display: block;
-  margin: 0 auto 15px;
-  max-width: 130px;
-  border-radius: 12px;
-  border: 3px solid #7DC387;
-  background: #fff;
+  margin: 0 auto 12px;
+  max-width: 100px;
+  border-radius: 8px;
+  border: 2px solid var(--primary-color);
+  background: var(--background-light);
 }
 
-.card-info {
-  font-size: 15px;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card-info span {
-  font-weight: 600;
-}
-
+/* Badge Component */
 .badge {
-  background: linear-gradient(135deg, #7DC387, #667eea);
+  background: var(--primary-color);
   color: white;
-  font-weight: 600;
-  font-size: 12px;
-  padding: 6px 14px;
-  border-radius: 25px;
-  margin-left: 8px;
-  box-shadow: 0 2px 8px rgba(125, 195, 135, 0.3);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  margin-left: 6px;
+  box-shadow: 0 2px 4px var(--shadow-light);
+  display: inline-block;
 }
 
+/* Button Styles */
 .buttons {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 8px;
+  margin-top: 16px;
   flex-wrap: wrap;
 }
 
 button {
-  padding: 12px 24px;
+  padding: 10px 16px;
   border: none;
-  border-radius: 12px;
-  font-weight: 600;
+  border-radius: 8px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 14px;
+  transition: all 0.2s ease;
+  font-size: 13px;
   position: relative;
-  overflow: hidden;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  min-width: 120px;
-}
-
-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-button:hover::before {
-  left: 100%;
+  text-transform: none;
+  letter-spacing: normal;
+  min-width: 100px;
+  font-family: inherit;
 }
 
 .buy {
-  background: linear-gradient(135deg, #7DC387, #667eea);
+  background: var(--primary-color);
   color: white;
-  box-shadow: 0 4px 15px rgba(125, 195, 135, 0.4);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
 }
 
 .buy:hover {
-  background: linear-gradient(135deg, #6bb77b, #5a67d8);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(125, 195, 135, 0.5);
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
 }
 
 .delete {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  background: #EF4444;
   color: white;
-  box-shadow: 0 4px 15px rgba(238, 90, 82, 0.4);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 .delete:hover {
-  background: linear-gradient(135deg, #ff5252, #d32f2f);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(238, 90, 82, 0.5);
+  background: #DC2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
 
+/* Form Elements */
 input,
 select {
   width: 100%;
-  margin-bottom: 12px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 2px solid #e1e5e9;
-  background: rgba(255, 255, 255, 0.9);
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--background-light);
   font-size: 14px;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 input:focus,
 select:focus {
   outline: none;
-  border-color: #7DC387;
-  box-shadow: 0 0 0 3px rgba(125, 195, 135, 0.1);
-  background: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
 }
 
-/* Responsive Design */
+/* Mobile Optimizations */
 @media (max-width: 768px) {
   .container {
-    width: 98%;
-    padding: 0 5px;
+    padding: 12px;
   }
   
   .card {
-    padding: 20px;
-    margin-bottom: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+  }
+  
+  .card h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .card img {
+    max-width: 80px;
+    margin-bottom: 10px;
   }
   
   .buttons {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    margin-top: 12px;
   }
   
   button {
     width: 100%;
     min-width: unset;
+    padding: 12px 16px;
+    font-size: 14px;
   }
   
   .badge {
-    font-size: 11px;
-    padding: 4px 10px;
+    font-size: 10px;
+    padding: 3px 8px;
+    margin-left: 4px;
+  }
+  
+  input,
+  select {
+    padding: 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
   }
 }
 
 @media (max-width: 480px) {
+  .container {
+    padding: 8px;
+  }
+  
   .card {
-    padding: 16px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 8px;
   }
   
   .card h3 {
-    font-size: 18px;
+    font-size: 15px;
   }
   
   button {
-    padding: 10px 16px;
-    font-size: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
+/* Performance Optimizations */
+.card,
+button,
+input,
+select {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Reduce animations on lower-end devices */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
   }
