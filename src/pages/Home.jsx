@@ -130,8 +130,8 @@ export default function Home() {
       const thumbnail = thumbData.data[0]?.imageUrl || "";
 
       const resalePrice = details.CollectiblesItemDetails?.CollectibleLowestResalePrice;
-      const formattedResale = resalePrice ? ` ${resalePrice.toLocaleString()} Robux` : "🔴 Offsale";
-      const resaleInPHP = resalePrice ? ` ₱${(resalePrice * 0.15).toLocaleString()} PHP` : "N/A";
+      const formattedResale = resalePrice ? ` ${resalePrice.toLocaleString()} Robux` : "ðŸ”´ Offsale";
+      const resaleInPHP = resalePrice ? ` â‚±${(resalePrice * 0.15).toLocaleString()} PHP` : "N/A";
 
       resultDiv.innerHTML = `
       <div class="card" style="padding: 20px; text-align: left;">
@@ -160,13 +160,13 @@ export default function Home() {
             <div style="margin-bottom: 8px;">
               <strong>Limited Status:</strong> 
               ${details.IsLimited ? 
-                "<span style='background: #7DC387; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;'>✅ Limited</span>" : 
-                "<span style='background: #FF4C4C; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;'>❌ Not Limited</span>"}
+                "<span style='background: #7DC387; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;'>âœ… Limited</span>" : 
+                "<span style='background: #FF4C4C; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;'>âŒ Not Limited</span>"}
             </div>
             <div>
               <strong>Unique Status:</strong> 
               ${details.IsLimitedUnique ? 
-                "<span style='background: #7DC387; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;'>🌟 Unique</span>" : 
+                "<span style='background: #7DC387; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;'>ðŸŒŸ Unique</span>" : 
                 "<span style='background: #555; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;'>Not Unique</span>"}
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function Home() {
 
     } catch (error) {
       console.error(error);
-      resultDiv.innerHTML = "<div class='card' style='padding: 20px; color: #FF4C4C;'><strong>❌ Error:</strong> Failed to fetch item. Make sure the Asset ID is valid.</div>";
+      resultDiv.innerHTML = "<div class='card' style='padding: 20px; color: #FF4C4C;'><strong>âŒ Error:</strong> Failed to fetch item. Make sure the Asset ID is valid.</div>";
     }
   }
 
@@ -200,7 +200,7 @@ export default function Home() {
           Total Accounts: {dashboardStats.totalAccounts}
         </div>
         <div className="badge" style={{ padding: '12px 20px', fontSize: '14px', textAlign: 'center' }}>
-          Total Revenue: ₱{dashboardStats.totalRevenue}
+          Total Revenue: â‚±{dashboardStats.totalRevenue}
         </div>
         <div className="badge" style={{ padding: '12px 20px', fontSize: '14px', textAlign: 'center' }}>
           Daily New Stock: {dashboardStats.newStock}
@@ -231,8 +231,8 @@ export default function Home() {
           type="text" 
           placeholder={
             viewType === 'accounts'
-              ? "🔎 Search by username, seller or gamepass..."
-              : "🔎 Search by via or seller..."
+              ? "ðŸ”Ž Search by username, seller or gamepass..."
+              : "ðŸ”Ž Search by via or seller..."
           }
           value={search} 
           onChange={(e) => setSearch(e.target.value)}
@@ -415,7 +415,7 @@ export default function Home() {
                 fontSize: '16px',
                 fontWeight: '500'
               }}>
-                🔍 Results will appear here
+                ðŸ” Results will appear here
               </p>
             </div>
           </div>
@@ -458,9 +458,9 @@ export default function Home() {
                   )}
 
                   <div style={{ marginTop: '15px' }}>
-                    <DetailRow label="➤ Price:" value={`₱${acc.price}`} />
-                    <DetailRow label="➤ Total Summary:" value={acc.totalSummary || "N/A"} />
-                    <DetailRow label="➤ Premium Status:" value={acc.premium === "True" ? "True" : "False"} />
+                    <DetailRow label="âž¤ Price:" value={`â‚±${acc.price}`} />
+                    <DetailRow label="âž¤ Total Summary:" value={acc.totalSummary || "N/A"} />
+                    <DetailRow label="âž¤ Premium Status:" value={acc.premium === "True" ? "True" : "False"} />
                   </div>
 
                   <AnimatePresence>
@@ -472,15 +472,15 @@ export default function Home() {
                         transition={{ duration: 0.3 }}
                         style={{ overflow: 'hidden', marginTop: '15px' }}
                       >
-                        <DetailRow label="➤ Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
-                        <DetailRow label="➤ Email:" value={acc.email} />
-                        <DetailRow label="➤ Robux Balance:" value={acc.robuxBalance} />
-                        <DetailRow label="➤ Limited item:" value={acc.limitedItems} />
-                        <DetailRow label="➤ Inventory:" value={acc.inventory} />
-                        <DetailRow label="🌍 Type:" value={acc.accountType} />
-                        <DetailRow label="💳 MOP:" value={acc.mop} />
+                        <DetailRow label="âž¤ Age:" value={acc.age ? `${acc.age} Days` : 'N/A'} />
+                        <DetailRow label="âž¤ Email:" value={acc.email} />
+                        <DetailRow label="âž¤ Robux Balance:" value={acc.robuxBalance} />
+                        <DetailRow label="âž¤ Limited item:" value={acc.limitedItems} />
+                        <DetailRow label="âž¤ Inventory:" value={acc.inventory} />
+                        <DetailRow label="ðŸŒ Type:" value={acc.accountType} />
+                        <DetailRow label="ðŸ’³ MOP:" value={acc.mop} />
                         <div style={{ marginTop: "10px" }}>
-                          <strong>🎮 Games with Gamepasses:</strong>
+                          <strong>ðŸŽ® Games with Gamepasses:</strong>
                           <div style={{ 
                             marginTop: '8px', 
                             display: 'flex', 
@@ -506,51 +506,4 @@ export default function Home() {
                   </AnimatePresence>
 
                   <div className="buttons" style={{ marginTop: "10px" }}>
-                    <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} className="buy">
-                      {expandedId === acc.id ? 'Hide Details' : 'View Details'}
-                    </button>
-                    <button onClick={() => showContact(acc)} className="delete" style={{ marginLeft: '10px' }}>
-                      Contact Me
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        )
-      ) : (
-        filteredRobux.length === 0 ? (
-          <p>No Robux listings found.</p>
-        ) : (
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
-            gap: '16px' 
-          }}>
-            {filteredRobux.map((item) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="card"
-              >
-                <h3>Robux: {item.amount}</h3>
-                <DetailRow label="➤ Via:" value={item.via} />
-                <DetailRow label="➤ Price:" value={`₱${item.price}`} />
-                <DetailRow label="➤ Seller:" value={item.seller} />
-                <div className="buttons" style={{ marginTop: "10px" }}>
-                  <button onClick={() => showContact(item)} className="delete">
-                    Contact Me
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )
-      )}
-    </div>
-  );
-}
+             
