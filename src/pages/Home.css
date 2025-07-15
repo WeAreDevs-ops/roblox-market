@@ -231,6 +231,49 @@
   flex-wrap: wrap;
 }
 
+/* Gamepass Section */
+.gamepass-container {
+  margin-top: 1rem;
+}
+
+.gamepass-label {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.gamepass-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.gamepass-tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid var(--gray-200);
+  transition: all 0.2s ease;
+}
+
+.gamepass-tag:hover {
+  background: var(--gray-200);
+  transform: translateY(-1px);
+}
+
+.no-gamepass-tag {
+  background: var(--gray-100);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
