@@ -236,17 +236,17 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border: none;
   border-radius: var(--radius);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
-  min-height: 2.75rem;
+  min-height: 2.375rem;
   flex: 1;
-  min-width: 120px;
+  min-width: 110px;
 }
 
 .btn-primary {

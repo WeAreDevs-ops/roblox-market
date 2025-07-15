@@ -403,7 +403,7 @@ export default function Home() {
                         <DetailRow label="🌍 Type:" value={acc.accountType} />
                         <DetailRow label="💳 MOP:" value={acc.mop} />
                         <div style={{ marginTop: "10px" }}>
-                          <strong>🎮 Games with Gamepasses:</strong>
+                          <DetailRow label="🎮 Games with Gamepasses:" value="" />
                           <div style={{ 
                             marginTop: '8px', 
                             display: 'flex', 
@@ -428,11 +428,11 @@ export default function Home() {
                     )}
                   </AnimatePresence>
 
-                  <div className="buttons" style={{ marginTop: "10px" }}>
-                    <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} className="buy">
+                  <div className="card-actions">
+                    <button onClick={() => setExpandedId(expandedId === acc.id ? null : acc.id)} className="btn btn-secondary">
                       {expandedId === acc.id ? 'Hide Details' : 'View Details'}
                     </button>
-                    <button onClick={() => showContact(acc)} className="delete" style={{ marginLeft: '10px' }}>
+                    <button onClick={() => showContact(acc)} className="btn btn-primary">
                       Contact Me
                     </button>
                   </div>
