@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { motion, AnimatePresence } from 'framer-motion';
+import './Home.css';
 
 export default function Home() {
   const [accounts, setAccounts] = useState([]);
@@ -187,19 +188,36 @@ export default function Home() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '10px',
-          justifyContent: 'center',
-          marginBottom: '20px'
-        }}
-        className="dashboard-grid"
+        className="dashboard-summary"
       >
-        <div className="badge">Total Accounts: {dashboardStats.totalAccounts}</div>
-        <div className="badge">Total Revenue: ₱{dashboardStats.totalRevenue}</div>
-        <div className="badge">Daily New Stock: {dashboardStats.newStock}</div>
-        <div className="badge">Total Sellers: {dashboardStats.sellerCount}</div>
+        <div className="stat-card">
+          <div className="stat-icon">📊</div>
+          <div className="stat-content">
+            <div className="stat-value">{dashboardStats.totalAccounts}</div>
+            <div className="stat-label">Total Accounts</div>
+          </div>
+        </div>
+        <div className="stat-card revenue">
+          <div className="stat-icon">💰</div>
+          <div className="stat-content">
+            <div className="stat-value">₱{dashboardStats.totalRevenue}</div>
+            <div className="stat-label">Total Revenue</div>
+          </div>
+        </div>
+        <div className="stat-card new-stock">
+          <div className="stat-icon">📦</div>
+          <div className="stat-content">
+            <div className="stat-value">{dashboardStats.newStock}</div>
+            <div className="stat-label">Daily New Stock</div>
+          </div>
+        </div>
+        <div className="stat-card sellers">
+          <div className="stat-icon">👥</div>
+          <div className="stat-content">
+            <div className="stat-value">{dashboardStats.sellerCount}</div>
+            <div className="stat-label">Total Sellers</div>
+          </div>
+        </div>
       </motion.div>
 
       {/* Filters */}
@@ -207,76 +225,65 @@ export default function Home() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
-        style={{ display: "flex", flexWrap: "wrap", alignItems: "center", marginBottom: "15px" }}
+        className="filters-container"
       >
-        <input 
-          type="text" 
-          placeholder={
-            viewType === 'accounts'
-              ? "🔎 Search by username, seller or gamepass..."
-              : "🔎 Search by via or seller..."
-          }
-          value={search} 
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
-          <option value="">Sort Price</option>
-          <option value="low-high">Low to High</option>
-          <option value="high-low">High to Low</option>
-        </select>
-        {viewType === 'accounts' && (
-          <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)}>
-            <option value="">Email Status</option>
-            <option value="Verified">Verified</option>
-            <option value="Unverified">Unverified</option>
+        <div className="search-bar">
+          <input 
+            type="text" 
+            placeholder={
+              viewType === 'accounts'
+                ? "🔎 Search by username, seller or gamepass..."
+                : "🔎 Search by via or seller..."
+            }
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)}
+            className="search-input"
+          />
+        </div>
+        <div className="filter-controls">
+          <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="filter-select">
+            <option value="">💰 Sort by Price</option>
+            <option value="low-high">💵 Low to High</option>
+            <option value="high-low">💸 High to Low</option>
           </select>
-        )}
-        <button className="delete" onClick={resetFilters}>Reset</button>
+          {viewType === 'accounts' && (
+            <select value={emailFilter} onChange={(e) => setEmailFilter(e.target.value)} className="filter-select">
+              <option value="">📧 Email Status</option>
+              <option value="Verified">✅ Verified</option>
+              <option value="Unverified">❌ Unverified</option>
+            </select>
+          )}
+          <button className="reset-btn" onClick={resetFilters}>
+            🔄 Reset
+          </button>
+        </div>
       </motion.div>
 
       {/* View Toggle */}
-      <div style={{ textAlign: "center", margin: "20px 0", display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
-        <button 
-          onClick={() => setViewType('accounts')} 
-          style={{
-            marginRight: '10px',
-            padding: '8px 20px',
-            borderRadius: '8px',
-            backgroundColor: viewType === 'accounts' ? '#7DC387' : '#ddd',
-            color: viewType === 'accounts' ? 'white' : 'black',
-            border: 'none',
-            fontWeight: 'bold'
-          }}
-        >
-          ACCOUNT LIST
-        </button>
-        <button 
-          onClick={() => setViewType('robux')} 
-          style={{
-            padding: '8px 20px',
-            borderRadius: '8px',
-            backgroundColor: viewType === 'robux' ? '#7DC387' : '#ddd',
-            color: viewType === 'robux' ? 'white' : 'black',
-            border: 'none',
-            fontWeight: 'bold'
-          }}
-        >
-          ROBUX LIST
-        </button>
-        <button 
-          onClick={() => setViewType('limitedChecker')}
-          style={{
-            marginLeft: '10px',
-            padding: '8px 20px',
-            borderRadius: '8px',
-            backgroundColor: viewType === 'limitedChecker' ? '#7DC387' : '#ddd',
-            color: viewType === 'limitedChecker' ? 'white' : 'black',
-            border: 'none',
-            fontWeight: 'bold'
-          }}
-        >
-          LIMITED CHECKER
-        </button>
+      <div className="view-toggle-container">
+        <div className="view-toggle-group">
+          <button 
+            onClick={() => setViewType('accounts')} 
+            className={`view-toggle-btn ${viewType === 'accounts' ? 'active' : ''}`}
+          >
+            <span className="toggle-icon">👤</span>
+            ACCOUNT LIST
+          </button>
+          <button 
+            onClick={() => setViewType('robux')} 
+            className={`view-toggle-btn ${viewType === 'robux' ? 'active' : ''}`}
+          >
+            <span className="toggle-icon">💎</span>
+            ROBUX LIST
+          </button>
+          <button 
+            onClick={() => setViewType('limitedChecker')}
+            className={`view-toggle-btn ${viewType === 'limitedChecker' ? 'active' : ''}`}
+          >
+            <span className="toggle-icon">🔍</span>
+            LIMITED CHECKER
+          </button>
+        </div>
       </div>
 
       {/* Render Based on View */}
