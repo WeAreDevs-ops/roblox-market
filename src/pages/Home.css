@@ -255,12 +255,12 @@
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.75rem;
-  background: var(--bg-tertiary); /* soft light background */
-  color: var(--text-primary);     /* matches other text */
-  border-radius: var(--radius);
+  background: var(--primary-light);  /* light blue background */
+  color: var(--primary);             /* blue text */
+  border-radius: var(--radius-md);
   font-size: 0.75rem;
-  font-weight: 500;
-  border: 1px solid var(--gray-200); /* subtle border */
+  font-weight: 600;
+  border: 1px solid rgba(99, 102, 241, 0.2); /* optional: subtle blue border */
   transition: all 0.2s ease;
 }
 
