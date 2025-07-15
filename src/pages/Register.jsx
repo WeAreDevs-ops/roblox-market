@@ -1,85 +1,99 @@
- import React, { useState } from 'react';
- import Swal from 'sweetalert2';
- import { createUserWithEmailAndPassword } from 'firebase/auth';
- import { auth } from '../../firebase'; // Firebase client SDK
- 
 
- export default function Register() {
+import React, { useState } from 'react';
+import Swal from 'sweetalert2';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../firebase';
+import './Register.css';
+
+export default function Register() {
   const [form, setForm] = useState({ username: '', password: '' });
- 
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
-  setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
- 
 
   const handleRegister = async (e) => {
-  e.preventDefault();
-  const email = `${form.username}@rbxsm.com`; // Convert username to email
- 
+    e.preventDefault();
+    setIsLoading(true);
+    const email = `${form.username}@rbxsm.com`;
 
-  try {
-  await createUserWithEmailAndPassword(auth, email, form.password);
-  Swal.fire('Success', 'Registration successful!', 'success');
-  } catch (error) {
-  console.error('Registration error:', error.message);
-  let msg = 'Registration failed';
-  if (error.code === 'auth/email-already-in-use') {
-  msg = 'Username already taken';
-  }
-  Swal.fire('Error', msg, 'error');
-  }
+    try {
+      await createUserWithEmailAndPassword(auth, email, form.password);
+      Swal.fire('Success', 'Registration successful!', 'success');
+      setForm({ username: '', password: '' });
+    } catch (error) {
+      console.error('Registration error:', error.message);
+      let msg = 'Registration failed';
+      if (error.code === 'auth/email-already-in-use') {
+        msg = 'Username already taken';
+      }
+      Swal.fire('Error', msg, 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
- 
 
   return (
-  <div className="container" style={{
-  marginTop: 40,
-  backgroundColor: '#f0f0f0',
-  padding: '20px',
-  borderRadius: '8px',
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
-  }}>
-  <h2 style={{
-  color: '#333',
-  textAlign: 'center',
-  marginBottom: '20px'
-  }}>🧾Register as a Seller</h2>
-  <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-  <input
-  name="username"
-  placeholder="Username"
-  onChange={handleChange}
-  required
-  style={{
-  padding: '10px',
-  border: '1px solid #ccc',
-  borderRadius: '4px'
-  }}
-  />
-  <input
-  type="password"
-  name="password"
-  placeholder="Password"
-  onChange={handleChange}
-  required
-  style={{
-  padding: '10px',
-  border: '1px solid #ccc',
-  borderRadius: '4px'
-  }}
-  />
-  <button className="buy" type="submit" style={{
-  backgroundColor: '#007bff',
-  color: 'white',
-  padding: '12px 20px',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  fontSize: '16px'
-  }}>Register</button>
-  </form>
-  </div>
+    <div className="register-container">
+      <div className="register-card">
+        <div className="register-header">
+          <div className="register-icon">🧾</div>
+          <h2 className="register-title">Register as a Seller</h2>
+          <p className="register-subtitle">Join our marketplace and start selling today</p>
+        </div>
+
+        <form onSubmit={handleRegister} className="register-form">
+          <div className="form-group">
+            <label className="form-label">Username</label>
+            <input
+              name="username"
+              type="text"
+              placeholder="Enter your username"
+              value={form.username}
+              onChange={handleChange}
+              required
+              className="form-input"
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              name="password"
+              placeholder="Enter a secure password"
+              value={form.password}
+              onChange={handleChange}
+              required
+              className="form-input"
+              disabled={isLoading}
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            className="register-btn"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <span className="loading-spinner"></span>
+                Creating Account...
+              </>
+            ) : (
+              <>
+                🚀 Register Now
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="register-footer">
+          <p>Already have an account? <a href="/seller-login">Login here</a></p>
+        </div>
+      </div>
+    </div>
   );
- }
- 
+}

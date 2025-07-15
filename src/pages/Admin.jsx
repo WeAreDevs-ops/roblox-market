@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+import './Admin.css';
 
 export default function Admin() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -366,293 +368,352 @@ export default function Admin() {
   // Render login screen if not authorized nor seller
   if (!isAuthorized && !seller) {
     return (
-      <div className="container" style={{ padding: '20px' }}>
-        <h2 style={{ color: 'white' }}>Admin Login</h2>
-        <input
-          type="password"
-          placeholder="Enter admin password"
-          value={adminPassword}
-          onChange={(e) => setAdminPassword(e.target.value)}
-        />
-        <button onClick={handleAdminLogin}>Login</button>
+      <div className="admin-container">
+        <div className="login-card">
+          <div className="login-section">
+            <h2 className="login-title">🔐 Admin Login</h2>
+            <div className="form-group">
+              <input
+                type="password"
+                placeholder="Enter admin password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                className="form-input"
+              />
+              <button onClick={handleAdminLogin} className="btn btn-primary">
+                Login as Admin
+              </button>
+            </div>
+          </div>
 
-        <hr style={{ margin: '30px 0' }} />
-        <h2 style={{ color: 'white' }}>Seller Login</h2>
-        <form onSubmit={handleSellerLogin}>
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={sellerLogin.username}
-            required
-            onChange={e => setSellerLogin({ ...sellerLogin, username: e.target.value })}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={sellerLogin.password}
-            required
-            onChange={e => setSellerLogin({ ...sellerLogin, password: e.target.value })}
-          />
-          <button type="submit">Login</button>
-        </form>
+          <div className="divider">
+            <span>OR</span>
+          </div>
+
+          <div className="login-section">
+            <h2 className="login-title">👤 Seller Login</h2>
+            <form onSubmit={handleSellerLogin} className="login-form">
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="username"
+                  placeholder="Username"
+                  value={sellerLogin.username}
+                  required
+                  onChange={e => setSellerLogin({ ...sellerLogin, username: e.target.value })}
+                  className="form-input"
+                />
+              </div>
+              <div className="form-group">
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={sellerLogin.password}
+                  required
+                  onChange={e => setSellerLogin({ ...sellerLogin, password: e.target.value })}
+                  className="form-input"
+                />
+              </div>
+              <button type="submit" className="btn btn-secondary">
+                Login as Seller
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     );
-}return (
-    <div className="container" style={{ padding: '20px' }}>
-      <h2 style={{ color: 'white' }}>
-        {isAuthorized ? 'Admin Panel' : `${seller?.username}'s Panel`}
-        <button
-          onClick={handleLogout}
-          style={{ marginLeft: '20px', background: 'red', color: '#fff' }}
-        >
-          Logout
+  }
+
+  return (
+    <div className="admin-container">
+      <div className="admin-header">
+        <h1 className="admin-title">
+          {isAuthorized ? '🛠️ Admin Panel' : `👤 ${seller?.username}'s Panel`}
+        </h1>
+        <button onClick={handleLogout} className="btn btn-danger">
+          🚪 Logout
         </button>
-      </h2>
+      </div>
 
       {/* FORM TOGGLE BUTTONS */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
+      <div className="form-toggle">
         <button
           onClick={() => setFormType('account')}
-          style={{
-            padding: '10px 25px',
-            backgroundColor: formType === 'account' ? '#4CAF50' : '#e0e0e0',
-            color: formType === 'account' ? 'white' : 'black',
-            border: 'none',
-            borderRadius: '8px',
-            fontWeight: 'bold',
-            fontSize: '14px',
-            cursor: 'pointer',
-            transition: 'background-color 0.3s ease'
-          }}
+          className={`toggle-btn ${formType === 'account' ? 'active' : ''}`}
         >
-          ACCOUNT LISTING FORM
+          <span className="toggle-icon">👤</span>
+          Account Listings
         </button>
         <button
           onClick={() => setFormType('robux')}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: formType === 'robux' ? '#2196F3' : '#e0e0e0',
-            color: formType === 'robux' ? 'white' : 'black',
-            border: 'none',
-            borderRadius: '5px'
-          }}
+          className={`toggle-btn ${formType === 'robux' ? 'active' : ''}`}
         >
-          ROBUX LISTING FORM
+          <span className="toggle-icon">💎</span>
+          Robux Listings
         </button>
       </div>
 
       {/* === ACCOUNT FORM SECTION === */}
       {formType === 'account' && (
-        <>
-          <form onSubmit={handleSubmit}>
-            {[
-              ['Username', 'username'],
-              ['Total Summary', 'totalSummary'],
-              ['Price', 'price'],
-              ['Robux Balance', 'robuxBalance'],
-              ['Limited Items', 'limitedItems'],
-              ['Game with Gamepass', 'gamepass'],
-            ].map(([label, name]) => (
-              <div key={name} style={{ marginBottom: '10px' }}>
-                <label style={{ color: 'white' }}>{label}:</label>
-                <input type="text" name={name} value={formData[name]} onChange={handleChange} />
-              </div>
-            ))}
+        <div className="form-section">
+          <div className="form-card">
+            <h3 className="form-title">Account Information</h3>
+            <form onSubmit={handleSubmit} className="admin-form">
+              <div className="form-grid">
+                {[
+                  ['Username', 'username', 'text'],
+                  ['Total Summary', 'totalSummary', 'text'],
+                  ['Price (₱)', 'price', 'number'],
+                  ['Robux Balance', 'robuxBalance', 'number'],
+                  ['Limited Items', 'limitedItems', 'text'],
+                  ['Game with Gamepass', 'gamepass', 'text'],
+                  ['Contact Link (Facebook)', 'facebookLink', 'url']
+                ].map(([label, name, type]) => (
+                  <div key={name} className="form-group">
+                    <label className="form-label">{label}</label>
+                    <input 
+                      type={type} 
+                      name={name} 
+                      value={formData[name]} 
+                      onChange={handleChange}
+                      className="form-input"
+                      placeholder={`Enter ${label.toLowerCase()}`}
+                    />
+                  </div>
+                ))}
 
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Contact Link -FB-:</label>
-              <input type="text" name="facebookLink" value={formData.facebookLink} onChange={handleChange} />
-            </div>
+                <div className="form-group">
+                  <label className="form-label">Email Status</label>
+                  <select name="email" value={formData.email} onChange={handleChange} className="form-select">
+                    <option value="Verified">✅ Verified</option>
+                    <option value="Unverified">❌ Unverified</option>
+                  </select>
+                </div>
 
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Email:</label>
-              <select name="email" value={formData.email} onChange={handleChange}>
-                <option value="Verified">Verified</option>
-                <option value="Unverified">Unverified</option>
-              </select>
-            </div>
+                <div className="form-group">
+                  <label className="form-label">Payment Method</label>
+                  <select name="mop" value={formData.mop} onChange={handleChange} className="form-select">
+                    <option value="Gcash">💳 Gcash</option>
+                    <option value="Paymaya">💳 Paymaya</option>
+                    <option value="Paypal">💳 Paypal</option>
+                    <option value="Others">💳 Others</option>
+                  </select>
+                </div>
 
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>MOP:</label>
-              <select name="mop" value={formData.mop} onChange={handleChange}>
-                <option value="Gcash">Gcash</option>
-                <option value="Paymaya">Paymaya</option>
-                <option value="Paypal">Paypal</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
+                <div className="form-group">
+                  <label className="form-label">Inventory</label>
+                  <select name="inventory" value={formData.inventory} onChange={handleChange} className="form-select">
+                    <option value="Public">🌐 Public</option>
+                    <option value="Private">🔒 Private</option>
+                  </select>
+                </div>
 
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Inventory:</label>
-              <select name="inventory" value={formData.inventory} onChange={handleChange}>
-                <option value="Public">Public</option>
-                <option value="Private">Private</option>
-              </select>
-            </div>
+                <div className="form-group">
+                  <label className="form-label">Account Type</label>
+                  <select name="accountType" value={formData.accountType} onChange={handleChange} className="form-select">
+                    <option value="Global Account">🌍 Global</option>
+                    <option value="Vietnam">🇻🇳 Vietnam</option>
+                    <option value="Others">🏳️ Others</option>
+                  </select>
+                </div>
 
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Account Type:</label>
-              <select name="accountType" value={formData.accountType} onChange={handleChange}>
-                <option value="Global Account">GLOBAL</option>
-                <option value="Vietnam">VIETNAM</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Premium Status:</label>
-              <select name="premium" value={formData.premium} onChange={handleChange}>
-                <option value="True">True</option>
-                <option value="False">False</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                backgroundColor: '#FF0000',
-                color: 'white',
-                padding: '10px 15px',
-                border: 'none',
-                borderRadius: '5px'
-              }}
-            >
-              {isSubmitting ? 'Processing...' : editMode ? 'Update Account' : 'Add Account'}
-            </button>
-          </form>
-
-          <hr style={{ margin: '30px 0' }} />
-          <h3 style={{ color: 'white' }}>Account List</h3>
-          <input
-            type="text"
-            placeholder="Search Username"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ marginBottom: '10px' }}
-          />
-
-          {accounts
-            .filter(acc => acc.username.toLowerCase().includes(search.toLowerCase()))
-            .map(acc => (
-              <div key={acc.id} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px', color: 'white' }}>
-                <strong>{acc.username}</strong> - ₱{acc.price}
-                <div>Account Age: {acc.age || 'N/A'} days</div>
-                <div style={{ marginTop: '5px' }}>
-                  <button onClick={() => handleEdit(acc)} style={{ background: 'orange', color: 'white', marginRight: '10px' }}>
-                    Edit
-                  </button>
-                  <button onClick={() => handleDelete(acc.id)} style={{ background: 'red', color: 'white' }}>
-                    Delete
-                  </button>
+                <div className="form-group">
+                  <label className="form-label">Premium Status</label>
+                  <select name="premium" value={formData.premium} onChange={handleChange} className="form-select">
+                    <option value="True">⭐ Premium</option>
+                    <option value="False">🆓 Regular</option>
+                  </select>
                 </div>
               </div>
-            ))}
-        </>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`btn ${editMode ? 'btn-warning' : 'btn-primary'} full-width`}
+              >
+                {isSubmitting ? '⏳ Processing...' : editMode ? '✏️ Update Account' : '➕ Add Account'}
+              </button>
+            </form>
+          </div>
+
+          <div className="listings-section">
+            <div className="section-header">
+              <h3 className="section-title">Account Listings</h3>
+              <div className="search-container">
+                <input
+                  type="text"
+                  placeholder="🔍 Search by username..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+            </div>
+
+            <div className="listings-grid">
+              {accounts
+                .filter(acc => acc.username.toLowerCase().includes(search.toLowerCase()))
+                .map(acc => (
+                  <div key={acc.id} className="listing-card">
+                    <div className="listing-header">
+                      <h4 className="listing-title">{acc.username}</h4>
+                      <div className="listing-price">₱{acc.price}</div>
+                    </div>
+                    <div className="listing-details">
+                      <div className="detail-item">
+                        <span className="detail-label">Age:</span>
+                        <span className="detail-value">{acc.age || 'N/A'} days</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Robux:</span>
+                        <span className="detail-value">{acc.robuxBalance}</span>
+                      </div>
+                    </div>
+                    <div className="listing-actions">
+                      <button 
+                        onClick={() => handleEdit(acc)} 
+                        className="btn btn-warning btn-sm"
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(acc.id)} 
+                        className="btn btn-danger btn-sm"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* === ROBUX FORM SECTION === */}
       {formType === 'robux' && (
-        <>
-          <form onSubmit={handleRobuxSubmit} style={{ marginBottom: '20px' }}>
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Robux Amount:</label>
-              <input
-                type="number"
-                name="amount"
-                value={robuxFormData.amount}
-                onChange={handleRobuxChange}
-                required
-              />
-            </div>
+        <div className="form-section">
+          <div className="form-card">
+            <h3 className="form-title">Robux Listing Information</h3>
+            <form onSubmit={handleRobuxSubmit} className="admin-form">
+              <div className="form-grid">
+                <div className="form-group">
+                  <label className="form-label">Robux Amount</label>
+                  <input
+                    type="number"
+                    name="amount"
+                    value={robuxFormData.amount}
+                    onChange={handleRobuxChange}
+                    required
+                    className="form-input"
+                    placeholder="Enter robux amount"
+                  />
+                </div>
 
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Method (e.g., Group Payout):</label>
-              <input
-                type="text"
-                name="via"
-                value={robuxFormData.via}
-                onChange={handleRobuxChange}
-                required
-              />
-            </div>
+                <div className="form-group">
+                  <label className="form-label">Method</label>
+                  <input
+                    type="text"
+                    name="via"
+                    value={robuxFormData.via}
+                    onChange={handleRobuxChange}
+                    required
+                    className="form-input"
+                    placeholder="e.g., Group Payout"
+                  />
+                </div>
 
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Price (₱):</label>
-              <input
-                type="number"
-                name="price"
-                value={robuxFormData.price}
-                onChange={handleRobuxChange}
-                required
-                step="any"
-                min="0"
-              />
-            </div>
+                <div className="form-group">
+                  <label className="form-label">Price (₱)</label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={robuxFormData.price}
+                    onChange={handleRobuxChange}
+                    required
+                    step="any"
+                    min="0"
+                    className="form-input"
+                    placeholder="Enter price"
+                  />
+                </div>
 
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ color: 'white' }}>Contact Link (Facebook, etc.):</label>
-              <input
-                type="url"
-                name="contact"
-                value={robuxFormData.contact}
-                onChange={handleRobuxChange}
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isRobuxSubmitting}
-              style={{
-                backgroundColor: '#2196F3',
-                color: 'white',
-                padding: '10px 15px',
-                border: 'none',
-                borderRadius: '5px'
-              }}
-            >
-              {isRobuxSubmitting ? 'Processing...' : robuxEditMode ? 'Update Robux Listing' : 'Add Robux Listing'}
-            </button>
-          </form>
-
-          <h3 style={{ color: 'white' }}>Robux Listings</h3>
-          {robuxListings.length === 0 && (
-            <p style={{ color: 'gray' }}>No robux listings found.</p>
-          )}
-
-          {robuxListings.map(listing => (
-            <div key={listing.id} style={{
-              border: '1px solid #ccc',
-              padding: '10px',
-              marginBottom: '10px',
-              color: 'white'
-            }}>
-              <strong>Robux:</strong> {listing.amount} <br />
-              <strong>Via:</strong> {listing.via} <br />
-              <strong>Price:</strong> ₱{listing.price} <br />
-              <strong>Contact:</strong> <a href={listing.contact} target="_blank" rel="noopener noreferrer" style={{ color: '#00c3ff' }}>{listing.contact}</a> <br />
-              <strong>Seller:</strong> {listing.seller}
-              <div style={{ marginTop: '5px' }}>
-                <button
-                  onClick={() => handleRobuxEdit(listing)}
-                  style={{ background: 'orange', color: 'white', marginRight: '10px' }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleRobuxDelete(listing.id)}
-                  style={{ background: 'red', color: 'white' }}
-                >
-                  Delete
-                </button>
+                <div className="form-group">
+                  <label className="form-label">Contact Link</label>
+                  <input
+                    type="url"
+                    name="contact"
+                    value={robuxFormData.contact}
+                    onChange={handleRobuxChange}
+                    required
+                    className="form-input"
+                    placeholder="https://facebook.com/..."
+                  />
+                </div>
               </div>
-            </div>
-          ))}
-        </>
+
+              <button
+                type="submit"
+                disabled={isRobuxSubmitting}
+                className={`btn ${robuxEditMode ? 'btn-warning' : 'btn-primary'} full-width`}
+              >
+                {isRobuxSubmitting ? '⏳ Processing...' : robuxEditMode ? '✏️ Update Robux Listing' : '➕ Add Robux Listing'}
+              </button>
+            </form>
+          </div>
+
+          <div className="listings-section">
+            <h3 className="section-title">Robux Listings</h3>
+            {robuxListings.length === 0 ? (
+              <div className="empty-state">
+                <p>No robux listings found.</p>
+              </div>
+            ) : (
+              <div className="listings-grid">
+                {robuxListings.map(listing => (
+                  <div key={listing.id} className="listing-card">
+                    <div className="listing-header">
+                      <h4 className="listing-title">💎 {listing.amount} Robux</h4>
+                      <div className="listing-price">₱{listing.price}</div>
+                    </div>
+                    <div className="listing-details">
+                      <div className="detail-item">
+                        <span className="detail-label">Via:</span>
+                        <span className="detail-value">{listing.via}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Seller:</span>
+                        <span className="detail-value">{listing.seller}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Contact:</span>
+                        <a href={listing.contact} target="_blank" rel="noopener noreferrer" className="contact-link">
+                          View Contact
+                        </a>
+                      </div>
+                    </div>
+                    <div className="listing-actions">
+                      <button
+                        onClick={() => handleRobuxEdit(listing)}
+                        className="btn btn-warning btn-sm"
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => handleRobuxDelete(listing.id)}
+                        className="btn btn-danger btn-sm"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
-                }
+}

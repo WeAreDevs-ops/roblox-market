@@ -174,7 +174,7 @@ export default function Home() {
         </div>
       </div>
       `;
-      
+
     } catch (error) {
       console.error(error);
       resultDiv.innerHTML = "<div class='card' style='padding: 20px; color: #FF4C4C;'><strong>❌ Error:</strong> Failed to fetch item. Make sure the Asset ID is valid.</div>";
@@ -464,9 +464,10 @@ export default function Home() {
                 <DetailRow label="➤ Via:" value={item.via} />
                 <DetailRow label="➤ Price:" value={`₱${item.price}`} />
                 <DetailRow label="➤ Seller:" value={item.seller} />
-                <div className="buttons" style={{ marginTop: "10px" }}>
-                  <button onClick={() => showContact(item)} className="delete">
-                    Contact Me
+                
+                <div className="card-actions">
+                  <button onClick={() => showContact(item)} className="btn btn-primary full-width">
+                    💬 Contact Seller
                   </button>
                 </div>
               </motion.div>
@@ -477,4 +478,3 @@ export default function Home() {
     </div>
   );
         }
-        
