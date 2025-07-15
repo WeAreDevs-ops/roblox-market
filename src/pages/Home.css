@@ -252,14 +252,15 @@
 }
 
 .gamepass-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 0.25rem 0.75rem;
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  background: var(--bg-tertiary); /* soft light background */
+  color: var(--text-primary);     /* matches other text */
   border-radius: var(--radius);
   font-size: 0.75rem;
   font-weight: 500;
-  border: 1px solid var(--gray-200);
+  border: 1px solid var(--gray-200); /* subtle border */
   transition: all 0.2s ease;
 }
 
