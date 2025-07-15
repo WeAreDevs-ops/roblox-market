@@ -402,25 +402,19 @@ export default function Home() {
                         <DetailRow label="➤ Inventory:" value={acc.inventory} />
                         <DetailRow label="🌍 Type:" value={acc.accountType} />
                         <DetailRow label="💳 MOP:" value={acc.mop} />
-                        <div style={{ marginTop: "10px" }}>
-                          <DetailRow label="🎮 Games with Gamepasses:" value="" />
-                          <div style={{ 
-                            marginTop: '8px', 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            gap: '5px', 
-                            maxHeight: '150px', 
-                            overflowY: 'auto', 
-                            paddingRight: '5px',
-                            border: '1px solid #ccc',
-                            borderRadius: '8px'
-                          }}>
+                        <div className="gamepass-container">
+                          <span className="gamepass-label">🎮 Games with Gamepasses:</span>
+                          <div className="gamepass-list">
                             {acc.gamepass && acc.gamepass.trim() !== "" ? (
                               acc.gamepass.split(",").map((game, index) => (
-                                <Tag key={index} text={game.trim()} color="#7DC387" />
+                                <span key={index} className="gamepass-tag">
+                                  {game.trim()}
+                                </span>
                               ))
                             ) : (
-                              <Tag text="No Gamepass Found" color="#999" />
+                              <span className="gamepass-tag no-gamepass-tag">
+                                No Gamepass Found
+                              </span>
                             )}
                           </div>
                         </div>
